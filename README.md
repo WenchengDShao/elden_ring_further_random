@@ -14,55 +14,44 @@
 
 ## 安装
 
+无论哪种环境，都要把游戏目录（`Steam/steamapps/common/ELDEN RING/Game/`）里的 `oo2core_6_win64.dll`
+复制到仓库目录，这个 DLL 不随仓库分发。
+
+### Windows
+
+1. 安装 [uv](https://github.com/astral-sh/uv)：在 PowerShell 里运行
+   `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`（没有 Python 时 uv 会自动下载）。
+2. 下载或 `git clone` 本仓库，把 `oo2core_6_win64.dll` 复制到仓库目录。
+3. 在仓库目录运行 `randomize.bat`，参数与 `randomize.sh` 相同，例如
+   `randomize.bat --input "D:\path\regulation.bin" --output regulation_new.bin --split-anim any --random-prices --weapons`。
+
+不需要 WSL。Windows 10 实测通过。
+
 ### Linux / WSL
 
-1. 需要 Python 3 和 [uv](https://github.com/astral-sh/uv)。`randomize.sh` 第一次运行时会在 `~/.venvs/er_mod`
-   建虚拟环境并安装依赖（`cryptography`、`zstandard`）。
-2. 把游戏目录（`Steam/steamapps/common/ELDEN RING/Game/`）里的 `oo2core_6_win64.dll` 复制到本项目目录
-   （ModEngine2 的 `mod/fog/`、`mod/randomizer/` 里也各有一份）。这个 DLL 不随仓库分发；默认只在当前目录找，
-   也可以用 `--oodle-dll PATH` 或环境变量 `OODLE_DLL` 指定。找不到时会说明并询问路径，只有明确放弃才回退到 zstd，
-   非交互运行时直接报错退出。
-3. `tools/linoodle/liblinoodle.so` 已预编译：x86_64，只依赖 glibc 2.17 以上（libc++ 已静态链进去，不依赖
-   libstdc++），Ubuntu 18.04 / Debian 10 以后的发行版（包括 WSL 里常见的 Ubuntu 20.04 / 22.04 / 24.04）可以直接加载。
-   如果仍然报 `cannot open shared object file` 或 `version ... not found`，按下面的方法重编。
-
-在 WSL 里的完整步骤（以 Ubuntu 为例，在 WSL 终端中执行）：
+以 Ubuntu 为例（WSL 在 WSL 终端里执行）：
 
 ```bash
 sudo apt update && sudo apt install -y git curl python3
-curl -LsSf https://astral.sh/uv/install.sh | sh        # 安装 uv，装完重开终端（或 source ~/.bashrc）
+curl -LsSf https://astral.sh/uv/install.sh | sh        # 安装 uv，装完重开终端
 git clone https://github.com/WenchengDShao/elden_ring_further_random.git ~/elden_ring_further_random
 cd ~/elden_ring_further_random
 cp "/mnt/c/Program Files (x86)/Steam/steamapps/common/ELDEN RING/Game/oo2core_6_win64.dll" .   # 按实际游戏路径改
-./randomize.sh --input "/mnt/c/path/to/regulation.bin" --output ./regulation_new.bin --split-anim any --random-prices --weapons
+./randomize.sh --input /path/to/regulation.bin --output ./regulation_new.bin --split-anim any --random-prices --weapons
 ```
 
-仓库建议放在 WSL 自己的文件系统里（如 `~/`）；放在 `/mnt/c`、`/mnt/d` 这类 Windows 盘上也能用，只是读写慢。
-输入输出可以直接用 `/mnt/<盘符>/...` 路径指向 Windows 上的文件。
+`randomize.sh` 第一次运行时会在 `~/.venvs/er_mod` 建虚拟环境并安装依赖。WSL 里仓库建议放在 WSL 自己的
+文件系统（如 `~/`），输入输出文件可以用 `/mnt/<盘符>/...` 指向 Windows 上的文件。
 
-重编 `liblinoodle.so`（预编译版加载失败时）：
+预编译的 `tools/linoodle/liblinoodle.so` 适用于 Ubuntu 18.04 / Debian 10 以后的 x86_64 发行版。如果运行时报
+`version ... not found` 或 `cannot open shared object file`，重编一次即可：
 
 ```bash
 sudo apt install -y git cmake g++
-tools/linoodle/build.sh        # 克隆 McSimp/linoodle 并编译，结果覆盖 tools/linoodle/liblinoodle.so
+tools/linoodle/build.sh
 ```
 
-脚本会把第三方的 pe-parse 改为 `-w` 编译（原本的 `-Werror` 在新版 g++ 下会因为警告而失败），补上新版编译器缺的头文件，编译过程没有警告。
-这样编出的库依赖本机的 glibc / libstdc++ 版本；想编出和仓库里一样的通用版，下载一份
-[Zig](https://ziglang.org/download/)（0.15.x，解压即用，不用安装）后运行
-`ZIG=/path/to/zig/zig tools/linoodle/build.sh`，它会用 Zig 自带的 clang 以 glibc 2.28 为目标编译并静态链接 libc++。
-
-### Windows 原生
-
-Windows 上的 Python 可以用 ctypes 直接加载 `oo2core_6_win64.dll`，不需要 WSL，也不需要 linoodle（Windows 10 实测通过）：
-
-1. 安装 uv（PowerShell：`powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`），
-   没有 Python 时 uv 会自动下载一份。
-2. 下载或 `git clone` 本仓库，把 `oo2core_6_win64.dll` 复制到仓库目录。
-3. 在仓库目录运行 `randomize.bat`，参数与 `randomize.sh` 相同，例如：
-   `randomize.bat --input "D:\path\regulation.bin" --output regulation_new.bin --split-anim any --random-prices --weapons`。
-
-实现只是 `tools/oodle.py` 在 `sys.platform == "win32"` 时改用 `ctypes.WinDLL` 加载 DLL，其余代码不变。
+DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 linoodle"。
 
 ## 用法
 
@@ -191,6 +180,20 @@ Windows 上的 Python 可以用 ctypes 直接加载 `oo2core_6_win64.dll`，不�
 - `leviathan`：同样的 KRAK 头里放 Leviathan 流，文件最小，游戏是否接受未测。
 
 保存时压缩等级逐级提高直到装下，装不下就报错而不是写出游戏拒绝的文件；运行结束会打印剩余余量。
+
+## Oodle DLL 与 linoodle
+
+- **DLL 查找**：默认只在当前目录找 `oo2core_6_win64.dll`，也可以用 `--oodle-dll PATH` 或环境变量 `OODLE_DLL`
+  指定。找不到时会说明并询问路径，只有明确放弃才回退到 zstd，非交互运行时直接报错退出。除游戏目录外，
+  ModEngine2 的 `mod/fog/`、`mod/randomizer/` 里也各有一份 DLL。
+- **Windows**：`tools/oodle.py` 在 `sys.platform == "win32"` 时用 `ctypes.WinDLL` 直接加载 DLL，其余代码不变。
+- **Linux / WSL**：DLL 由 `tools/linoodle/liblinoodle.so`（McSimp/linoodle 的 PE 加载器）加载。仓库里的 .so 用
+  Zig 以 glibc 2.28 为目标编译并静态链接 libc++，实际只依赖 glibc 2.17，不依赖 libstdc++，所以老一些的发行版
+  也能加载。
+- **`tools/linoodle/build.sh`**：克隆 McSimp/linoodle 并编译，结果覆盖 `tools/linoodle/liblinoodle.so`。脚本把
+  第三方的 pe-parse 改为 `-w` 编译（原本的 `-Werror` 在新版 g++ 下会因为警告而失败），补上新版编译器缺的头文件，
+  编译过程没有警告。本机 g++ 编出的库依赖本机的 glibc / libstdc++ 版本；要编出和仓库里一样的通用版，下载一份
+  [Zig](https://ziglang.org/download/)（0.15.x，解压即用）后运行 `ZIG=/path/to/zig/zig tools/linoodle/build.sh`。
 
 ## 实现原理
 
