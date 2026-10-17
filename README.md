@@ -12,8 +12,7 @@
 - Linux、WSL（Windows Subsystem for Linux）和 Windows 原生都能跑。Windows 上用 `randomize.bat`，Python 直接
   加载游戏的 DLL，不需要 WSL 和 linoodle（Windows 10 实测通过）。`--compression zstd` 不依赖 DLL。
 
-图形界面：`randomize_gui.bat` Windows 10 实测通过；`build_exe.bat` 打包出的 exe 尚未在 Windows 上实测
-（Linux 上两者都测过）。
+图形界面：`randomize_gui.bat` 和 `build_exe.bat` 打包出的 exe 都在 Windows 10 实测通过（Linux 上也测过）。
 
 ## 安装
 
@@ -33,7 +32,7 @@
 想要一个不依赖 uv / Python 的单文件程序：运行 `build_exe.bat`，它用 PyInstaller 打包出 `dist\ERFurtherRandom.exe`，
 把它和 `oo2core_6_win64.dll` 放在同一目录就能双击运行（见下文“图形界面”）。
 
-不需要 WSL。`randomize.bat` 和 `randomize_gui.bat` Windows 10 实测通过；`build_exe.bat` 尚未实测。
+不需要 WSL。`randomize.bat`、`randomize_gui.bat` 和 `build_exe.bat` 打包出的 exe 都在 Windows 10 实测通过。
 
 ### Linux / WSL
 
@@ -129,6 +128,10 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 - 日志区显示命令行的全部输出；Kraken 压缩约需 2 分钟，期间窗口保持响应。
 - 打包出的程序带 `--` 开头的参数运行时就是命令行工具（参数与 `randomize.py` 相同；Windows 的 windowed 程序
   没有控制台输出，结果看输出文件旁的 `mapping.txt` 等）。
+- 打包出的 exe 自带 Python、tkinter、Tcl/Tk 和依赖库，复制到别的 64 位 Windows 10 / 11 电脑上就能用，对方不用装
+  uv 或 Python，只要把 `oo2core_6_win64.dll` 放在 exe 旁边（每台电脑的游戏目录里都有）。exe 没有数字签名，
+  首次运行可能被 SmartScreen 拦下（“更多信息 → 仍要运行”），Defender 偶尔会误报 PyInstaller 打包的程序；每次
+  启动先解压到临时目录，要等几秒。要发布可以作为 GitHub Release 的附件上传，仓库本身不收 exe（`dist/` 已忽略）。
 - 窗口没有出现时：错误信息会弹窗显示，并写进程序（exe 或仓库目录）旁边的 `gui_error.log`。uv 自动下载的
   Python 在虚拟环境里自己找不到 Tcl 的脚本库（init.tcl），`gui.py` 启动时会补上路径，`build_exe.bat` 打包前用
   `tools/tkcheck.py` 检查 Tk 并把 `TCL_LIBRARY` / `TK_LIBRARY` 传给 PyInstaller。Python 根本没带 tkinter 时
