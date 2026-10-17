@@ -27,7 +27,8 @@
 3. 在仓库目录运行 `randomize.bat`，参数与 `randomize.sh` 相同，例如
    `randomize.bat --input "D:\path\regulation.bin" --output regulation_new.bin --split-anim any --random-prices --weapons`。
 
-也可以用图形界面：运行 `randomize_gui.bat` 打开窗口，选文件、勾选项、点“开始随机”即可（同样需要 uv）。
+也可以用图形界面：运行 `randomize_gui.bat` 打开窗口，选文件、勾选项、点“开始随机”即可（同样需要 uv；它会保留
+一个黑色控制台窗口用来显示错误信息）。
 想要一个不依赖 uv / Python 的单文件程序：运行 `build_exe.bat`，它用 PyInstaller 打包出 `dist\ERFurtherRandom.exe`，
 把它和 `oo2core_6_win64.dll` 放在同一目录就能双击运行（见下文“图形界面”）。
 
@@ -127,6 +128,8 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 - 日志区显示命令行的全部输出；Kraken 压缩约需 2 分钟，期间窗口保持响应。
 - 打包出的程序带 `--` 开头的参数运行时就是命令行工具（参数与 `randomize.py` 相同；Windows 的 windowed 程序
   没有控制台输出，结果看输出文件旁的 `mapping.txt` 等）。
+- 窗口没有出现时：错误信息会弹窗显示，并写进程序（exe 或仓库目录）旁边的 `gui_error.log`。最常见的原因是
+  这个 Python 没带 tkinter（python.org 安装包要勾选 “tcl/tk and IDLE”）；`build_exe.bat` 打包前会先检查这一点。
 
 ## 道具效果随机
 

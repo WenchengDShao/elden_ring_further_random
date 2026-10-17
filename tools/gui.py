@@ -27,18 +27,58 @@ import oodle      # noqa: E402
 import randomize  # noqa: E402
 import weapons    # noqa: E402
 
-try:
-    import tkinter as tk
-    from tkinter import filedialog, messagebox, ttk
-except ImportError:                       # Linux without python3-tk
-    tk = None
-
 TITLE = "Elden Ring Further Random"
 WINDOWS = sys.platform == "win32"
 FROZEN = bool(getattr(sys, "frozen", False))
 # Like randomize.sh / randomize.bat the window works from the project folder (the executable's folder
 # when packaged): relative paths and the default ./oo2core_6_win64.dll resolve there.
 APP_DIR = Path(sys.executable).resolve().parent if FROZEN else Path(__file__).resolve().parents[1]
+
+
+def _tcl_env() -> None:
+    """Point Tcl / Tk at the base installation's script libraries when the environment does not: in a
+       venv of a relocated (uv-managed) Windows Python, Tk may otherwise fail with 'Can't find a usable
+       init.tcl'.  PyInstaller sets these itself in the packaged program."""
+    if FROZEN or not WINDOWS:
+        return
+    base = Path(sys.base_prefix)
+    for var, name, probe in (("TCL_LIBRARY", "tcl", "init.tcl"), ("TK_LIBRARY", "tk", "tk.tcl")):
+        if os.environ.get(var):
+            continue
+        for d in (base / "tcl", base / "lib", base / "Lib"):
+            hits = sorted(d.glob(f"{name}[89].*")) if d.is_dir() else []   # tcl8.6 / tcl9.0
+            if hits and (hits[-1] / probe).is_file():
+                os.environ[var] = str(hits[-1])
+                break
+
+
+_tcl_env()
+TK_ERROR: str | None = None
+try:
+    import tkinter as tk
+    from tkinter import filedialog, messagebox, ttk
+except Exception:                         # Linux without python3-tk, Windows Python without tcl/tk
+    tk = None
+    TK_ERROR = traceback.format_exc()
+
+
+def fatal(text: str) -> None:
+    """Report a start-up failure in a way that survives having no console (pythonw, windowed exe):
+       gui_error.log next to the program, a Windows message box, and stderr when there is one."""
+    log = APP_DIR / "gui_error.log"
+    try:
+        log.write_text(text + "\n", encoding="utf-8")
+        text += f"\n\n（以上内容已写入 {log}）"
+    except OSError:
+        pass
+    if sys.stderr is not None:
+        print(text, file=sys.stderr)
+    if WINDOWS:
+        try:
+            import ctypes
+            ctypes.windll.user32.MessageBoxW(None, text, TITLE, 0x10)
+        except Exception:
+            pass
 LAUNCHER = "randomize.bat" if WINDOWS else "./randomize.sh"
 WEAPON_FLAGS = ("--somber-infusable", "--random-movesets", "--random-default-ash", "--random-stats")
 STAMINA_DEFAULT = ("0.3", "1.7")
@@ -515,12 +555,14 @@ class Gui:
         self.root.destroy()
 
 
-def main() -> int:
-    args = sys.argv[1:]
-    if args and args[0].startswith("-"):                 # command-line mode, same options as randomize.py
-        return randomize.main(args)
+NO_TK_HINT = (
+    "Windows：安装 python.org 的 Python（安装时勾选 “tcl/tk and IDLE”），删除 %USERPROFILE%\\.venvs\\er_mod 后"
+    "重新运行 randomize_gui.bat / build_exe.bat。" if WINDOWS else "Ubuntu / WSL: sudo apt install python3-tk")
+
+
+def run_gui(args: list[str]) -> int:
     if tk is None:
-        print("tkinter 不可用（Ubuntu / WSL: sudo apt install python3-tk）", file=sys.stderr)
+        fatal("这个 Python 没有可用的 tkinter，无法显示窗口。\n\n" + (TK_ERROR or "").rstrip() + "\n\n" + NO_TK_HINT)
         return 1
     input_file = str(Path(args[0]).resolve()) if args and Path(args[0]).is_file() else None
     os.chdir(APP_DIR)
@@ -531,13 +573,20 @@ def main() -> int:
         except Exception:
             pass
     root = tk.Tk()
-    try:
-        Gui(root, input_file)
-    except Exception:
-        messagebox.showerror(TITLE, traceback.format_exc())
-        return 1
+    Gui(root, input_file)
     root.mainloop()
     return 0
+
+
+def main() -> int:
+    args = sys.argv[1:]
+    if args and args[0].startswith("-"):                 # command-line mode, same options as randomize.py
+        return randomize.main(args)
+    try:
+        return run_gui(args)
+    except Exception:
+        fatal("图形界面启动失败：\n\n" + traceback.format_exc().rstrip())
+        return 1
 
 
 if __name__ == "__main__":
