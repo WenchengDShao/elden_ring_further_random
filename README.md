@@ -12,6 +12,8 @@
 - Linux、WSL（Windows Subsystem for Linux）和 Windows 原生都能跑。Windows 上用 `randomize.bat`，Python 直接
   加载游戏的 DLL，不需要 WSL 和 linoodle（Windows 10 实测通过）。`--compression zstd` 不依赖 DLL。
 
+图形界面（`randomize_gui.bat` / `./randomize_gui.sh`，以及 `build_exe.bat` 打包出的 exe）目前只在 Linux 上测试过，Windows 下尚未实测。
+
 ## 安装
 
 无论哪种环境，都要把游戏目录（`Steam/steamapps/common/ELDEN RING/Game/`）里的 `oo2core_6_win64.dll`
@@ -25,7 +27,11 @@
 3. 在仓库目录运行 `randomize.bat`，参数与 `randomize.sh` 相同，例如
    `randomize.bat --input "D:\path\regulation.bin" --output regulation_new.bin --split-anim any --random-prices --weapons`。
 
-不需要 WSL。Windows 10 实测通过。
+也可以用图形界面：运行 `randomize_gui.bat` 打开窗口，选文件、勾选项、点“开始随机”即可（同样需要 uv）。
+想要一个不依赖 uv / Python 的单文件程序：运行 `build_exe.bat`，它用 PyInstaller 打包出 `dist\ERFurtherRandom.exe`，
+把它和 `oo2core_6_win64.dll` 放在同一目录就能双击运行（见下文“图形界面”）。
+
+不需要 WSL。命令行方式 Windows 10 实测通过；`randomize_gui.bat` 和 `build_exe.bat` 尚未在 Windows 上实测。
 
 ### Linux / WSL
 
@@ -42,6 +48,9 @@ cp "/mnt/c/Program Files (x86)/Steam/steamapps/common/ELDEN RING/Game/oo2core_6_
 
 `randomize.sh` 第一次运行时会在 `~/.venvs/er_mod` 建虚拟环境并安装依赖。WSL 里仓库建议放在 WSL 自己的
 文件系统（如 `~/`），输入输出文件可以用 `/mnt/<盘符>/...` 指向 Windows 上的文件。
+
+图形界面：`./randomize_gui.sh`（需要 tkinter，系统 Python 缺它时 `sudo apt install python3-tk`；WSL 需要 WSLg 或
+X 服务器才能显示窗口）。`./build_exe.sh` 把它打包成 Linux 单文件程序 `dist/ERFurtherRandom`。
 
 预编译的 `tools/linoodle/liblinoodle.so` 适用于 Ubuntu 18.04 / Debian 10 以后的 x86_64 发行版。如果运行时报
 `version ... not found` 或 `cannot open shared object file`，重编一次即可：
@@ -105,6 +114,19 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 | `--random-default-ash` | 默认战技随机；掉落表 / 商店 / 初始职业给出的武器改成随机质变 |
 | `--random-stats` | 攻击、防御、必需能力值、能力加成、异常积累、出招耐力随机；`--stat-groups` 选子集，`--stamina-rate LO,HI` |
 | `--compression auto\|kraken\|zstd\|leviathan` | 输出压缩格式，见下文 |
+
+### 图形界面
+
+`randomize_gui.bat`（Windows）/ `./randomize_gui.sh`（Linux）打开窗口，或者双击 `build_exe.bat` 打包出的
+`dist\ERFurtherRandom.exe`。窗口里的每个控件对应一个命令行选项，底部“等价命令”实时显示同样设置的命令行。
+
+- 文件：输入 regulation.bin、输出文件、Oodle DLL（启动时自动填入 exe / 仓库目录里的 `oo2core_6_win64.dll`，
+  没有就留空，开始时会询问是否改用 zstd 格式）、随机种子（留空则随机抽一个，日志里会显示）、压缩格式。
+- “常用设定”按钮 = `--split-anim any --random-prices --weapons`；“预览（不写文件）” = `--dry-run`；
+  “开始随机”生成文件，完成后提示输出位置，`mapping.txt / weapons.txt / spells.txt` 写在输出文件旁边。
+- 日志区显示命令行的全部输出；Kraken 压缩约需 2 分钟，期间窗口保持响应。
+- 打包出的程序带 `--` 开头的参数运行时就是命令行工具（参数与 `randomize.py` 相同；Windows 的 windowed 程序
+  没有控制台输出，结果看输出文件旁的 `mapping.txt` 等）。
 
 ## 道具效果随机
 
@@ -220,6 +242,8 @@ param 重新序列化（支持新增行），没动过的原字节写回，再�
   （Linux / WSL 经 linoodle 加载，Windows 直接 ctypes 加载）
 - `tools/paramdef/*.xml`、`tools/names/*.txt` — 来自 soulsmods/Paramdex 的表结构和行名
 - `randomize.sh`、`randomize.bat` — 一键运行（Linux / WSL、Windows）
+- `tools/gui.py` — 图形界面（tkinter，不需要额外依赖），`randomize_gui.sh`、`randomize_gui.bat` 启动它
+- `build_exe.sh`、`build_exe.bat` — 用 PyInstaller 把图形界面打包成单文件程序，输出在 `dist/`
 
 ## 致谢
 

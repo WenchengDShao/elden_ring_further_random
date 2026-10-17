@@ -10,3 +10,7 @@ randomized/
 __pycache__/
 *.pyc
 .venv/
+# PyInstaller
+/build/
+/dist/
+*.spec

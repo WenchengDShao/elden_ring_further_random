@@ -206,7 +206,7 @@ def choose_codec(wanted: str) -> str:
     why = oodle.available()
     while why and oodle.missing_dll():
         print(DLL_HELP)
-        if not sys.stdin.isatty():
+        if sys.stdin is None or not sys.stdin.isatty():
             raise SystemExit(f"# {oodle.DLL_NAME} 找不到，且无法交互询问。请用 --oodle-dll PATH 或 OODLE_DLL 指定，"
                              "或明确加 --compression zstd 回退到 zstd 格式。")
         try:
@@ -229,7 +229,7 @@ def choose_codec(wanted: str) -> str:
     return erreg.CODEC_KRAKEN if wanted == "auto" else wanted
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--input", default="regulation.bin")
     ap.add_argument("--output", default="randomized/regulation.bin")
@@ -304,7 +304,7 @@ def main() -> int:
     ap.add_argument("--zstd-window", type=int, default=16, choices=range(16, 23), metavar="16..22",
                     help="zstd window log of the output; 16 (64 KB) is the only value the game accepts "
                          "(22 crashed it), kept for experiments only")
-    args = ap.parse_args()
+    args = ap.parse_args(argv)
     if args.weapons:
         args.somber_infusable = args.random_movesets = args.random_default_ash = args.random_stats = True
     if args.oodle_dll is not None and not oodle.use_dll(args.oodle_dll):
