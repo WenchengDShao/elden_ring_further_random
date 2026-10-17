@@ -4,6 +4,25 @@
 动作模组、默认战灰和数值。输入可以是原版文件，也可以是雾门随机器 / 道具随机器已经改过的文件，
 所以能和它们叠加使用。
 
+## 快速开始：图形界面（Windows）
+
+不需要安装任何东西：
+
+1. 到 [Releases](https://github.com/WenchengDShao/elden_ring_further_random/releases/latest) 下载 `ERFurtherRandom.exe`。
+2. 把游戏目录 `Steam\steamapps\common\ELDEN RING\Game\` 里的 `oo2core_6_win64.dll` 复制到 exe 旁边
+   （没有它只能输出体积更大的 zstd 格式）。
+3. 双击 exe，几秒后出现窗口：选“输入 regulation.bin”（原版，或雾门 / 道具随机器已经改过的文件），
+   点“常用设定”（= 道具动作与效果分开随机 + 商店价格随机 + 武器四项全开），再点“开始随机”。
+4. 约两分钟后弹窗提示完成，把生成的文件覆盖 mod 目录里的 `regulation.bin` 即可生效；随机结果清单
+   `mapping.txt / weapons.txt / spells.txt` 在输出文件旁边。
+
+![图形界面](docs/gui.png)
+
+exe 自带 Python、tkinter、Tcl/Tk 和依赖库，64 位 Windows 10 / 11 都能直接运行。它没有数字签名，首次运行可能被
+SmartScreen 拦下（“更多信息 → 仍要运行”），Defender 偶尔会误报 PyInstaller 打包的程序。
+窗口里每个控件对应一个命令行选项，细节见下文“图形界面”；从源码运行（`randomize_gui.bat`）、Linux 和命令行用法
+见“安装”和“用法”。
+
 ## 兼容性
 
 - 游戏 **1.16.1** 测试通过（2026 年 10 月），开发时用的原版文件也来自 1.16.1。其他版本没有测过：只要
@@ -20,6 +39,8 @@
 复制到仓库目录，这个 DLL 不随仓库分发。
 
 ### Windows
+
+只想用图形界面的话直接下载 Release 里的 exe（见开头“快速开始”），不用装 uv。下面是从源码运行的步骤：
 
 1. 安装 [uv](https://github.com/astral-sh/uv)：在 PowerShell 里运行
    `powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`（没有 Python 时 uv 会自动下载）。
@@ -118,8 +139,9 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 
 ### 图形界面
 
-`randomize_gui.bat`（Windows）/ `./randomize_gui.sh`（Linux）打开窗口，或者双击 `build_exe.bat` 打包出的
-`dist\ERFurtherRandom.exe`。窗口里的每个控件对应一个命令行选项，底部“等价命令”实时显示同样设置的命令行。
+Release 里的 `ERFurtherRandom.exe`（见开头“快速开始”）、`randomize_gui.bat`（Windows，从源码运行）和
+`./randomize_gui.sh`（Linux）打开的是同一个窗口；`build_exe.bat` 可以自己打包 exe。窗口里的每个控件对应一个
+命令行选项，底部“等价命令”实时显示同样设置的命令行。
 
 - 文件：输入 regulation.bin、输出文件、Oodle DLL（启动时自动填入 exe / 仓库目录里的 `oo2core_6_win64.dll`，
   没有就留空，开始时会询问是否改用 zstd 格式）、随机种子（留空则随机抽一个，日志里会显示）、压缩格式。
@@ -128,10 +150,9 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 - 日志区显示命令行的全部输出；Kraken 压缩约需 2 分钟，期间窗口保持响应。
 - 打包出的程序带 `--` 开头的参数运行时就是命令行工具（参数与 `randomize.py` 相同；Windows 的 windowed 程序
   没有控制台输出，结果看输出文件旁的 `mapping.txt` 等）。
-- 打包出的 exe 自带 Python、tkinter、Tcl/Tk 和依赖库，复制到别的 64 位 Windows 10 / 11 电脑上就能用，对方不用装
-  uv 或 Python，只要把 `oo2core_6_win64.dll` 放在 exe 旁边（每台电脑的游戏目录里都有）。exe 没有数字签名，
-  首次运行可能被 SmartScreen 拦下（“更多信息 → 仍要运行”），Defender 偶尔会误报 PyInstaller 打包的程序；每次
-  启动先解压到临时目录，要等几秒。要发布可以作为 GitHub Release 的附件上传，仓库本身不收 exe（`dist/` 已忽略）。
+- 自己打包的 exe 和 Release 里的一样，可以复制到别的 64 位 Windows 10 / 11 电脑上用，对方不用装 uv 或 Python，
+  只要把 `oo2core_6_win64.dll` 放在 exe 旁边；每次启动先解压到临时目录，要等几秒。仓库本身不收 exe（`dist/`
+  已忽略），发布时作为 Release 附件上传。
 - 窗口没有出现时：错误信息会弹窗显示，并写进程序（exe 或仓库目录）旁边的 `gui_error.log`。uv 自动下载的
   Python 在虚拟环境里自己找不到 Tcl 的脚本库（init.tcl），`gui.py` 启动时会补上路径，`build_exe.bat` 打包前用
   `tools/tkcheck.py` 检查 Tk 并把 `TCL_LIBRARY` / `TK_LIBRARY` 传给 PyInstaller。Python 根本没带 tkinter 时
