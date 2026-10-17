@@ -25,6 +25,29 @@
 
 ## 用法
 
+### 常用设定
+
+```bash
+./randomize.sh --input /path/to/targeted/regulation.bin --output ./regulation_new.bin --split-anim any --random-prices --weapons
+```
+
+`/path/to/targeted/regulation.bin` 是要随机的文件（原版，或雾门 / 道具随机器已经改过的文件），结果写到
+`regulation_new.bin`，映射表 `mapping.txt`、`weapons.txt`、`spells.txt` 写在同一目录；`regulation_new.bin`
+需要覆盖原文件以生效。这一条包含的随机：
+
+- 道具使用效果（总是做）：每个可使用道具拿到另一个道具的使用效果，shuffle 模式每个效果恰好用一次。
+- `--split-anim any`：使用动作和效果分开随机，动作从整个池子里挑，投掷类效果也可能配吃 / 涂抹的动作；
+  魔法 / 祷告的施放动作同样从全池里挑。
+- 魔法 / 祷告效果（总是做）：魔法和祷告同池互换效果，各自保留魔法 / 祷告归属。
+- `--random-prices`：商店里道具的卢恩价格在条目间打乱。
+- `--weapons`：失色 / 独特武器获得全部 12 种质变并可装战灰（`--somber-infusable`）；每个（武器, 质变）行换成随机
+  武器的动作模组，盾只在盾的动画集之间换、弓弩只在弓弩类之间换（`--random-movesets`，affinity 模式）；
+  默认战技随机，掉落表 / 商店 / 初始职业给出的武器改成随机质变（`--random-default-ash`）；攻击、防御、必需能力值、
+  能力加成、异常积累、出招耐力全部随机，法术的专注值 / 耐力 / 必需能力值也随机（`--random-stats`，全部分组）。
+- 没给 `--seed`，种子随机生成并打印在开头；想复现就把它加回去（`--seed N`）。压缩用默认的 Kraken（需要 DLL）。
+
+### 其他示例
+
 ```bash
 ./randomize.sh --seed 1                        # 读 regulation.bin，写 randomized/regulation.bin 和映射表
 ./randomize.sh --input regulation_random.bin --output /path/to/mod/regulation.bin --seed 1848 --split-anim any --random-prices --weapons
