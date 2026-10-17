@@ -1,0 +1,12 @@
+# game data and the game's own DLL are never committed
+*.bin
+*.dll
+# outputs
+randomized/
+/mapping.txt
+/weapons.txt
+/spells.txt
+# python
+__pycache__/
+*.pyc
+.venv/
