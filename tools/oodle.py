@@ -1,7 +1,8 @@
 """Oodle (Kraken / Leviathan) compression through the game's own oo2core_6_win64.dll.
 
-The Windows DLL is loaded on Linux by linoodle, a tiny PE loader (McSimp/linoodle): the prebuilt
-tools/linoodle/liblinoodle.so (x86_64 glibc) is used; tools/linoodle/build.sh rebuilds it from source.
+On Windows the DLL is loaded directly with ctypes.  On Linux (incl. WSL) it is loaded by linoodle,
+a tiny PE loader (McSimp/linoodle): the prebuilt tools/linoodle/liblinoodle.so (x86_64, glibc >= 2.28,
+libc++ linked in) is used; tools/linoodle/build.sh rebuilds it from source.
 The DLL itself is not shipped here: it is expected in the current directory (./oo2core_6_win64.dll;
 randomize.sh runs from the project folder, so er_mod/oo2core_6_win64.dll) or at $OODLE_DLL / --oodle-dll.
 Copy it from the game folder (Steam\\steamapps\\common\\ELDEN RING\\Game\\) or from any ModEngine2 mod
@@ -12,10 +13,12 @@ from __future__ import annotations
 import ctypes
 import os
 import struct
+import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 LIB = HERE / "linoodle" / "liblinoodle.so"
+WINDOWS = sys.platform == "win32"          # load the game's DLL directly, no linoodle needed
 DLL_NAME = "oo2core_6_win64.dll"
 
 # OodleLZ_Compressor ids and OodleLZ_CompressionLevel values of Oodle 2.6
@@ -38,7 +41,7 @@ def find_dll() -> Path | None:
 
 def available() -> str | None:
     """None when usable, else the reason it is not."""
-    if not LIB.is_file():
+    if not WINDOWS and not LIB.is_file():
         return f"{LIB} missing (run tools/linoodle/build.sh)"
     if find_dll() is None:
         return (f"{DLL_NAME} not found in the current directory ({Path.cwd()}); copy it there or set "
@@ -47,7 +50,7 @@ def available() -> str | None:
 
 
 def missing_dll() -> bool:
-    return LIB.is_file() and find_dll() is None
+    return (WINDOWS or LIB.is_file()) and find_dll() is None
 
 
 def use_dll(path: str | os.PathLike) -> bool:
@@ -65,8 +68,11 @@ def _load():
         why = available()
         if why:
             raise RuntimeError(why)
-        os.environ["LINOODLE_DLL"] = str(find_dll())
-        lib = ctypes.CDLL(str(LIB))
+        if WINDOWS:
+            lib = ctypes.WinDLL(str(find_dll()))     # same three exports as the linoodle wrapper
+        else:
+            os.environ["LINOODLE_DLL"] = str(find_dll())
+            lib = ctypes.CDLL(str(LIB))
         lib.OodleLZ_Compress.restype = ctypes.c_size_t
         lib.OodleLZ_Compress.argtypes = [ctypes.c_int64, ctypes.c_void_p, ctypes.c_size_t, ctypes.c_void_p,
                                          ctypes.c_int64, ctypes.c_void_p, ctypes.c_size_t, ctypes.c_size_t,

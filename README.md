@@ -9,10 +9,12 @@
 - 游戏 **1.16.1** 测试通过（2026 年 10 月），开发时用的原版文件也来自 1.16.1。其他版本没有测过：只要
   regulation.bin 的表结构没变（小版本更新通常如此）就能用，但生成的文件只能用于和输入文件同版本的游戏。
 - 不要带着改过的 regulation.bin 联机，会触发 EAC / 封禁。
-- 在 Linux 上开发和测试。Kraken 压缩靠 linoodle 加载游戏自带的 Windows DLL，Windows 上未测；
-  `--compression zstd` 不依赖 DLL，哪里都能跑。
+- 在 Linux 上开发和测试，WSL（Windows Subsystem for Linux）同样可用。Windows 原生运行走 `randomize.bat`，
+  Python 直接加载游戏的 DLL，不需要 linoodle，但这条路还没有实测。`--compression zstd` 不依赖 DLL，哪里都能跑。
 
 ## 安装
+
+### Linux / WSL
 
 1. 需要 Python 3 和 [uv](https://github.com/astral-sh/uv)。`randomize.sh` 第一次运行时会在 `~/.venvs/er_mod`
    建虚拟环境并安装依赖（`cryptography`、`zstandard`）。
@@ -20,8 +22,48 @@
    （ModEngine2 的 `mod/fog/`、`mod/randomizer/` 里也各有一份）。这个 DLL 不随仓库分发；默认只在当前目录找，
    也可以用 `--oodle-dll PATH` 或环境变量 `OODLE_DLL` 指定。找不到时会说明并询问路径，只有明确放弃才回退到 zstd，
    非交互运行时直接报错退出。
-3. `tools/linoodle/liblinoodle.so` 已预编译（x86_64 glibc）。需要重编时运行 `tools/linoodle/build.sh`
-   （需要 git、cmake、g++）。
+3. `tools/linoodle/liblinoodle.so` 已预编译：x86_64，只依赖 glibc 2.17 以上（libc++ 已静态链进去，不依赖
+   libstdc++），Ubuntu 18.04 / Debian 10 以后的发行版（包括 WSL 里常见的 Ubuntu 20.04 / 22.04 / 24.04）可以直接加载。
+   如果仍然报 `cannot open shared object file` 或 `version ... not found`，按下面的方法重编。
+
+在 WSL 里的完整步骤（以 Ubuntu 为例，在 WSL 终端中执行）：
+
+```bash
+sudo apt update && sudo apt install -y git curl python3
+curl -LsSf https://astral.sh/uv/install.sh | sh        # 安装 uv，装完重开终端（或 source ~/.bashrc）
+git clone https://github.com/WenchengDShao/elden_ring_further_random.git ~/elden_ring_further_random
+cd ~/elden_ring_further_random
+cp "/mnt/c/Program Files (x86)/Steam/steamapps/common/ELDEN RING/Game/oo2core_6_win64.dll" .   # 按实际游戏路径改
+./randomize.sh --input "/mnt/c/path/to/regulation.bin" --output ./regulation_new.bin --split-anim any --random-prices --weapons
+```
+
+仓库建议放在 WSL 自己的文件系统里（如 `~/`）；放在 `/mnt/c`、`/mnt/d` 这类 Windows 盘上也能用，只是读写慢。
+输入输出可以直接用 `/mnt/<盘符>/...` 路径指向 Windows 上的文件。
+
+重编 `liblinoodle.so`（预编译版加载失败时）：
+
+```bash
+sudo apt install -y git cmake g++
+tools/linoodle/build.sh        # 克隆 McSimp/linoodle 并编译，结果覆盖 tools/linoodle/liblinoodle.so
+```
+
+脚本会把第三方的 pe-parse 改为 `-w` 编译（原本的 `-Werror` 在新版 g++ 下会因为警告而失败），补上新版编译器缺的头文件，编译过程没有警告。
+这样编出的库依赖本机的 glibc / libstdc++ 版本；想编出和仓库里一样的通用版，下载一份
+[Zig](https://ziglang.org/download/)（0.15.x，解压即用，不用安装）后运行
+`ZIG=/path/to/zig/zig tools/linoodle/build.sh`，它会用 Zig 自带的 clang 以 glibc 2.28 为目标编译并静态链接 libc++。
+
+### Windows 原生（未实测）
+
+Windows 上的 Python 可以用 ctypes 直接加载 `oo2core_6_win64.dll`，不需要 WSL，也不需要 linoodle：
+
+1. 安装 uv（PowerShell：`powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`），
+   没有 Python 时 uv 会自动下载一份。
+2. 下载或 `git clone` 本仓库，把 `oo2core_6_win64.dll` 复制到仓库目录。
+3. 在仓库目录运行 `randomize.bat`，参数与 `randomize.sh` 相同，例如：
+   `randomize.bat --input "D:\path\regulation.bin" --output regulation_new.bin --split-anim any --random-prices --weapons`。
+
+这条路径的代码很短（`tools/oodle.py` 在 `sys.platform == "win32"` 时用 `ctypes.WinDLL` 加载 DLL，其余不变），
+但作者没有在 Windows 上实测，遇到问题请提 issue。
 
 ## 用法
 
@@ -173,8 +215,9 @@ param 重新序列化（支持新增行），没动过的原字节写回，再�
 - `tools/weapons.py` — 武器四项功能
 - `tools/spells.py` — 魔法 / 祷告随机
 - `tools/oodle.py`、`tools/linoodle/` — 通过游戏自带的 `oo2core_6_win64.dll` 做 Kraken / Leviathan 压缩
+  （Linux / WSL 经 linoodle 加载，Windows 直接 ctypes 加载）
 - `tools/paramdef/*.xml`、`tools/names/*.txt` — 来自 soulsmods/Paramdex 的表结构和行名
-- `randomize.sh` — 一键运行
+- `randomize.sh`、`randomize.bat` — 一键运行（Linux / WSL、Windows）
 
 ## 致谢
 
