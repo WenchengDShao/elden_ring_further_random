@@ -9,6 +9,8 @@ if not exist "%VENV%\Scripts\python.exe" (
   uv venv "%VENV%" || exit /b 1
   uv pip install --python "%VENV%\Scripts\python.exe" -r tools\requirements.txt || exit /b 1
 )
+rem 旧的虚拟环境可能还没有 Pillow（背景图需要它）
+"%VENV%\Scripts\python.exe" -I -c "import PIL" >nul 2>&1 || uv pip install --python "%VENV%\Scripts\python.exe" -r tools\requirements.txt || exit /b 1
 set PYTHONDONTWRITEBYTECODE=1
 "%VENV%\Scripts\python.exe" -I tools\gui.py %*
 if errorlevel 1 (

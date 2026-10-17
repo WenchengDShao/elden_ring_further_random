@@ -7,4 +7,6 @@ if [ ! -x "$VENV/bin/python" ]; then
   uv venv "$VENV"
   uv pip install --python "$VENV/bin/python" -r tools/requirements.txt
 fi
+# an older venv may lack Pillow (backdrop image)
+"$VENV/bin/python" -I -c "import PIL" 2>/dev/null || uv pip install --python "$VENV/bin/python" -r tools/requirements.txt
 PYTHONDONTWRITEBYTECODE=1 exec "$VENV/bin/python" -I tools/gui.py "$@"

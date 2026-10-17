@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-"""Graphical front end of the Elden Ring regulation.bin randomizer (tkinter, nothing extra to install).
+"""Graphical front end of the Elden Ring regulation.bin randomizer (tkinter; Pillow for the backdrop image).
 
     python tools/gui.py                open the window
     python tools/gui.py FILE.bin       open the window with FILE.bin as the input
     python tools/gui.py --opt ...      no window: exactly the command line of randomize.py, so the
                                        packaged executable doubles as the command-line tool
 
-build_exe.bat / build_exe.sh pack this file into one executable with PyInstaller.  paramdef/, names/
-(and liblinoodle.so on Linux) travel inside it; the game's oo2core_6_win64.dll never does, it is
+build_exe.bat / build_exe.sh pack this file into one executable with PyInstaller.  paramdef/, names/,
+assets/ (and liblinoodle.so on Linux) travel inside it; the game's oo2core_6_win64.dll never does, it is
 expected next to the executable (or wherever the "Oodle DLL" field points).
 """
 from __future__ import annotations
@@ -25,6 +25,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 import erreg      # noqa: E402
 import oodle      # noqa: E402
 import randomize  # noqa: E402
+import theme      # noqa: E402
 import weapons    # noqa: E402
 
 TITLE = "Elden Ring Further Random"
@@ -108,10 +109,10 @@ class QueueWriter:
 
 
 class Gui:
-    def __init__(self, root: tk.Tk, input_file: str | None):
+    def __init__(self, root: tk.Tk, input_file: str | None, pal: dict = theme.PALETTE):
         self.root = root
+        self.pal = pal
         root.title(TITLE)
-        root.minsize(820, 680)
         root.protocol("WM_DELETE_WINDOW", self._close)
         self.q: queue.Queue = queue.Queue()
         self.running = False
@@ -162,30 +163,29 @@ class Gui:
 
     # ---------------------------------------------------------------- layout
     def _build(self) -> None:
-        root = self.root
-        root.columnconfigure(0, weight=1)
-        root.rowconfigure(5, weight=1)
+        parent = theme.layout(self.root, self.pal)
+        sections = []                                   # (widget, sticky, grows, pady)
 
-        f = ttk.LabelFrame(root, text="文件")
-        f.grid(row=0, column=0, sticky="ew", padx=8, pady=(8, 2))
+        f = ttk.LabelFrame(parent, text="文件")
         f.columnconfigure(1, weight=1)
         self._file_row(f, 0, "输入 regulation.bin", self.input, self._pick_input)
         self._file_row(f, 1, "输出文件", self.output, self._pick_output)
         ttk.Button(f, text="打开输出目录", command=self._open_out_dir).grid(row=1, column=3, **PAD)
         self._file_row(f, 2, "Oodle DLL", self.dll, self._pick_dll)
         ttk.Label(f, text=f"{oodle.DLL_NAME} 在游戏目录 Game\\ 里（ModEngine2 的 mod 文件夹里也有）；"
-                          "没有它只能输出 zstd 格式，文件更大").grid(row=3, column=1, columnspan=3, sticky="w", **PAD)
+                          "没有它只能输出 zstd 格式，文件更大", style="Hint.TLabel").grid(row=3, column=1, columnspan=3,
+                                                                                    sticky="w", **PAD)
         r = ttk.Frame(f)
         r.grid(row=4, column=0, columnspan=4, sticky="w")
         ttk.Label(r, text="随机种子").pack(side="left", **PAD)
         ttk.Entry(r, textvariable=self.seed, width=12).pack(side="left")
-        ttk.Label(r, text="（留空 = 随机抽一个，运行后显示在日志里，填回去可复现）").pack(side="left", **PAD)
+        ttk.Label(r, text="（留空 = 随机抽一个，运行后显示在日志里，填回去可复现）", style="Hint.TLabel").pack(side="left", **PAD)
         ttk.Label(r, text="压缩格式").pack(side="left", padx=(18, 6))
         ttk.Combobox(r, textvariable=self.compression, values=("auto",) + tuple(erreg.CODECS), width=10,
                      state="readonly").pack(side="left")
+        sections.append((f, "ew", False, (8, 2)))
 
-        g = ttk.LabelFrame(root, text="道具与法术（效果总是随机）")
-        g.grid(row=1, column=0, sticky="ew", padx=8, pady=2)
+        g = ttk.LabelFrame(parent, text="道具与法术（效果总是随机）")
         r = ttk.Frame(g)
         r.grid(row=0, column=0, sticky="w")
         ttk.Label(r, text="效果分配").pack(side="left", **PAD)
@@ -219,9 +219,9 @@ class Gui:
             w = ttk.Entry(r, textvariable=var, width=8)
             w.pack(side="left")
             self.dep_prices.append(w)
+        sections.append((g, "ew", False, 2))
 
-        wf = ttk.LabelFrame(root, text="武器（四项全选 = --weapons）")
-        wf.grid(row=2, column=0, sticky="ew", padx=8, pady=2)
+        wf = ttk.LabelFrame(parent, text="武器（四项全选 = --weapons）")
         r = ttk.Frame(wf)
         r.grid(row=0, column=0, sticky="w")
         ttk.Checkbutton(r, text="失色 / 独特武器可质变、可装战灰 (--somber-infusable)",
@@ -278,37 +278,40 @@ class Gui:
         w = ttk.Entry(r, textvariable=self.stamina_hi, width=6)
         w.pack(side="left")
         self.dep_stats.append(w)
+        sections.append((wf, "ew", False, 2))
 
-        b = ttk.Frame(root)
-        b.grid(row=3, column=0, sticky="ew", padx=8, pady=4)
+        b = ttk.Frame(parent, style="Bg.TFrame")
         ttk.Button(b, text="常用设定", command=self._preset).pack(side="left", **PAD)
-        ttk.Label(b, text="= --split-anim any --random-prices --weapons").pack(side="left")
+        ttk.Label(b, text="= --split-anim any --random-prices --weapons", style="Bg.TLabel").pack(side="left")
         ttk.Button(b, text="恢复默认选项", command=self._reset).pack(side="left", padx=(16, 6))
-        self.btn_run = ttk.Button(b, text="开始随机", command=lambda: self._start(False))
+        self.btn_run = ttk.Button(b, text="开始随机", style="Accent.TButton", command=lambda: self._start(False))
         self.btn_run.pack(side="right", **PAD)
         self.btn_dry = ttk.Button(b, text="预览（不写文件）", command=lambda: self._start(True))
         self.btn_dry.pack(side="right", **PAD)
+        sections.append((b, "ew", False, 4))
 
-        c = ttk.Frame(root)
-        c.grid(row=4, column=0, sticky="ew", padx=8)
+        c = ttk.Frame(parent, style="Bg.TFrame")
         c.columnconfigure(1, weight=1)
-        ttk.Label(c, text="等价命令").grid(row=0, column=0, sticky="w", **PAD)
+        ttk.Label(c, text="等价命令", style="Bg.TLabel").grid(row=0, column=0, sticky="w", **PAD)
         ttk.Entry(c, textvariable=self.cmd, state="readonly").grid(row=0, column=1, sticky="ew", **PAD)
+        sections.append((c, "ew", False, 0))
 
-        lf = ttk.Frame(root)
-        lf.grid(row=5, column=0, sticky="nsew", padx=8, pady=2)
+        lf = ttk.Frame(parent, style="Bg.TFrame")
         lf.columnconfigure(0, weight=1)
         lf.rowconfigure(0, weight=1)
-        self.log = tk.Text(lf, height=14, wrap="none", state="disabled", font="TkFixedFont")
+        self.log = tk.Text(lf, height=8, wrap="none", state="disabled", font="TkFixedFont")
+        theme.style_text(self.log, self.pal)
         self.log.grid(row=0, column=0, sticky="nsew")
         ys = ttk.Scrollbar(lf, orient="vertical", command=self.log.yview)
         ys.grid(row=0, column=1, sticky="ns")
         xs = ttk.Scrollbar(lf, orient="horizontal", command=self.log.xview)
         xs.grid(row=1, column=0, sticky="ew")
         self.log.configure(yscrollcommand=ys.set, xscrollcommand=xs.set)
+        sections.append((lf, "nsew", True, 2))
 
-        self.status = ttk.Label(root, text="就绪", anchor="w", relief="sunken")
-        self.status.grid(row=6, column=0, sticky="ew", padx=8, pady=(2, 8))
+        self.status = ttk.Label(parent, text="就绪", anchor="w", style="Status.TLabel")
+        sections.append((self.status, "ew", False, (2, 8)))
+        theme.arrange(parent, sections)
 
     def _file_row(self, parent, row: int, label: str, var: tk.StringVar, pick) -> None:
         ttk.Label(parent, text=label).grid(row=row, column=0, sticky="w", **PAD)
@@ -573,6 +576,7 @@ def run_gui(args: list[str]) -> int:
         except Exception:
             pass
     root = tk.Tk()
+    theme.apply(root)
     Gui(root, input_file)
     root.mainloop()
     return 0

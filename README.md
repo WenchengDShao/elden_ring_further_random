@@ -148,6 +148,8 @@ Release 里的 `ERFurtherRandom.exe`（见开头“快速开始”）、`randomi
 - “常用设定”按钮 = `--split-anim any --random-prices --weapons`；“预览（不写文件）” = `--dry-run`；
   “开始随机”生成文件，完成后提示输出位置，`mapping.txt / weapons.txt / spells.txt` 写在输出文件旁边。
 - 日志区显示命令行的全部输出；Kraken 压缩约需 2 分钟，期间窗口保持响应。
+- 外观：夜空配色，左侧是梅琳娜的立像（`tools/assets/melina.jpg`，游戏截图），随窗口高度重新裁切。背景图由
+  Pillow 渲染（在 `tools/requirements.txt` 里，启动 / 打包脚本会自动装）；没有 Pillow 时只是没有背景图。
 - 打包出的程序带 `--` 开头的参数运行时就是命令行工具（参数与 `randomize.py` 相同；Windows 的 windowed 程序
   没有控制台输出，结果看输出文件旁的 `mapping.txt` 等）。
 - 自己打包的 exe 和 Release 里的一样，可以复制到别的 64 位 Windows 10 / 11 电脑上用，对方不用装 uv 或 Python，
@@ -272,8 +274,9 @@ param 重新序列化（支持新增行），没动过的原字节写回，再�
   （Linux / WSL 经 linoodle 加载，Windows 直接 ctypes 加载）
 - `tools/paramdef/*.xml`、`tools/names/*.txt` — 来自 soulsmods/Paramdex 的表结构和行名
 - `randomize.sh`、`randomize.bat` — 一键运行（Linux / WSL、Windows）
-- `tools/gui.py` — 图形界面（tkinter，不需要额外依赖），`randomize_gui.sh`、`randomize_gui.bat` 启动它；
-  `tools/tkcheck.py` — 打包前的 Tk 检查，输出 Tcl / Tk 库路径
+- `tools/gui.py` — 图形界面（tkinter），`randomize_gui.sh`、`randomize_gui.bat` 启动它；`tools/theme.py` —
+  配色、ttk 样式和背景图（Pillow）；`tools/assets/melina.jpg` — 背景图；`tools/tkcheck.py` — 打包前的 Tk 检查，
+  输出 Tcl / Tk 库路径
 - `build_exe.sh`、`build_exe.bat` — 用 PyInstaller 把图形界面打包成单文件程序，输出在 `dist/`
 
 ## 致谢
