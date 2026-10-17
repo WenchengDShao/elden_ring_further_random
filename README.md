@@ -12,7 +12,8 @@
 - Linux、WSL（Windows Subsystem for Linux）和 Windows 原生都能跑。Windows 上用 `randomize.bat`，Python 直接
   加载游戏的 DLL，不需要 WSL 和 linoodle（Windows 10 实测通过）。`--compression zstd` 不依赖 DLL。
 
-图形界面（`randomize_gui.bat` / `./randomize_gui.sh`，以及 `build_exe.bat` 打包出的 exe）目前只在 Linux 上测试过，Windows 下尚未实测。
+图形界面：`randomize_gui.bat` Windows 10 实测通过；`build_exe.bat` 打包出的 exe 尚未在 Windows 上实测
+（Linux 上两者都测过）。
 
 ## 安装
 
@@ -32,7 +33,7 @@
 想要一个不依赖 uv / Python 的单文件程序：运行 `build_exe.bat`，它用 PyInstaller 打包出 `dist\ERFurtherRandom.exe`，
 把它和 `oo2core_6_win64.dll` 放在同一目录就能双击运行（见下文“图形界面”）。
 
-不需要 WSL。命令行方式 Windows 10 实测通过；`randomize_gui.bat` 和 `build_exe.bat` 尚未在 Windows 上实测。
+不需要 WSL。`randomize.bat` 和 `randomize_gui.bat` Windows 10 实测通过；`build_exe.bat` 尚未实测。
 
 ### Linux / WSL
 
@@ -128,8 +129,10 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 - 日志区显示命令行的全部输出；Kraken 压缩约需 2 分钟，期间窗口保持响应。
 - 打包出的程序带 `--` 开头的参数运行时就是命令行工具（参数与 `randomize.py` 相同；Windows 的 windowed 程序
   没有控制台输出，结果看输出文件旁的 `mapping.txt` 等）。
-- 窗口没有出现时：错误信息会弹窗显示，并写进程序（exe 或仓库目录）旁边的 `gui_error.log`。最常见的原因是
-  这个 Python 没带 tkinter（python.org 安装包要勾选 “tcl/tk and IDLE”）；`build_exe.bat` 打包前会先检查这一点。
+- 窗口没有出现时：错误信息会弹窗显示，并写进程序（exe 或仓库目录）旁边的 `gui_error.log`。uv 自动下载的
+  Python 在虚拟环境里自己找不到 Tcl 的脚本库（init.tcl），`gui.py` 启动时会补上路径，`build_exe.bat` 打包前用
+  `tools/tkcheck.py` 检查 Tk 并把 `TCL_LIBRARY` / `TK_LIBRARY` 传给 PyInstaller。Python 根本没带 tkinter 时
+  （python.org 安装包要勾选 “tcl/tk and IDLE”）两者都会明确报错。
 
 ## 道具效果随机
 
@@ -245,7 +248,8 @@ param 重新序列化（支持新增行），没动过的原字节写回，再�
   （Linux / WSL 经 linoodle 加载，Windows 直接 ctypes 加载）
 - `tools/paramdef/*.xml`、`tools/names/*.txt` — 来自 soulsmods/Paramdex 的表结构和行名
 - `randomize.sh`、`randomize.bat` — 一键运行（Linux / WSL、Windows）
-- `tools/gui.py` — 图形界面（tkinter，不需要额外依赖），`randomize_gui.sh`、`randomize_gui.bat` 启动它
+- `tools/gui.py` — 图形界面（tkinter，不需要额外依赖），`randomize_gui.sh`、`randomize_gui.bat` 启动它；
+  `tools/tkcheck.py` — 打包前的 Tk 检查，输出 Tcl / Tk 库路径
 - `build_exe.sh`、`build_exe.bat` — 用 PyInstaller 把图形界面打包成单文件程序，输出在 `dist/`
 
 ## 致谢

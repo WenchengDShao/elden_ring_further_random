@@ -9,6 +9,9 @@ if [ ! -x "$VENV/bin/python" ]; then
   uv venv "$VENV"
   uv pip install --python "$VENV/bin/python" -r tools/requirements.txt
 fi
+# tkcheck.py fails loudly when Tk is unusable and prints TCL_LIBRARY / TK_LIBRARY exports for PyInstaller's hook
+tkenv="$("$VENV/bin/python" -I tools/tkcheck.py)" || { echo "tkinter unusable (Ubuntu / WSL: sudo apt install python3-tk)"; exit 1; }
+eval "$tkenv"
 uv pip install --python "$VENV/bin/python" pyinstaller
 "$VENV/bin/python" -m PyInstaller --noconfirm --clean --onefile --windowed --name ERFurtherRandom \
   --add-data "$PWD/tools/paramdef:paramdef" --add-data "$PWD/tools/names:names" \
