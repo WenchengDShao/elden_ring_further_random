@@ -9,8 +9,8 @@
 - 游戏 **1.16.1** 测试通过（2026 年 10 月），开发时用的原版文件也来自 1.16.1。其他版本没有测过：只要
   regulation.bin 的表结构没变（小版本更新通常如此）就能用，但生成的文件只能用于和输入文件同版本的游戏。
 - 不要带着改过的 regulation.bin 联机，会触发 EAC / 封禁。
-- 在 Linux 上开发和测试，WSL（Windows Subsystem for Linux）同样可用。Windows 原生运行走 `randomize.bat`，
-  Python 直接加载游戏的 DLL，不需要 linoodle，但这条路还没有实测。`--compression zstd` 不依赖 DLL，哪里都能跑。
+- Linux、WSL（Windows Subsystem for Linux）和 Windows 原生都能跑。Windows 上用 `randomize.bat`，Python 直接
+  加载游戏的 DLL，不需要 WSL 和 linoodle（Windows 10 实测通过）。`--compression zstd` 不依赖 DLL。
 
 ## 安装
 
@@ -52,9 +52,9 @@ tools/linoodle/build.sh        # 克隆 McSimp/linoodle 并编译，结果覆盖
 [Zig](https://ziglang.org/download/)（0.15.x，解压即用，不用安装）后运行
 `ZIG=/path/to/zig/zig tools/linoodle/build.sh`，它会用 Zig 自带的 clang 以 glibc 2.28 为目标编译并静态链接 libc++。
 
-### Windows 原生（未实测）
+### Windows 原生
 
-Windows 上的 Python 可以用 ctypes 直接加载 `oo2core_6_win64.dll`，不需要 WSL，也不需要 linoodle：
+Windows 上的 Python 可以用 ctypes 直接加载 `oo2core_6_win64.dll`，不需要 WSL，也不需要 linoodle（Windows 10 实测通过）：
 
 1. 安装 uv（PowerShell：`powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`），
    没有 Python 时 uv 会自动下载一份。
@@ -62,8 +62,7 @@ Windows 上的 Python 可以用 ctypes 直接加载 `oo2core_6_win64.dll`，不�
 3. 在仓库目录运行 `randomize.bat`，参数与 `randomize.sh` 相同，例如：
    `randomize.bat --input "D:\path\regulation.bin" --output regulation_new.bin --split-anim any --random-prices --weapons`。
 
-这条路径的代码很短（`tools/oodle.py` 在 `sys.platform == "win32"` 时用 `ctypes.WinDLL` 加载 DLL，其余不变），
-但作者没有在 Windows 上实测，遇到问题请提 issue。
+实现只是 `tools/oodle.py` 在 `sys.platform == "win32"` 时改用 `ctypes.WinDLL` 加载 DLL，其余代码不变。
 
 ## 用法
 
