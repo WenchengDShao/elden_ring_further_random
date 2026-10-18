@@ -19,9 +19,9 @@ ItemLotParam_map
     left out           < 10000 (starting gear, the flasks, quest-only rewards), 1000000-9999999 (unused)
 ShopLineupParam
     slots whose item (equipId / equipType) the item randomizer changed: merchants, Twin Maiden Husks,
-    Enia's remembrance forging, Dragon Communion...; the shops of the Land of Shadow are left out (all
-    of them belong to quest NPCs: Moore, Thiollier, Ymir); rows where only a flag or the price changed
-    (the remembrance duplication menus) are not locations
+    Enia's remembrance forging, Dragon Communion...; the shops of the Land of Shadow (ids 102250+: Moore,
+    Thiollier, Ymir's sorceries, Bayle's altar) are left out, all of them belong to quest NPCs; rows
+    where only a flag or the price changed (the remembrance duplication menus) are not locations
 
 Each line: table, row id, "base" or "dlc", the row's vanilla content as named in names/<table>.txt.
 dlc = the Land of Shadow (ids 20xxxxxxxx), its legacy and minor dungeons (8-digit ids whose map area
@@ -101,7 +101,7 @@ def main(argv: list[str] | None = None) -> int:
     for r in VS.rows:
         q = RS.by_id.get(r.id)
         name = names.get(r.id, "")
-        if q is None or shop_content(VS, r) == shop_content(RS, q) or not name.startswith("["):
+        if q is None or shop_content(VS, r) == shop_content(RS, q) or not name.startswith("[") or r.id >= 102000:
             continue
         n["shops"] += 1
         lines.append(f"ShopLineupParam\t{r.id}\tbase\t{name}".rstrip())

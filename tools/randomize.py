@@ -11,6 +11,9 @@ Goods:
                         else: a random one-time pickup, boss reward, NPC gift or shop slot (never a
                         chance drop, never a map fragment, no Land of Shadow NPC); the first Site of
                         Grace gives what was there.  Needs names/item_locations.txt (tools/locations.py)
+  --flask-at lot:ID[,lot:ID|shop:ID]
+                        choose the spots yourself (Crimson first, Cerulean second), e.g.
+                        --flask-at shop:100510,lot:1042360050; implies --random-flask-locations
 Weapons:
   --somber-infusable    somber / unique weapons get all 12 affinities and can mount Ashes of War
   --random-movesets     every melee weapon and shield gets the moveset of a random other weapon/shield
@@ -47,7 +50,7 @@ Usage:
                         [--no-spells] [--dry-run]
                         [--random-prices] [--price-mode shuffle|range] [--price-min N] [--price-max N]
                         [--no-sell-prices] [--sell-min N] [--sell-max N] [--sell-equipment]
-                        [--random-flask-locations]
+                        [--random-flask-locations] [--flask-at lot:ID,shop:ID]
                         [--somber-infusable] [--random-movesets] [--random-default-ash]
                         [--random-stats] [--stat-groups attack,guard,...] [--stamina-rate 0.3,1.7] [--weapons]
 """
@@ -340,6 +343,10 @@ def main(argv: list[str] | None = None) -> int:
                          "swaps places with a random one-time pickup, boss reward, NPC gift or shop slot (never a "
                          "chance drop or a map fragment; Land of Shadow NPCs and shops excluded), and the first "
                          "Site of Grace gives that item instead")
+    ap.add_argument("--flask-at", default=None, metavar="SPOT[,SPOT]",
+                    help="--random-flask-locations with the spots chosen by hand: lot:ID (ItemLotParam_map row) or "
+                         "shop:ID (ShopLineupParam row), the Crimson flask's spot first, the Cerulean flask's second "
+                         "(one given: the other is drawn at random); the ids are in names/item_locations.txt")
     ap.add_argument("--somber-infusable", action="store_true", help="somber/unique weapons get all affinities and Ashes of War")
     ap.add_argument("--random-movesets", action="store_true",
                     help="random light/heavy attack moveset on every melee weapon and shield")
@@ -393,6 +400,16 @@ def main(argv: list[str] | None = None) -> int:
     args = ap.parse_args(argv)
     if args.weapons:
         args.somber_infusable = args.random_movesets = args.random_default_ash = args.random_stats = True
+    flask_at: list[tuple[str, int]] = []
+    if args.flask_at:
+        for spot in args.flask_at.split(","):
+            kind, _, num = spot.strip().partition(":")
+            if kind not in ("lot", "shop") or not num.isdigit():
+                raise SystemExit(f"--flask-at: expected lot:ID or shop:ID, got {spot!r}")
+            flask_at.append((kind, int(num)))
+        if len(flask_at) > 2:
+            raise SystemExit("--flask-at: at most two spots (Crimson, Cerulean)")
+        args.random_flask_locations = True
     if args.oodle_dll is not None and not oodle.use_dll(args.oodle_dll):
         raise SystemExit(f"--oodle-dll: {args.oodle_dll} does not exist")
     codec = erreg.CODEC_ZSTD if args.dry_run else choose_codec(args.compression)
@@ -475,7 +492,7 @@ def main(argv: list[str] | None = None) -> int:
         print("\n".join(l for l in slines if l.startswith("#")))
 
     if args.random_flask_locations:
-        flines = flasks.Flasks(reg).randomize(rng)
+        flines = flasks.Flasks(reg).randomize(rng, flask_at)
         print("\n".join(flines))
         report += "\n\n" + "\n".join(flines)
 

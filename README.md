@@ -142,6 +142,7 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 | `--include-flasks`、`--include-remembrances` | 把圣杯瓶 / 追忆也加入道具池（默认都不加） |
 | `--split-anim [same\|any]` | 使用动作和效果分开随机；`same` 只在同类动作里挑，`any` 全池 |
 | `--random-flask-locations` | 红 / 蓝露滴圣杯瓶改到随机一处必定给出的位置（拾取物、boss 奖励、NPC 赠礼或商店货架）获得，第一个赐福改给那里原来的东西 |
+| `--flask-at lot:ID,shop:ID` | 自己指定两个圣杯瓶的位置（红瓶在前、蓝瓶在后，只给一个则另一个随机），id 见 `tools/names/item_locations.txt` |
 | （总是） | 每个魔法/祷告拿到另一个法术的效果；`--no-spells` 关闭 |
 | `--random-prices` | 商店购买价和道具售价；`--price-mode shuffle\|range`、`--price-min N`、`--price-max N`、`--sell-min N`、`--sell-max N`、`--no-sell-prices`（售价不动）、`--sell-equipment`（武器、防具、战灰的售价也随机，默认不动） |
 | `--weapons` | = 下面四项 |
@@ -225,11 +226,12 @@ Release 里的 `ERFurtherRandom.exe`（见开头“快速开始”）、`randomi
 `ShopLineupParam` 格子（regulation.bin 自己看不出哪些行真的被地图 / 事件引用，表里混着被砍内容；道具随机器读
 地图文件知道、并且只改写这些行），由 `tools/locations.py 原版.bin 道具随机器输出.bin` 生成（1.17.1 已附带）。
 掉落行取 boss / 野外 boss / 封印监牢 / 泪滴圣甲虫的事件奖励、交界地的 NPC 赠礼和 NPC 尸体掉落（依赖任务进度）、
-各处拾取物（含幽影之地）；幽影之地的 NPC 赠礼和商店不取（全是任务 NPC，任务太容易断）。掉落行还必须必定给出
+各处拾取物（含幽影之地）；幽影之地的 NPC 赠礼和商店不取（穆尔、休里耶、伊密尔等全是任务 NPC，任务太容易断）。掉落行还必须必定给出
 且只给一样（只有一个带权重的槽，有获得标记；带概率的行和敌人掉落表 `ItemLotParam_enemy` 一律不用）、是掉落组
 的第一行（同一个标记下另一条路给同一件东西的行一起换，给别的东西的位置整个跳过）、原版内容在 Paramdex 行名里
 唯一（报告才说得清"在原版 Dragonscale Blade 的位置"）；商店格子必须限量（`sellQuantity >= 1` 且有库存旗标）、
-以卢恩或龙心结账。地图碎片两边都不碰。1.17.1 的道具随机器输出上约 2000 个候选（1568 个掉落行 + 466 个货架）。
+以卢恩或龙心结账。地图碎片两边都不碰。1.17.1 的道具随机器输出上约 2000 个候选（1581 个掉落行 + 459 个货架）。
+`--flask-at lot:ID,shop:ID` 自己指定位置（红瓶在前、蓝瓶在后），指定的位置要过同样的检查。
 
 报告在控制台和 `mapping.txt` 末尾：
 
