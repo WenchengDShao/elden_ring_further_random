@@ -59,6 +59,8 @@ SmartScreen 拦下（“更多信息 → 仍要运行”），Defender 偶尔会
 把它和 `oo2core_6_win64.dll` 放在同一目录就能双击运行（见下文“图形界面”）。
 
 不需要 WSL。`randomize.bat`、`randomize_gui.bat` 和 `build_exe.bat` 打包出的 exe 都在 Windows 10 实测通过。
+三个 .bat 共用 `%USERPROFILE%\.venvs\er_mod` 这个虚拟环境；它依赖建它时用的那个 Python，那个 Python 被卸载或
+升级到别的目录后脚本会自动删掉重建。`randomize_gui.bat` / `build_exe.bat` 出错时窗口会停住显示错误信息。
 
 ### Linux / WSL
 
