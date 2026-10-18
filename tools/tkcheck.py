@@ -6,6 +6,11 @@ stdout: one assignment per line in the caller's shell syntax (`set "TCL_LIBRARY=
 its tkinter hook needs a working `tkinter.Tcl()` and honours TCL_LIBRARY / TK_LIBRARY, and the
 uv-managed Windows Python cannot find init.tcl from inside a venv on its own (gui._tcl_env() fixes
 that for the running process).  Diagnostics go to stderr; exit status 1 when Tk is unusable.
+
+Tcl/Tk 9 on Windows (python.org 3.14) keeps the Tk script library inside tk90.dll and reports it as
+`//zipfs:/lib/tk/tk_library`; PyInstaller recognises that prefix and skips the collection, so such a
+path must be passed on verbatim (Path() would turn its slashes into backslashes, which
+PyInstaller then treats as a missing directory and aborts the build; seen 2026-10-18).
 """
 from __future__ import annotations
 
@@ -32,7 +37,8 @@ def main() -> int:
         return 1
     print(f"tkinter {gui.tk.TkVersion} from {sys.base_prefix}: tcl={tcl_dir} tk={tk_dir}", file=sys.stderr)
     for var, d in (("TCL_LIBRARY", tcl_dir), ("TK_LIBRARY", tk_dir)):
-        d = str(Path(d))
+        if not d.startswith("//zipfs:/"):
+            d = str(Path(d))
         print(f'set "{var}={d}"' if gui.WINDOWS else f"export {var}={shlex.quote(d)}")
     return 0
 
