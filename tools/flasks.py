@@ -20,9 +20,6 @@ the same item (the same gift by another route, e.g. the NPC's corpse) get the fl
 a different item on another route is skipped as ambiguous (the other route would set the flag first).  A shop slot must have a limited stock (sellQuantity >= 1 with
 a stock flag) and cost runes or dragon hearts.  Map fragments are never touched, on either side.
 Enemy drop tables (ItemLotParam_enemy) are never used.
-
---flask-at lot:ID / shop:ID picks the spots by hand (Crimson first, Cerulean second), for testing or
-taste; a chosen spot must pass the same checks except the unique-name one.
 """
 from __future__ import annotations
 
@@ -120,7 +117,7 @@ class Flasks:
             return False
         return L.get(r, "lotItemId01") > 0 and L.get(r, "lotItemNum01") > 0 and L.get(r, "getItemFlagId") != 0
 
-    def lot_spots(self, unique: bool = True) -> list[Spot]:
+    def lot_spots(self) -> list[Spot]:
         L = self.L
         known = self.locations.get("ItemLotParam_map", {})
         count: dict[str, int] = {}
@@ -134,7 +131,7 @@ class Flasks:
             if r.id not in known or r.id in FLASK_LOTS:
                 continue
             nm = self.lot_names.get(r.id, "")
-            if not nm or nm == "?" or (unique and count[nm] != 1) or MAP_WORD.search(nm) or not self.certain(r):
+            if not nm or nm == "?" or count[nm] != 1 or MAP_WORD.search(nm) or not self.certain(r):
                 continue
             content = self.lot_content(r)
             if self.is_map(content[0], content[1]):
@@ -175,9 +172,7 @@ class Flasks:
         return spots
 
     # ------------------------------------------------------------ the swap
-    def randomize(self, rng: random.Random, forced: list[tuple[str, int]] = ()) -> list[str]:
-        """forced: up to two (kind, id) spots, for the Crimson and the Cerulean flask in that order
-           (--flask-at); the rest is drawn from the pool."""
+    def randomize(self, rng: random.Random) -> list[str]:
         L, S = self.L, self.S
         lots, shops = self.lot_spots(), self.shop_spots()
         pool = lots + shops
@@ -187,25 +182,13 @@ class Flasks:
         if len(pool) < len(FLASK_LOTS):
             lines.append("# not enough candidate rows, flasks left where they are")
             return lines
-        chosen: dict[tuple[str, int], Spot] = {}
-        if forced:
-            loose = {(s.kind, s.row.id): s for s in self.lot_spots(unique=False) + shops}
-            for key in forced:
-                if key not in loose:
-                    raise SystemExit(f"--flask-at {key[0]}:{key[1]}: not a usable spot (not in names/item_locations.txt, "
-                                     "missing from the input, a chance drop, a later row of a lot group, a map fragment, "
-                                     "an unlimited or unflagged shop slot, or a shop not paid in runes / dragon hearts)")
-                chosen[key] = loose[key]
         picked: set[tuple[str, int]] = set()
-        for n, (lot, (lo, hi)) in enumerate(FLASK_LOTS.items()):
+        for lot, (lo, hi) in FLASK_LOTS.items():
             row = L.by_id.get(lot)
             if row is None or L.get(row, "lotItemCategory01") != CATEGORY_GOODS or not lo <= L.get(row, "lotItemId01") <= hi:
                 lines.append(f"# lot {lot} does not hold the flask any more (already moved?), left alone")
                 continue
-            if n < len(forced):
-                dest = chosen[forced[n]]
-            else:
-                dest = rng.choice([s for s in pool if (s.kind, s.row.id) not in picked and (s.kind, s.row.id) not in chosen])
+            dest = rng.choice([s for s in pool if (s.kind, s.row.id) not in picked])
             picked.add((dest.kind, dest.row.id))
             flask = self.lot_content(row)
             if dest.kind == "lot":
