@@ -4,15 +4,21 @@ rem 需要 uv（https://github.com/astral-sh/uv）；虚拟环境建在 %USERPRO
 setlocal
 cd /d "%~dp0"
 set "VENV=%USERPROFILE%\.venvs\er_mod"
-rem 母体 Python 被卸载或移走后虚拟环境的 python.exe 会报 "did not find executable"，这时删掉重建
-if exist "%VENV%\Scripts\python.exe" (
-  "%VENV%\Scripts\python.exe" -I -c "pass" >nul 2>&1 || (
-    echo 虚拟环境 %VENV% 依赖的 Python 已不存在，删掉重建。
+rem 依赖包只给 Python 3.10-3.14 发了 wheel，所以限定版本范围（详见 build_exe.bat）；已有的虚拟环境
+rem 母体 Python 被卸载或版本不在范围内时删掉重建。
+set "PYMIN=3.10"
+set "PYMAX=3.15"
+set "RECREATE="
+if not exist "%VENV%\Scripts\python.exe" set "RECREATE=1"
+if not defined RECREATE (
+  "%VENV%\Scripts\python.exe" -I tools\pycheck.py %PYMIN% %PYMAX% || set "RECREATE=1"
+)
+if defined RECREATE (
+  if exist "%VENV%" (
+    echo 虚拟环境 %VENV% 不可用或 Python 版本不在支持范围内，删掉重建。
     rmdir /s /q "%VENV%"
   )
-)
-if not exist "%VENV%\Scripts\python.exe" (
-  uv venv "%VENV%" || exit /b 1
+  uv venv --python ">=%PYMIN%,<%PYMAX%" "%VENV%" || exit /b 1
   uv pip install --python "%VENV%\Scripts\python.exe" -r tools\requirements.txt || exit /b 1
 )
 set PYTHONDONTWRITEBYTECODE=1

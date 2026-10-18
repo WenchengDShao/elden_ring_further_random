@@ -59,8 +59,9 @@ SmartScreen 拦下（“更多信息 → 仍要运行”），Defender 偶尔会
 把它和 `oo2core_6_win64.dll` 放在同一目录就能双击运行（见下文“图形界面”）。
 
 不需要 WSL。`randomize.bat`、`randomize_gui.bat` 和 `build_exe.bat` 打包出的 exe 都在 Windows 10 实测通过。
-三个 .bat 共用 `%USERPROFILE%\.venvs\er_mod` 这个虚拟环境；它依赖建它时用的那个 Python，那个 Python 被卸载或
-升级到别的目录后脚本会自动删掉重建。`randomize_gui.bat` / `build_exe.bat` 出错时窗口会停住显示错误信息。
+三个 .bat 共用 `%USERPROFILE%\.venvs\er_mod` 这个虚拟环境，Python 需要 3.10–3.14（依赖包还没有 3.15 的 wheel）：
+机器上装的 Python 在范围内就用它，否则 uv 自动下载一个。虚拟环境失效（建它的 Python 被卸载）或版本不在范围内时
+脚本会自动删掉重建。`randomize_gui.bat` / `build_exe.bat` 出错时窗口会停住显示错误信息。
 
 ### Linux / WSL
 
@@ -75,7 +76,8 @@ cp "/mnt/c/Program Files (x86)/Steam/steamapps/common/ELDEN RING/Game/oo2core_6_
 ./randomize.sh --input /path/to/regulation.bin --output ./regulation_new.bin --split-anim any --random-prices --weapons
 ```
 
-`randomize.sh` 第一次运行时会在 `~/.venvs/er_mod` 建虚拟环境并安装依赖。WSL 里仓库建议放在 WSL 自己的
+`randomize.sh` 第一次运行时会在 `~/.venvs/er_mod` 建虚拟环境并安装依赖（Python 3.10–3.14，系统 Python 不在范围内时
+uv 会下载一个）。WSL 里仓库建议放在 WSL 自己的
 文件系统（如 `~/`），输入输出文件可以用 `/mnt/<盘符>/...` 指向 Windows 上的文件。
 
 图形界面：`./randomize_gui.sh`（需要 tkinter，系统 Python 缺它时 `sudo apt install python3-tk`；WSL 需要 WSLg 或
@@ -292,6 +294,7 @@ param 重新序列化（支持新增行），没动过的原字节写回，再�
 - `tools/paramdef/*.xml`、`tools/names/*.txt` — 来自 soulsmods/Paramdex 的表结构和行名（1.17 Tarnished Pack
   新增行的名字 Paramdex 还没有，由本仓库手工补充）
 - `randomize.sh`、`randomize.bat` — 一键运行（Linux / WSL、Windows）
+- `tools/pycheck.py` — 启动脚本用它判断虚拟环境的 Python 版本是否在支持范围内（坏了或越界就重建）
 - `tools/gui.py` — 图形界面（tkinter），`randomize_gui.sh`、`randomize_gui.bat` 启动它；`tools/theme.py` —
   配色、ttk 样式和背景图（Pillow）；`tools/lang.py` — 界面语言（英文文案的中文翻译表，`gui.ini` 读写）；
   `tools/assets/melina.jpg` — 背景图；`tools/tkcheck.py` — 打包前的 Tk 检查，

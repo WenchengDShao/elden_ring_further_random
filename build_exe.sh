@@ -5,8 +5,16 @@
 set -e
 cd "$(dirname "$0")"
 VENV="$HOME/.venvs/er_mod"
-if [ ! -x "$VENV/bin/python" ]; then
-  uv venv "$VENV"
+# Python 3.10-3.14: the dependencies only ship wheels for these (zstandard has none for 3.15 yet); a venv whose
+# base interpreter is gone or whose version is out of range is deleted and recreated (see randomize.sh)
+PYMIN=3.10
+PYMAX=3.15
+if [ ! -x "$VENV/bin/python" ] || ! "$VENV/bin/python" -I tools/pycheck.py "$PYMIN" "$PYMAX"; then
+  if [ -e "$VENV" ]; then
+    echo "virtual environment $VENV is unusable or its Python is out of range, recreating"
+    rm -rf "$VENV"
+  fi
+  uv venv --python ">=$PYMIN,<$PYMAX" "$VENV"
   uv pip install --python "$VENV/bin/python" -r tools/requirements.txt
 fi
 "$VENV/bin/python" -I -c "import PIL" 2>/dev/null || uv pip install --python "$VENV/bin/python" -r tools/requirements.txt

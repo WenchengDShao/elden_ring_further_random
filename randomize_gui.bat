@@ -10,16 +10,21 @@ where uv >nul 2>&1 || (
   goto :fail
 )
 set "VENV=%USERPROFILE%\.venvs\er_mod"
-rem 虚拟环境只是指向母体 Python 的壳：母体被卸载或移走后它的 python.exe 会报 "did not find executable"，
-rem 这时把它删掉重建，而不是让后面每一步都失败。
-if exist "%VENV%\Scripts\python.exe" (
-  "%VENV%\Scripts\python.exe" -I -c "pass" >nul 2>&1 || (
-    echo 虚拟环境 %VENV% 依赖的 Python 已不存在，删掉重建。
+rem 依赖包只给 Python 3.10-3.14 发了 wheel（zstandard 还没有 3.15 的），所以限定版本范围：
+rem 已装的 Python 在范围内就用它，否则 uv 下载一个托管的。详见 build_exe.bat。
+set "PYMIN=3.10"
+set "PYMAX=3.15"
+set "RECREATE="
+if not exist "%VENV%\Scripts\python.exe" set "RECREATE=1"
+if not defined RECREATE (
+  "%VENV%\Scripts\python.exe" -I tools\pycheck.py %PYMIN% %PYMAX% || set "RECREATE=1"
+)
+if defined RECREATE (
+  if exist "%VENV%" (
+    echo 虚拟环境 %VENV% 不可用或 Python 版本不在支持范围内，删掉重建。
     rmdir /s /q "%VENV%"
   )
-)
-if not exist "%VENV%\Scripts\python.exe" (
-  uv venv "%VENV%" || goto :fail
+  uv venv --python ">=%PYMIN%,<%PYMAX%" "%VENV%" || goto :fail
   uv pip install --python "%VENV%\Scripts\python.exe" -r tools\requirements.txt || goto :fail
 )
 rem 旧的虚拟环境可能还没有 Pillow（背景图需要它）
@@ -36,7 +41,7 @@ exit /b 0
 :fail
 echo.
 echo 失败，错误信息见上方。
-echo 常见原因：uv 找不到可用的 Python，又下载不了托管的 Python（没网或被墙）——安装 python.org 的 Python
+echo 常见原因：uv 找不到 3.10-3.14 的 Python 又下载不了（没网或被墙）——安装 python.org 的 Python 3.13
 echo （勾选 "tcl/tk and IDLE"）后重新运行；或者下载依赖包失败——检查网络后重试。
 pause
 exit /b 1
