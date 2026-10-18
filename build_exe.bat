@@ -47,8 +47,15 @@ uv pip install --python "%VENV%\Scripts\python.exe" pyinstaller || goto :fail
 "%VENV%\Scripts\python.exe" -m PyInstaller --noconfirm --clean --onefile --windowed --name ERFurtherRandom ^
   --add-data "%~dp0tools\paramdef;paramdef" --add-data "%~dp0tools\names;names" --add-data "%~dp0tools\assets;assets" ^
   --distpath dist --workpath build --specpath build tools\gui.py || goto :fail
+if not exist "dist\ERFurtherRandom.exe" (
+  echo.
+  echo PyInstaller 没有报错，但 dist\ERFurtherRandom.exe 不存在。多半是 Windows Defender 把刚生成的 exe 当成病毒
+  echo 隔离了（PyInstaller 打包的程序常被误报）：打开“Windows 安全中心 - 病毒和威胁防护 - 保护历史记录”，
+  echo 找到 ERFurtherRandom.exe 选“恢复”并“允许”，或者把本目录加入排除项后重新运行本脚本。
+  goto :fail
+)
 echo.
-echo built dist\ERFurtherRandom.exe
+for %%F in (dist\ERFurtherRandom.exe) do echo built %%~fF  (%%~zF 字节)
 echo 如果双击它没有窗口，错误信息会弹窗显示并写在 exe 旁边的 gui_error.log 里。
 pause
 exit /b 0

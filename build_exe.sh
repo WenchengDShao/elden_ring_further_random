@@ -26,5 +26,6 @@ uv pip install --python "$VENV/bin/python" pyinstaller
   --add-data "$PWD/tools/paramdef:paramdef" --add-data "$PWD/tools/names:names" --add-data "$PWD/tools/assets:assets" \
   --add-data "$PWD/tools/linoodle/liblinoodle.so:linoodle" \
   --distpath dist --workpath build --specpath build tools/gui.py
+[ -x dist/ERFurtherRandom ] || { echo "PyInstaller reported success but dist/ERFurtherRandom is missing"; exit 1; }
 echo
-echo "built dist/ERFurtherRandom"
+ls -l dist/ERFurtherRandom
