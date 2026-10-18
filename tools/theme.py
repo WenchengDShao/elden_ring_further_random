@@ -24,7 +24,7 @@ PALETTE = dict(bg="#0d0b1c", panel="#181536", raised="#221e48", field="#100e24",
                select="#3a3270", log_bg="#09071a", log_fg="#cfc8e6")
 SIDE = 270                                # sidebar width at 96 dpi
 MINSIZE = (1110, 720)
-TITLE_LINES = ("ELDEN RING", "F U R T H E R   R A N D O M", "regulation.bin 随机器 · 道具 / 法术 / 武器")
+TITLE_LINES = ("ELDEN RING", "F U R T H E R   R A N D O M", "regulation.bin randomizer · goods / spells / weapons")
 TITLE_FAMILIES = ("Cinzel", "Trajan Pro", "Georgia", "Palatino Linotype", "Book Antiqua", "Times New Roman",
                   "DejaVu Serif", "Liberation Serif")
 _FONTS: list = []          # tkinter deletes a Font's Tk font when the object is garbage-collected: keep ours alive
@@ -190,13 +190,14 @@ class Backdrop:
             cb(w, h)
 
     def title(self, root: tk.Tk, lines: tuple[str, str, str], place) -> None:
-        """Three text lines (big serif, small serif, hint); `place(w, h)` -> (x, y, anchor, justify)."""
+        """Three text lines (big serif, small serif, hint that wraps inside the canvas width);
+           `place(w, h)` -> (x, y, anchor, justify)."""
         pal, c = self.pal, self.canvas
         f1 = _font(root, TITLE_FAMILIES, 24, "bold")
         f2 = _font(root, TITLE_FAMILIES, 11)
         ids = (c.create_text(0, 0, text=lines[0], font=f1, fill=pal["accent"]),
                c.create_text(0, 0, text=lines[1], font=f2, fill=pal["fg"]),
-               c.create_text(0, 0, text=lines[2], fill=pal["muted"]))
+               c.create_text(0, 0, text=lines[2], fill=pal["muted"], width=int(c.cget("width")) - 12))
         gaps = (0, f1.metrics("linespace") + 2, f1.metrics("linespace") + f2.metrics("linespace") + 6)
 
         def move(w, h):
@@ -208,8 +209,8 @@ class Backdrop:
 
 
 # ---------------------------------------------------------------- layout
-def layout(root: tk.Tk, pal: dict = PALETTE) -> ttk.Frame:
-    """Melina sidebar on the left (title at its foot), returns the frame the sections go into."""
+def layout(root: tk.Tk, pal: dict = PALETTE, lines: tuple[str, str, str] = TITLE_LINES) -> ttk.Frame:
+    """Melina sidebar on the left (title `lines` at its foot), returns the frame the sections go into."""
     s = dpi_scale(root)
     root.minsize(round(MINSIZE[0] * s), round(MINSIZE[1] * s))
     root.columnconfigure(1, weight=1)
@@ -217,7 +218,7 @@ def layout(root: tk.Tk, pal: dict = PALETTE) -> ttk.Frame:
     bd = Backdrop(root, pal, width=round(SIDE * s), focus=(0.5, 0.45),
                   fades=[("right", 0.78, 1.0), ("bottom", 0.6, 0.97)])
     bd.canvas.grid(row=0, column=0, sticky="ns")
-    bd.title(root, TITLE_LINES, lambda w, h: (w // 2, h - round(96 * s), "n", "center"))
+    bd.title(root, lines, lambda w, h: (w // 2, h - round(96 * s), "n", "center"))
     body = ttk.Frame(root, style="Bg.TFrame")
     body.grid(row=0, column=1, sticky="nsew")
     return body

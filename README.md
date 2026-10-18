@@ -11,12 +11,15 @@
 1. 到 [Releases](https://github.com/WenchengDShao/elden_ring_further_random/releases/latest) 下载 `ERFurtherRandom.exe`。
 2. 把游戏目录 `Steam\steamapps\common\ELDEN RING\Game\` 里的 `oo2core_6_win64.dll` 复制到 exe 旁边
    （没有它只能输出体积更大的 zstd 格式）。
-3. 双击 exe，几秒后出现窗口：选“输入 regulation.bin”（原版，或雾门 / 道具随机器已经改过的文件），
-   点“常用设定”（= 道具动作与效果分开随机 + 商店价格随机 + 武器四项全开），再点“开始随机”。
+3. 双击 exe，几秒后出现窗口（默认英文，右上角 Language 可切换为中文，下次启动沿用）：选“输入 regulation.bin”
+   （Input regulation.bin；原版，或雾门 / 道具随机器已经改过的文件），点“常用设定”（Preset，= 道具动作与效果分开
+   随机 + 商店价格随机 + 武器四项全开），再点“开始随机”（Randomize）。
 4. 约两分钟后弹窗提示完成，把生成的文件覆盖 mod 目录里的 `regulation.bin` 即可生效；随机结果清单
    `mapping.txt / weapons.txt / spells.txt` 在输出文件旁边。
 
 ![图形界面](docs/gui.png)
+
+（截图为中文界面。）
 
 exe 自带 Python、tkinter、Tcl/Tk 和依赖库，64 位 Windows 10 / 11 都能直接运行。它没有数字签名，首次运行可能被
 SmartScreen 拦下（“更多信息 → 仍要运行”），Defender 偶尔会误报 PyInstaller 打包的程序。
@@ -143,6 +146,9 @@ Release 里的 `ERFurtherRandom.exe`（见开头“快速开始”）、`randomi
 `./randomize_gui.sh`（Linux）打开的是同一个窗口；`build_exe.bat` 可以自己打包 exe。窗口里的每个控件对应一个
 命令行选项，底部“等价命令”实时显示同样设置的命令行。
 
+- 语言：右上角 Language 下拉选 English / 中文，默认英文。选择写进程序（exe 或仓库目录）旁边的 `gui.ini`
+  （`[gui] language = zh`），下次启动沿用；切换时窗口按新语言重建，已填的选项和日志都保留。日志里命令行工具的
+  输出和 `mapping.txt` 等清单始终是英文。
 - 文件：输入 regulation.bin、输出文件、Oodle DLL（启动时自动填入 exe / 仓库目录里的 `oo2core_6_win64.dll`，
   没有就留空，开始时会询问是否改用 zstd 格式）、随机种子（留空则随机抽一个，日志里会显示）、压缩格式。
 - “常用设定”按钮 = `--split-anim any --random-prices --weapons`；“预览（不写文件）” = `--dry-run`；
@@ -282,7 +288,8 @@ param 重新序列化（支持新增行），没动过的原字节写回，再�
 - `tools/paramdef/*.xml`、`tools/names/*.txt` — 来自 soulsmods/Paramdex 的表结构和行名
 - `randomize.sh`、`randomize.bat` — 一键运行（Linux / WSL、Windows）
 - `tools/gui.py` — 图形界面（tkinter），`randomize_gui.sh`、`randomize_gui.bat` 启动它；`tools/theme.py` —
-  配色、ttk 样式和背景图（Pillow）；`tools/assets/melina.jpg` — 背景图；`tools/tkcheck.py` — 打包前的 Tk 检查，
+  配色、ttk 样式和背景图（Pillow）；`tools/lang.py` — 界面语言（英文文案的中文翻译表，`gui.ini` 读写）；
+  `tools/assets/melina.jpg` — 背景图；`tools/tkcheck.py` — 打包前的 Tk 检查，
   输出 Tcl / Tk 库路径
 - `build_exe.sh`、`build_exe.bat` — 用 PyInstaller 把图形界面打包成单文件程序，输出在 `dist/`
 

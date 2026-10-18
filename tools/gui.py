@@ -9,6 +9,9 @@
 build_exe.bat / build_exe.sh pack this file into one executable with PyInstaller.  paramdef/, names/,
 assets/ (and liblinoodle.so on Linux) travel inside it; the game's oo2core_6_win64.dll never does, it is
 expected next to the executable (or wherever the "Oodle DLL" field points).
+
+The texts are English; lang.py holds the Chinese translations and the language setting (gui.ini next to the
+program).  The language box in the window's top-right corner rebuilds the widgets in the chosen language.
 """
 from __future__ import annotations
 
@@ -23,10 +26,12 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import erreg      # noqa: E402
+import lang       # noqa: E402
 import oodle      # noqa: E402
 import randomize  # noqa: E402
 import theme      # noqa: E402
 import weapons    # noqa: E402
+from lang import tr as _  # noqa: E402
 
 TITLE = "Elden Ring Further Random"
 WINDOWS = sys.platform == "win32"
@@ -34,6 +39,7 @@ FROZEN = bool(getattr(sys, "frozen", False))
 # Like randomize.sh / randomize.bat the window works from the project folder (the executable's folder
 # when packaged): relative paths and the default ./oo2core_6_win64.dll resolve there.
 APP_DIR = Path(sys.executable).resolve().parent if FROZEN else Path(__file__).resolve().parents[1]
+INI = APP_DIR / lang.INI                       # [gui] language = en | zh
 
 
 def _tcl_env() -> None:
@@ -69,7 +75,7 @@ def fatal(text: str) -> None:
     log = APP_DIR / "gui_error.log"
     try:
         log.write_text(text + "\n", encoding="utf-8")
-        text += f"\n\n（以上内容已写入 {log}）"
+        text += "\n\n" + _("(this message was also written to {})").format(log)
     except OSError:
         pass
     if sys.stderr is not None:
@@ -84,6 +90,9 @@ LAUNCHER = "randomize.bat" if WINDOWS else "./randomize.sh"
 WEAPON_FLAGS = ("--somber-infusable", "--random-movesets", "--random-default-ash", "--random-stats")
 STAMINA_DEFAULT = ("0.3", "1.7")
 PAD = dict(padx=6, pady=2)
+NO_TK_HINT = ("Windows: install Python from python.org (tick \"tcl/tk and IDLE\" in the installer), delete "
+              "%USERPROFILE%\\.venvs\\er_mod and run randomize_gui.bat / build_exe.bat again."
+              if WINDOWS else "Ubuntu / WSL: sudo apt install python3-tk")
 
 
 def join_argv(argv: list[str]) -> str:
@@ -120,6 +129,8 @@ class Gui:
         self.out = Path("randomized/regulation.bin")
         self.vars: list[tk.Variable] = []
         self.cmd = tk.StringVar()                      # command preview, not traced
+        self.lang_name = tk.StringVar(value=lang.name(lang.current))   # the language box, not in self.vars
+        self._status: tuple = ("Ready",)               # (English template, *format args) of the status line
         S, B = self._str, self._bool
         # files
         self.input = S(input_file or "")
@@ -150,7 +161,8 @@ class Gui:
         self.dep_stats: list = []
         self._build()
         for v in self.vars:
-            v.trace_add("write", lambda *_: self._refresh())
+            v.trace_add("write", lambda *a: self._refresh())
+        self.lang_name.trace_add("write", lambda *a: self._language_changed())
         self._refresh()
         root.after(100, self._poll)
 
@@ -166,56 +178,68 @@ class Gui:
 
     # ---------------------------------------------------------------- layout
     def _build(self) -> None:
-        parent = theme.layout(self.root, self.pal)
+        lines = theme.TITLE_LINES[:2] + (_(theme.TITLE_LINES[2]),)
+        parent = theme.layout(self.root, self.pal, lines)
         sections = []                                   # (widget, sticky, grows, pady)
 
-        f = ttk.LabelFrame(parent, text="文件")
+        top = ttk.Frame(parent, style="Bg.TFrame")
+        ttk.Combobox(top, textvariable=self.lang_name, values=[n for c, n in lang.LANGUAGES], width=8,
+                     state="readonly").pack(side="right", padx=(0, 6))
+        ttk.Label(top, text=_("Language"), style="Bg.TLabel").pack(side="right", padx=6)
+        sections.append((top, "ew", False, (6, 0)))
+
+        f = ttk.LabelFrame(parent, text=_("Files"))
         f.columnconfigure(1, weight=1)
-        self._file_row(f, 0, "输入 regulation.bin", self.input, self._pick_input)
-        self._file_row(f, 1, "输出文件", self.output, self._pick_output)
-        ttk.Button(f, text="打开输出目录", command=self._open_out_dir).grid(row=1, column=3, **PAD)
+        self._file_row(f, 0, _("Input regulation.bin"), self.input, self._pick_input)
+        self._file_row(f, 1, _("Output file"), self.output, self._pick_output)
+        ttk.Button(f, text=_("Open output folder"), command=self._open_out_dir).grid(row=1, column=3, **PAD)
         self._file_row(f, 2, "Oodle DLL", self.dll, self._pick_dll)
-        ttk.Label(f, text=f"{oodle.DLL_NAME} 在游戏目录 Game\\ 里（ModEngine2 的 mod 文件夹里也有）；"
-                          "没有它只能输出 zstd 格式，文件更大", style="Hint.TLabel").grid(row=3, column=1, columnspan=3,
-                                                                                    sticky="w", **PAD)
+        ttk.Label(f, text=_("{}: in the game's Game\\ folder or ModEngine2's mod folder; without it the output is zstd "
+                            "and larger").format(oodle.DLL_NAME),
+                  style="Hint.TLabel").grid(row=3, column=1, columnspan=3, sticky="w", **PAD)
         r = ttk.Frame(f)
         r.grid(row=4, column=0, columnspan=4, sticky="w")
-        ttk.Label(r, text="随机种子").pack(side="left", **PAD)
+        ttk.Label(r, text=_("Seed")).pack(side="left", **PAD)
         ttk.Entry(r, textvariable=self.seed, width=12).pack(side="left")
-        ttk.Label(r, text="（留空 = 随机抽一个，运行后显示在日志里，填回去可复现）", style="Hint.TLabel").pack(side="left", **PAD)
-        ttk.Label(r, text="压缩格式").pack(side="left", padx=(18, 6))
+        ttk.Label(r, text=_("(blank = random; the log shows it, enter it here to reproduce a run)"),
+                  style="Hint.TLabel").pack(side="left", **PAD)
+        ttk.Label(r, text=_("Compression")).pack(side="left", padx=(18, 6))
         ttk.Combobox(r, textvariable=self.compression, values=("auto",) + tuple(erreg.CODECS), width=10,
                      state="readonly").pack(side="left")
-        sections.append((f, "ew", False, (8, 2)))
+        sections.append((f, "ew", False, 2))
 
-        g = ttk.LabelFrame(parent, text="道具与法术（效果总是随机）")
+        g = ttk.LabelFrame(parent, text=_("Goods and spells (effects are always randomized)"))
         r = ttk.Frame(g)
         r.grid(row=0, column=0, sticky="w")
-        ttk.Label(r, text="效果分配").pack(side="left", **PAD)
-        ttk.Radiobutton(r, text="shuffle：每个效果恰好用一次", variable=self.mode, value="shuffle").pack(side="left", **PAD)
-        ttk.Radiobutton(r, text="random：效果可重复", variable=self.mode, value="random").pack(side="left", **PAD)
+        ttk.Label(r, text=_("Effect assignment")).pack(side="left", **PAD)
+        ttk.Radiobutton(r, text=_("shuffle: each effect is used exactly once"), variable=self.mode,
+                        value="shuffle").pack(side="left", **PAD)
+        ttk.Radiobutton(r, text=_("random: effects may repeat"), variable=self.mode, value="random").pack(side="left", **PAD)
         r = ttk.Frame(g)
         r.grid(row=1, column=0, sticky="w")
-        ttk.Label(r, text="使用动作").pack(side="left", **PAD)
-        ttk.Radiobutton(r, text="跟着效果走", variable=self.split_anim, value="none").pack(side="left", **PAD)
-        ttk.Radiobutton(r, text="同类道具里另选 (--split-anim same)", variable=self.split_anim,
+        ttk.Label(r, text=_("Use animation")).pack(side="left", **PAD)
+        ttk.Radiobutton(r, text=_("follows the effect"), variable=self.split_anim, value="none").pack(side="left", **PAD)
+        ttk.Radiobutton(r, text=_("from another item of the same kind (--split-anim same)"), variable=self.split_anim,
                         value="same").pack(side="left", **PAD)
-        ttk.Radiobutton(r, text="任意道具 (--split-anim any)", variable=self.split_anim, value="any").pack(side="left", **PAD)
+        ttk.Radiobutton(r, text=_("from any item (--split-anim any)"), variable=self.split_anim,
+                        value="any").pack(side="left", **PAD)
         r = ttk.Frame(g)
         r.grid(row=2, column=0, sticky="w")
-        ttk.Checkbutton(r, text="圣杯瓶也随机 (--include-flasks)", variable=self.include_flasks).pack(side="left", **PAD)
-        ttk.Checkbutton(r, text="追忆也随机 (--include-remembrances)", variable=self.include_remembrances).pack(side="left", **PAD)
-        ttk.Checkbutton(r, text="魔法 / 祷告效果随机（取消 = --no-spells）", variable=self.spells).pack(side="left", **PAD)
+        ttk.Checkbutton(r, text=_("Flasks too (--include-flasks)"), variable=self.include_flasks).pack(side="left", **PAD)
+        ttk.Checkbutton(r, text=_("Remembrances too (--include-remembrances)"),
+                        variable=self.include_remembrances).pack(side="left", **PAD)
+        ttk.Checkbutton(r, text=_("Sorcery / incantation effects (off = --no-spells)"),
+                        variable=self.spells).pack(side="left", **PAD)
         r = ttk.Frame(g)
         r.grid(row=3, column=0, sticky="w")
-        ttk.Checkbutton(r, text="商店价格随机 (--random-prices)", variable=self.random_prices).pack(side="left", **PAD)
-        w = ttk.Radiobutton(r, text="shuffle：打乱现有价格", variable=self.price_mode, value="shuffle")
+        ttk.Checkbutton(r, text=_("Shop prices (--random-prices)"), variable=self.random_prices).pack(side="left", **PAD)
+        w = ttk.Radiobutton(r, text=_("shuffle: permute the existing prices"), variable=self.price_mode, value="shuffle")
         w.pack(side="left", **PAD)
         self.dep_prices.append(w)
-        w = ttk.Radiobutton(r, text="range：区间内重抽", variable=self.price_mode, value="range")
+        w = ttk.Radiobutton(r, text=_("range: redraw within a range"), variable=self.price_mode, value="range")
         w.pack(side="left", **PAD)
         self.dep_prices.append(w)
-        for label, var in (("最低", self.price_min), ("最高", self.price_max)):
+        for label, var in ((_("min"), self.price_min), (_("max"), self.price_max)):
             w = ttk.Label(r, text=label)
             w.pack(side="left", padx=(10, 2))
             self.dep_prices.append(w)
@@ -224,10 +248,10 @@ class Gui:
             self.dep_prices.append(w)
         r = ttk.Frame(g)
         r.grid(row=4, column=0, sticky="w")
-        w = ttk.Checkbutton(r, text="道具售价也随机（取消 = --no-sell-prices）", variable=self.sell_prices)
+        w = ttk.Checkbutton(r, text=_("Sell prices of goods too (off = --no-sell-prices)"), variable=self.sell_prices)
         w.pack(side="left", **PAD)
         self.dep_prices.append(w)
-        for label, var in (("售价最低", self.sell_min), ("售价最高", self.sell_max)):
+        for label, var in ((_("sell min"), self.sell_min), (_("sell max"), self.sell_max)):
             w = ttk.Label(r, text=label)
             w.pack(side="left", padx=(10, 2))
             self.dep_sell.append(w)
@@ -236,31 +260,31 @@ class Gui:
             self.dep_sell.append(w)
         r = ttk.Frame(g)
         r.grid(row=5, column=0, sticky="w")
-        w = ttk.Checkbutton(r, text="武器 / 防具 / 战灰的售价也随机 (--sell-equipment)", variable=self.sell_equipment)
+        w = ttk.Checkbutton(r, text=_("Sell prices of weapons / armor / Ashes of War too (--sell-equipment)"),
+                            variable=self.sell_equipment)
         w.pack(side="left", **PAD)
         self.dep_prices.append(w)
         sections.append((g, "ew", False, 2))
 
-        wf = ttk.LabelFrame(parent, text="武器（四项全选 = --weapons）")
+        wf = ttk.LabelFrame(parent, text=_("Weapons (all four = --weapons)"))
         r = ttk.Frame(wf)
         r.grid(row=0, column=0, sticky="w")
-        ttk.Checkbutton(r, text="失色 / 独特武器可质变、可装战灰 (--somber-infusable)",
+        ttk.Checkbutton(r, text=_("Somber weapons: affinities + Ashes of War (--somber-infusable)"),
                         variable=self.somber).pack(side="left", **PAD)
-        ttk.Checkbutton(r, text="默认战技随机，掉落 / 商店 / 初始武器的质变随机 (--random-default-ash)",
-                        variable=self.default_ash).pack(side="left", **PAD)
+        ttk.Checkbutton(r, text=_("Random default skill and affinity on new weapons (--random-default-ash)"), variable=self.default_ash).pack(side="left", **PAD)
         r = ttk.Frame(wf)
         r.grid(row=1, column=0, sticky="w")
-        ttk.Checkbutton(r, text="动作模组随机 (--random-movesets)", variable=self.movesets).pack(side="left", **PAD)
-        for label, var, values, width in (("模式", self.moveset_mode, ("affinity", "bound", "weapon"), 8),
-                                          ("盾", self.shield, ("shields", "none", "all"), 7),
-                                          ("弓", self.bow, ("bows", "none"), 6)):
+        ttk.Checkbutton(r, text=_("Random movesets (--random-movesets)"), variable=self.movesets).pack(side="left", **PAD)
+        for label, var, values, width in ((_("Mode"), self.moveset_mode, ("affinity", "bound", "weapon"), 8),
+                                          (_("Shields"), self.shield, ("shields", "none", "all"), 7),
+                                          (_("Bows"), self.bow, ("bows", "none"), 6)):
             w = ttk.Label(r, text=label)
             w.pack(side="left", padx=(10, 2))
             self.dep_movesets.append(w)
             w = ttk.Combobox(r, textvariable=var, values=values, width=width, state="readonly")
             w.pack(side="left")
             self.dep_movesets.append(w)
-        w = ttk.Label(r, text="bound 模式的 variety")
+        w = ttk.Label(r, text=_("bound variety"))
         w.pack(side="left", padx=(10, 2))
         self.dep_movesets.append(w)
         w = ttk.Spinbox(r, textvariable=self.variety, from_=1, to=12, width=4)
@@ -268,16 +292,18 @@ class Gui:
         self.dep_movesets.append(w)
         r = ttk.Frame(wf)
         r.grid(row=2, column=0, sticky="w", padx=(24, 0))
-        w = ttk.Checkbutton(r, text="Standard 行保留原动作 (--keep-standard-moveset)", variable=self.keep_standard)
+        w = ttk.Checkbutton(r, text=_("Standard rows keep their moveset (--keep-standard-moveset)"),
+                            variable=self.keep_standard)
         w.pack(side="left", **PAD)
         self.dep_movesets.append(w)
-        w = ttk.Checkbutton(r, text="wepType 跟随动作 (--weptype-follows，未测试存档校验)", variable=self.weptype)
+        w = ttk.Checkbutton(r, text=_("wepType follows (--weptype-follows, save validation untested)"),
+                            variable=self.weptype)
         w.pack(side="left", **PAD)
         self.dep_movesets.append(w)
         r = ttk.Frame(wf)
         r.grid(row=3, column=0, sticky="w")
-        ttk.Checkbutton(r, text="数值随机 (--random-stats)", variable=self.stats).pack(side="left", **PAD)
-        w = ttk.Label(r, text="分组")
+        ttk.Checkbutton(r, text=_("Random stats (--random-stats)"), variable=self.stats).pack(side="left", **PAD)
+        w = ttk.Label(r, text=_("Groups"))
         w.pack(side="left", padx=(10, 2))
         self.dep_stats.append(w)
         for gname in weapons.STAT_GROUPS:
@@ -286,13 +312,13 @@ class Gui:
             self.dep_stats.append(w)
         r = ttk.Frame(wf)
         r.grid(row=4, column=0, sticky="w", padx=(24, 0))
-        w = ttk.Label(r, text="出招耐力倍率范围 (--stamina-rate)")
+        w = ttk.Label(r, text=_("Stamina cost multiplier range (--stamina-rate)"))
         w.pack(side="left", **PAD)
         self.dep_stats.append(w)
         w = ttk.Entry(r, textvariable=self.stamina_lo, width=6)
         w.pack(side="left")
         self.dep_stats.append(w)
-        w = ttk.Label(r, text="到")
+        w = ttk.Label(r, text=_("to"))
         w.pack(side="left", padx=4)
         self.dep_stats.append(w)
         w = ttk.Entry(r, textvariable=self.stamina_hi, width=6)
@@ -301,18 +327,18 @@ class Gui:
         sections.append((wf, "ew", False, 2))
 
         b = ttk.Frame(parent, style="Bg.TFrame")
-        ttk.Button(b, text="常用设定", command=self._preset).pack(side="left", **PAD)
+        ttk.Button(b, text=_("Preset"), command=self._preset).pack(side="left", **PAD)
         ttk.Label(b, text="= --split-anim any --random-prices --weapons", style="Bg.TLabel").pack(side="left")
-        ttk.Button(b, text="恢复默认选项", command=self._reset).pack(side="left", padx=(16, 6))
-        self.btn_run = ttk.Button(b, text="开始随机", style="Accent.TButton", command=lambda: self._start(False))
+        ttk.Button(b, text=_("Reset options"), command=self._reset).pack(side="left", padx=(16, 6))
+        self.btn_run = ttk.Button(b, text=_("Randomize"), style="Accent.TButton", command=lambda: self._start(False))
         self.btn_run.pack(side="right", **PAD)
-        self.btn_dry = ttk.Button(b, text="预览（不写文件）", command=lambda: self._start(True))
+        self.btn_dry = ttk.Button(b, text=_("Preview (no file written)"), command=lambda: self._start(True))
         self.btn_dry.pack(side="right", **PAD)
         sections.append((b, "ew", False, 4))
 
         c = ttk.Frame(parent, style="Bg.TFrame")
         c.columnconfigure(1, weight=1)
-        ttk.Label(c, text="等价命令", style="Bg.TLabel").grid(row=0, column=0, sticky="w", **PAD)
+        ttk.Label(c, text=_("Command line"), style="Bg.TLabel").grid(row=0, column=0, sticky="w", **PAD)
         ttk.Entry(c, textvariable=self.cmd, state="readonly").grid(row=0, column=1, sticky="ew", **PAD)
         sections.append((c, "ew", False, 0))
 
@@ -329,25 +355,59 @@ class Gui:
         self.log.configure(yscrollcommand=ys.set, xscrollcommand=xs.set)
         sections.append((lf, "nsew", True, 2))
 
-        self.status = ttk.Label(parent, text="就绪", anchor="w", style="Status.TLabel")
+        self.status = ttk.Label(parent, anchor="w", style="Status.TLabel")
+        self._set_status(*self._status)
         sections.append((self.status, "ew", False, (2, 8)))
         theme.arrange(parent, sections)
 
     def _file_row(self, parent, row: int, label: str, var: tk.StringVar, pick) -> None:
         ttk.Label(parent, text=label).grid(row=row, column=0, sticky="w", **PAD)
         ttk.Entry(parent, textvariable=var).grid(row=row, column=1, sticky="ew", **PAD)
-        ttk.Button(parent, text="浏览…", command=pick).grid(row=row, column=2, **PAD)
+        ttk.Button(parent, text=_("Browse…"), command=pick).grid(row=row, column=2, **PAD)
+
+    def _set_status(self, template: str, *args) -> None:
+        """The status line keeps its English template so a language change can re-render it."""
+        self._status = (template, *args)
+        self.status.configure(text=_(template).format(*args))
+
+    # ---------------------------------------------------------------- language
+    def _language_changed(self) -> None:
+        code = lang.code(self.lang_name.get())
+        if code is None or code == lang.current:
+            return
+        lang.current = code
+        try:
+            lang.save(INI, code)
+        except OSError as e:
+            self._status = ("Language not saved ({}): {}", INI.name, e)
+        self.root.after_idle(self._rebuild)        # not inside the combobox's own event handling
+
+    def _rebuild(self) -> None:
+        """Throw the widgets away and build them again in the current language.  The variables (so every
+           option), the log and the status line survive; a running job keeps going."""
+        text = self.log.get("1.0", "end-1c")
+        for w in self.root.winfo_children():
+            w.destroy()
+        for dep in (self.dep_prices, self.dep_sell, self.dep_movesets, self.dep_stats):
+            dep.clear()
+        self._build()
+        if text:
+            self._append(text)
+        if self.running:
+            for b in (self.btn_dry, self.btn_run):
+                b.state(["disabled"])
+        self._refresh()
 
     # ---------------------------------------------------------------- pickers
     def _pick_input(self) -> None:
-        p = filedialog.askopenfilename(title="输入 regulation.bin",
-                                       filetypes=[("regulation.bin", "*.bin"), ("所有文件", "*.*")])
+        p = filedialog.askopenfilename(title=_("Input regulation.bin"),
+                                       filetypes=[("regulation.bin", "*.bin"), (_("All files"), "*.*")])
         if p:
             self.input.set(p)
 
     def _pick_output(self) -> None:
         cur = Path(self.output.get() or "randomized/regulation.bin")
-        p = filedialog.asksaveasfilename(title="输出文件", initialdir=str(cur.parent), initialfile=cur.name,
+        p = filedialog.asksaveasfilename(title=_("Output file"), initialdir=str(cur.parent), initialfile=cur.name,
                                          defaultextension=".bin", filetypes=[("regulation.bin", "*.bin")])
         if p:
             self.output.set(p)
@@ -361,7 +421,7 @@ class Gui:
     def _open_out_dir(self) -> None:
         d = Path(self.output.get().strip() or "randomized/regulation.bin").resolve().parent
         if not d.is_dir():
-            messagebox.showinfo(TITLE, f"目录还不存在：{d}")
+            messagebox.showinfo(TITLE, _("The folder does not exist yet: {}").format(d))
             return
         if WINDOWS:
             os.startfile(d)                                  # type: ignore[attr-defined]
@@ -374,13 +434,13 @@ class Gui:
         try:
             return int(s.strip())
         except ValueError:
-            raise ValueError(f"{what} 应为整数：{s}") from None
+            raise ValueError(_("{} must be an integer: {}").format(_(what), s)) from None
 
     def argv(self, dry_run: bool) -> list[str]:
         a = ["--input", self.input.get().strip() or "regulation.bin",
              "--output", self.output.get().strip() or "randomized/regulation.bin"]
         if self.seed.get().strip():
-            a += ["--seed", str(self._int(self.seed.get(), "随机种子"))]
+            a += ["--seed", str(self._int(self.seed.get(), "Seed"))]
         if self.mode.get() != "shuffle":
             a += ["--mode", self.mode.get()]
         if self.include_flasks.get():
@@ -395,8 +455,8 @@ class Gui:
             a.append("--random-prices")
             if self.price_mode.get() == "range":
                 a += ["--price-mode", "range"]
-                for var, flag, what in ((self.price_min, "--price-min", "最低价格"),
-                                        (self.price_max, "--price-max", "最高价格")):
+                for var, flag, what in ((self.price_min, "--price-min", "min price"),
+                                        (self.price_max, "--price-max", "max price")):
                     if var.get().strip():
                         a += [flag, str(self._int(var.get(), what))]
             if not self.sell_prices.get():
@@ -404,8 +464,8 @@ class Gui:
             if self.sell_equipment.get():
                 a.append("--sell-equipment")
             if self.price_mode.get() == "range" and (self.sell_prices.get() or self.sell_equipment.get()):
-                for var, flag, what in ((self.sell_min, "--sell-min", "最低售价"),
-                                        (self.sell_max, "--sell-max", "最高售价")):
+                for var, flag, what in ((self.sell_min, "--sell-min", "min sell price"),
+                                        (self.sell_max, "--sell-max", "max sell price")):
                     if var.get().strip():
                         a += [flag, str(self._int(var.get(), what))]
         four = (self.somber.get(), self.movesets.get(), self.default_ash.get(), self.stats.get())
@@ -429,7 +489,7 @@ class Gui:
         if self.stats.get():
             groups = [g for g in weapons.STAT_GROUPS if self.groups[g].get()]
             if not groups:
-                raise ValueError("数值随机至少要选一个分组")
+                raise ValueError(_("Random stats needs at least one group"))
             if len(groups) != len(weapons.STAT_GROUPS):
                 a += ["--stat-groups", ",".join(groups)]
             lo, hi = self.stamina_lo.get().strip(), self.stamina_hi.get().strip()
@@ -439,7 +499,7 @@ class Gui:
                 except ValueError:
                     flo, fhi = 0.0, 0.0
                 if not 0 < flo <= fhi:
-                    raise ValueError("出招耐力倍率范围应满足 0 < 最低 <= 最高，例如 0.3 到 1.7")
+                    raise ValueError(_("The stamina multiplier range must satisfy 0 < min <= max, e.g. 0.3 to 1.7"))
                 a += ["--stamina-rate", f"{lo},{hi}"]
         if self.compression.get() != "auto":
             a += ["--compression", self.compression.get()]
@@ -460,7 +520,7 @@ class Gui:
         try:
             self.cmd.set(f"{LAUNCHER} {join_argv(self.argv(False))}")
         except ValueError as e:
-            self.cmd.set(f"参数有误：{e}")
+            self.cmd.set(_("Bad option: {}").format(e))
 
     def _preset(self) -> None:
         self.split_anim.set("any")
@@ -504,20 +564,21 @@ class Gui:
             return
         inp = Path(self.input.get().strip() or "regulation.bin")
         if not inp.is_file():
-            messagebox.showerror(TITLE, f"找不到输入文件：{inp}")
+            messagebox.showerror(TITLE, _("Input file not found: {}").format(inp))
             return
         dll = self.dll.get().strip()
         if dll and not Path(dll).is_file():
-            messagebox.showerror(TITLE, f"找不到 DLL：{dll}")
+            messagebox.showerror(TITLE, _("DLL not found: {}").format(dll))
             return
         if not dll:
             os.environ.pop("OODLE_DLL", None)      # the field is the only source, not the DLL of an earlier run
         if not dry_run and not dll and self.compression.get() != erreg.CODEC_ZSTD:
             if oodle.find_dll() is None:
-                if not messagebox.askyesno(
-                        TITLE, f"没有指定 {oodle.DLL_NAME}，当前目录（{Path.cwd()}）里也没有。\n\n"
-                               f"它在游戏目录 Game\\ 里，用“浏览…”选中它就能输出原版的 KRAK 格式。\n\n"
-                               "改用 zstd 格式继续吗？文件会大约 35%，可能超过游戏的大小上限。"):
+                if not messagebox.askyesno(TITLE, _(
+                        "No {} given and there is none in the current folder ({}).\n\n"
+                        "It is in the game's Game\\ folder; pick it with Browse… to write the game's own KRAK format.\n\n"
+                        "Continue with the zstd format instead? The file will be about 35% larger and may exceed "
+                        "the game's size limit.").format(oodle.DLL_NAME, Path.cwd())):
                     return
                 if "--compression" in argv:
                     argv[argv.index("--compression") + 1] = erreg.CODEC_ZSTD
@@ -530,7 +591,7 @@ class Gui:
         self.log.configure(state="normal")
         self.log.delete("1.0", "end")
         self.log.configure(state="disabled")
-        self.status.configure(text="运行中…")
+        self._set_status("Running…")
         self._append(f"$ {LAUNCHER} {join_argv(argv)}\n\n")
         threading.Thread(target=self._work, args=(argv,), daemon=True).start()
 
@@ -576,31 +637,29 @@ class Gui:
         for b in (self.btn_dry, self.btn_run):
             b.state(["!disabled"])
         if rc == 0 and self.dry_run:
-            self.status.configure(text="预览完成，没有写文件")
+            self._set_status("Preview finished, no file written")
         elif rc == 0:
-            self.status.configure(text=f"完成：{self.out}")
-            messagebox.showinfo(TITLE, f"已写入 {self.out}\n\n要覆盖 mod 目录里的 regulation.bin 才会生效。\n"
-                                       f"mapping.txt / weapons.txt / spells.txt（随机结果清单）在同一目录。")
+            self._set_status("Done: {}", self.out)
+            messagebox.showinfo(TITLE, _("Written: {}\n\nReplace the regulation.bin in the mod folder with it to use it.\n"
+                                         "mapping.txt / weapons.txt / spells.txt (what was randomized) are in the same "
+                                         "folder.").format(self.out))
         else:
             if msg:
                 self._append("\n" + msg.rstrip() + "\n")
-            self.status.configure(text="失败，见日志")
-            messagebox.showerror(TITLE, (msg or "运行失败，详见日志").strip()[-2000:])
+            self._set_status("Failed, see the log")
+            messagebox.showerror(TITLE, (msg or _("The run failed, see the log")).strip()[-2000:])
 
     def _close(self) -> None:
-        if self.running and not messagebox.askyesno(TITLE, "还在运行中，确定退出？输出文件可能不完整。"):
+        if self.running and not messagebox.askyesno(TITLE, _("Still running. Quit anyway? The output file may be "
+                                                             "incomplete.")):
             return
         self.root.destroy()
 
 
-NO_TK_HINT = (
-    "Windows：安装 python.org 的 Python（安装时勾选 “tcl/tk and IDLE”），删除 %USERPROFILE%\\.venvs\\er_mod 后"
-    "重新运行 randomize_gui.bat / build_exe.bat。" if WINDOWS else "Ubuntu / WSL: sudo apt install python3-tk")
-
-
 def run_gui(args: list[str]) -> int:
     if tk is None:
-        fatal("这个 Python 没有可用的 tkinter，无法显示窗口。\n\n" + (TK_ERROR or "").rstrip() + "\n\n" + NO_TK_HINT)
+        fatal(_("This Python has no usable tkinter, the window cannot be shown.") + "\n\n" + (TK_ERROR or "").rstrip()
+              + "\n\n" + _(NO_TK_HINT))
         return 1
     input_file = str(Path(args[0]).resolve()) if args and Path(args[0]).is_file() else None
     os.chdir(APP_DIR)
@@ -621,10 +680,11 @@ def main() -> int:
     args = sys.argv[1:]
     if args and args[0].startswith("-"):                 # command-line mode, same options as randomize.py
         return randomize.main(args)
+    lang.load(INI)
     try:
         return run_gui(args)
     except Exception:
-        fatal("图形界面启动失败：\n\n" + traceback.format_exc().rstrip())
+        fatal(_("The window failed to start:") + "\n\n" + traceback.format_exc().rstrip())
         return 1
 
 
