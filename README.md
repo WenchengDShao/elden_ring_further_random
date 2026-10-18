@@ -100,7 +100,7 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 - `--split-anim any`：使用动作和效果分开随机，动作从整个池子里挑，投掷类效果也可能配吃 / 涂抹的动作；
   魔法 / 祷告的施放动作同样从全池里挑。
 - 魔法 / 祷告效果（总是做）：魔法和祷告同池互换效果，各自保留魔法 / 祷告归属。
-- `--random-prices`：商店里道具的卢恩价格在条目间打乱。
+- `--random-prices`：商店里道具的购买价在条目间打乱，道具的售价也在道具间打乱。
 - `--weapons`：失色 / 独特武器获得全部 12 种质变并可装战灰（`--somber-infusable`）；每个（武器, 质变）行换成随机
   武器的动作模组，盾只在盾的动画集之间换、弓弩只在弓弩类之间换（`--random-movesets`，affinity 模式）；
   默认战技随机，掉落表 / 商店 / 初始职业给出的武器改成随机质变（`--random-default-ash`）；攻击、防御、必需能力值、
@@ -129,7 +129,7 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 | `--include-flasks`、`--include-remembrances` | 把圣杯瓶 / 追忆也加入道具池（默认都不加） |
 | `--split-anim [same\|any]` | 使用动作和效果分开随机；`same` 只在同类动作里挑，`any` 全池 |
 | （总是） | 每个魔法/祷告拿到另一个法术的效果；`--no-spells` 关闭 |
-| `--random-prices` | 商店里道具的卢恩价格；`--price-mode shuffle\|range`、`--price-min N`、`--price-max N` |
+| `--random-prices` | 商店购买价和道具售价；`--price-mode shuffle\|range`、`--price-min N`、`--price-max N`、`--sell-min N`、`--sell-max N`、`--no-sell-prices`（售价不动） |
 | `--weapons` | = 下面四项 |
 | `--somber-infusable` | 失色/独特武器获得全部 12 种质变并可装战灰 |
 | `--random-movesets` | 每个（武器, 质变）行换成随机武器的动作模组；`--moveset-mode affinity\|bound\|weapon`、`--shield-movesets shields\|none\|all`、`--bow-movesets bows\|none`、`--keep-standard-moveset`、`--weptype-follows` |
@@ -186,8 +186,11 @@ Release 里的 `ERFurtherRandom.exe`（见开头“快速开始”）、`randomi
 
 ## 价格随机
 
-商店价格写在 `ShopLineupParam.value` 里，该选项改道具条目（含魔法、食谱、锻造石、消耗品）中以卢恩计价的价格；
+购买价写在 `ShopLineupParam.value` 里，该选项改道具条目（含魔法、食谱、锻造石、消耗品）中以卢恩计价的价格；
 免费条目和用龙心等特殊货币的条目不动。`shuffle` 在条目间打乱现有价格，`range` 在区间内按对数均匀抽新价格。
+售价（卖给商人拿到的卢恩）写在 `EquipParamGoods.sellValue` 里，黄金卢恩、消耗品、素材、锻造石、追忆等所有能卖的道具
+作为一个池子同样打乱或重抽（`range` 用 `--sell-min/--sell-max`，默认现有最低/最高）。有商人以卢恩出售的道具，
+售价封顶为其最便宜购买价的一半，避免买进卖出刷卢恩；`--no-sell-prices` 保留原版售价。
 筛选只看条目类型和货币，不看卖的是什么，所以道具随机器塞进商店的黄金卢恩、素材也在池子里。
 `mapping.txt` 的价格一段按“商人、槽位里实际卖的道具、旧价 -> 新价”列出；
 槽位被道具随机器换过的，行尾附 `(slot: 原版道具)`。

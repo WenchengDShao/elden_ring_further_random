@@ -136,6 +136,7 @@ class Gui:
         self.spells = B(True)
         self.random_prices, self.price_mode = B(False), S("shuffle")
         self.price_min, self.price_max = S(""), S("")
+        self.sell_prices, self.sell_min, self.sell_max = B(True), S(""), S("")
         # weapons
         self.somber, self.movesets, self.default_ash, self.stats = B(False), B(False), B(False), B(False)
         self.moveset_mode, self.shield, self.bow, self.variety = S("affinity"), S("shields"), S("bows"), S("3")
@@ -143,6 +144,7 @@ class Gui:
         self.groups = {g: B(True) for g in weapons.STAT_GROUPS}
         self.stamina_lo, self.stamina_hi = S(STAMINA_DEFAULT[0]), S(STAMINA_DEFAULT[1])
         self.dep_prices: list = []
+        self.dep_sell: list = []
         self.dep_movesets: list = []
         self.dep_stats: list = []
         self._build()
@@ -219,6 +221,18 @@ class Gui:
             w = ttk.Entry(r, textvariable=var, width=8)
             w.pack(side="left")
             self.dep_prices.append(w)
+        r = ttk.Frame(g)
+        r.grid(row=4, column=0, sticky="w")
+        w = ttk.Checkbutton(r, text="道具售价也随机（取消 = --no-sell-prices）", variable=self.sell_prices)
+        w.pack(side="left", **PAD)
+        self.dep_prices.append(w)
+        for label, var in (("售价最低", self.sell_min), ("售价最高", self.sell_max)):
+            w = ttk.Label(r, text=label)
+            w.pack(side="left", padx=(10, 2))
+            self.dep_sell.append(w)
+            w = ttk.Entry(r, textvariable=var, width=8)
+            w.pack(side="left")
+            self.dep_sell.append(w)
         sections.append((g, "ew", False, 2))
 
         wf = ttk.LabelFrame(parent, text="武器（四项全选 = --weapons）")
@@ -379,6 +393,13 @@ class Gui:
                                         (self.price_max, "--price-max", "最高价格")):
                     if var.get().strip():
                         a += [flag, str(self._int(var.get(), what))]
+            if not self.sell_prices.get():
+                a.append("--no-sell-prices")
+            elif self.price_mode.get() == "range":
+                for var, flag, what in ((self.sell_min, "--sell-min", "最低售价"),
+                                        (self.sell_max, "--sell-max", "最高售价")):
+                    if var.get().strip():
+                        a += [flag, str(self._int(var.get(), what))]
         four = (self.somber.get(), self.movesets.get(), self.default_ash.get(), self.stats.get())
         if all(four):
             a.append("--weapons")
@@ -422,6 +443,7 @@ class Gui:
 
     def _refresh(self) -> None:
         for widgets, on in ((self.dep_prices, self.random_prices.get()),
+                            (self.dep_sell, self.random_prices.get() and self.sell_prices.get()),
                             (self.dep_movesets, self.movesets.get()),
                             (self.dep_stats, self.stats.get())):
             for w in widgets:
@@ -446,6 +468,9 @@ class Gui:
         self.price_mode.set("shuffle")
         self.price_min.set("")
         self.price_max.set("")
+        self.sell_prices.set(True)
+        self.sell_min.set("")
+        self.sell_max.set("")
         for v in (self.include_flasks, self.include_remembrances, self.random_prices, self.somber, self.movesets,
                   self.default_ash, self.stats, self.keep_standard, self.weptype):
             v.set(False)
