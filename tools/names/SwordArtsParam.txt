@@ -185,6 +185,8 @@
 1197 Contagious Fury
 1198 Ordovis's Vortex
 1199 Spinning Weapon
+1200 Muleta
+1201 Causality's Wrath
 2000 Dryleaf Whirlwind
 2001 Aspects of the Crucible: Wings
 4000 Spinning Gravity Thrust

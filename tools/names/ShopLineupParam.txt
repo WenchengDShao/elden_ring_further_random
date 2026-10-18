@@ -199,6 +199,7 @@
 100565 [Merchant - East Limgrave] Blue-Gold Kite Shield
 100566 [Merchant - East Limgrave] St. Trina's Arrow
 100567 [Merchant - East Limgrave] Smithing Stone [1]
+100568 [Merchant - East Limgrave] Hefty Scimitar
 100575 [Merchant - Coastal Cave] Armorer's Cookbook [2]
 100576 [Merchant - Coastal Cave] Note: Stonedigger Trolls
 100585 [Merchant - Coastal Cave] Note: Land Squirts
@@ -257,6 +258,10 @@
 100663 [Isolated Merchant - Weeping Peninsula] Great Arrow
 100664 [Isolated Merchant - Weeping Peninsula] Festering Bloody Finger
 100665 [Isolated Merchant - Weeping Peninsula] Smithing Stone [2]
+100666 [Isolated Merchant - Weeping Peninsula] Steel Helm
+100667 [Isolated Merchant - Weeping Peninsula] Steel Armor
+100668 [Isolated Merchant - Weeping Peninsula] Steel Gauntlets
+100669 [Isolated Merchant - Weeping Peninsula] Steel Greaves
 100675 [Merchant - Academy of Raya Lucaria] Fevor's Cookbook [2]
 100676 [Merchant - Academy of Raya Lucaria] Trina's Lily
 100678 [Merchant - Academy of Raya Lucaria] Eye of Yelough
@@ -278,6 +283,11 @@
 100704 [Merchant - North Liurnia] Composite Bow
 100705 [Merchant - North Liurnia] Rift Shield
 100706 [Merchant - North Liurnia] Blue Crest Heater Shield
+100709 [Merchant - North Liurnia] Silver Grooved Shield
+100710 [Merchant - North Liurnia] Silver Grooved Helm
+100711 [Merchant - North Liurnia] Silver Grooved Armor
+100712 [Merchant - North Liurnia] Silver Grooved Gauntlets
+100713 [Merchant - North Liurnia] Silver Grooved Greaves
 100714 [Merchant - North Liurnia] Rune Arc
 100715 [Merchant - North Liurnia] Bewitching Branch
 100716 [Merchant - North Liurnia] Arrow
@@ -565,6 +575,7 @@
 101893 [Twin Maiden Husks] String
 101894 [Twin Maiden Husks] Igon's Harpoon
 101895 [Twin Maiden Husks] Rabbath's Greatbolt
+101896 [Twin Maiden Husks] Reverse-Bladed Sword
 101898 [Twin Maiden Husks] Enraged Divine Beast
 101899 [Twin Maiden Husks] Ash of War: Divine Beast Frost Stomp
 101900 [Remembrance of the Grafted] Axe of Godrick
@@ -800,6 +811,8 @@
 110080 [Alteration] Armor of Solitude (Altered)
 110081 [Alteration] Messmer Soldier Armor (Altered)
 110082 [Alteration] Fire Knight Armor (Altered)
+110084 [Alteration] Silver Grooved Armor (Altered)
+110085 [Alteration] Leontiel's Hat (Altered)
 110100 [Alteration] Elden Lord Armor (Altered)
 110101 [Alteration] Radahn's Lion Armor (Altered)
 110102 [Alteration] Lord of Blood's Robe (Altered)
@@ -883,6 +896,8 @@
 110280 [Reversion] Armor of Solitude
 110281 [Reversion] Messmer Soldier Armor
 110282 [Reversion] Fire Knight Armor
+110284 [Reversion] Silver Grooved Armor
+110285 [Reversion] Leontiel's Hat
 110300 [Reversion] Elden Lord Armor
 110301 [Reversion] Radahn's Lion Armor
 110302 [Reversion] Lord of Blood's Robe
@@ -966,6 +981,8 @@
 111080 [Alteration] Armor of Solitude (Altered)
 111081 [Alteration] Messmer Soldier Armor (Altered)
 111082 [Alteration] Fire Knight Armor (Altered)
+111084 [Alteration] Silver Grooved Armor (Altered)
+111085 [Alteration] Leontiel's Hat (Altered)
 111100 [Alteration] Elden Lord Armor (Altered)
 111101 [Alteration] Radahn's Lion Armor (Altered)
 111102 [Alteration] Lord of Blood's Robe (Altered)
@@ -1049,6 +1066,8 @@
 111280 [Reversion] Armor of Solitude
 111281 [Reversion] Messmer Soldier Armor
 111282 [Reversion] Fire Knight Armor
+111284 [Reversion] Silver Grooved Armor
+111285 [Reversion] Leontiel's Hat
 111300 [Reversion] Elden Lord Armor
 111301 [Reversion] Radahn's Lion Armor
 111302 [Reversion] Lord of Blood's Robe

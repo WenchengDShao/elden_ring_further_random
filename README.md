@@ -28,8 +28,10 @@ SmartScreen 拦下（“更多信息 → 仍要运行”），Defender 偶尔会
 
 ## 兼容性
 
-- 游戏 **1.16.1** 测试通过（2026 年 10 月），开发时用的原版文件也来自 1.16.1。其他版本没有测过：只要
-  regulation.bin 的表结构没变（小版本更新通常如此）就能用，但生成的文件只能用于和输入文件同版本的游戏。
+- 当前适配游戏 **1.17.1**（2026 年 10 月）。Tarnished Pack 的新内容都在随机范围内：8 把新武器（含 Leontiel's
+  Greatsword、Golden Order Flail 两把失色武器）参与全部武器随机，新职业 Idus Knight / Heavy Knight 的初始武器
+  也随机质变，新防具参与售价随机。1.16.1 的文件表结构相同，仍能读，但不再以它测试。其他版本：只要
+  regulation.bin 的表结构没变（小版本更新通常如此）就能用；生成的文件只能用于和输入文件同版本的游戏。
 - 不要带着改过的 regulation.bin 联机，会触发 EAC / 封禁。
 - Linux、WSL（Windows Subsystem for Linux）和 Windows 原生都能跑。Windows 上用 `randomize.bat`，Python 直接
   加载游戏的 DLL，不需要 WSL 和 linoodle（Windows 10 实测通过）。`--compression zstd` 不依赖 DLL。
@@ -285,7 +287,8 @@ param 重新序列化（支持新增行），没动过的原字节写回，再�
 - `tools/spells.py` — 魔法 / 祷告随机
 - `tools/oodle.py`、`tools/linoodle/` — 通过游戏自带的 `oo2core_6_win64.dll` 做 Kraken / Leviathan 压缩
   （Linux / WSL 经 linoodle 加载，Windows 直接 ctypes 加载）
-- `tools/paramdef/*.xml`、`tools/names/*.txt` — 来自 soulsmods/Paramdex 的表结构和行名
+- `tools/paramdef/*.xml`、`tools/names/*.txt` — 来自 soulsmods/Paramdex 的表结构和行名（1.17 Tarnished Pack
+  新增行的名字 Paramdex 还没有，由本仓库手工补充）
 - `randomize.sh`、`randomize.bat` — 一键运行（Linux / WSL、Windows）
 - `tools/gui.py` — 图形界面（tkinter），`randomize_gui.sh`、`randomize_gui.bat` 启动它；`tools/theme.py` —
   配色、ttk 样式和背景图（Pillow）；`tools/lang.py` — 界面语言（英文文案的中文翻译表，`gui.ini` 读写）；

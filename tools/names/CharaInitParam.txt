@@ -18,6 +18,8 @@
 3007 Class - Samurai
 3008 Class - Prisoner
 3009 Class - Wretch
+3010 Class - Idus Knight
+3011 Class - Heavy Knight
 20000 Human
 23000 Tanith, Volcano Manor Proprietress
 23010 White Mask Varré
@@ -203,6 +205,10 @@
 23910 Magnus the Beast Claw
 24010 Stray Mimic Tear
 24020 Mimic Tear
+24700 Knight Leontiel
+24701 Knight Leontiel
+24702 Knight Leontiel
+24710 Noble Broken Mask
 26050 Mimic Tear
 27000 Stormhill Colosseum Silent Spirit
 27001 Caria Manor Silent Spirit

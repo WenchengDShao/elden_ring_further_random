@@ -723,9 +723,9 @@ class Weapons:
                 lines.append(f"ShopLineupParam {r.id} [{sn.get(r.id, '?')}] : {old} -> {new}  ({self.name(new - level(new))})")
         C = self.reg.param("CharaInitParam", erreg.load_paramdef(D / "CharaInitParam.xml"))
         cn = erreg.load_names(N / "CharaInitParam.txt")
-        for rid in range(3000, 3010):
-            r = C.by_id.get(rid)
-            if r is None:
+        for r in C.rows:
+            rid = r.id
+            if not 3000 <= rid < 3100:      # 3000-3009 the ten base classes, 3010-3011 Idus / Heavy Knight (1.17)
                 continue
             for f in ("equip_Wep_Right", "equip_Subwep_Right", "equip_Subwep_Right3",
                       "equip_Wep_Left", "equip_Subwep_Left", "equip_Subwep_Left3"):

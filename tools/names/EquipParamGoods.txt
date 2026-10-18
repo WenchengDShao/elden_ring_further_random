@@ -1909,6 +1909,9 @@
 2009344 Grave Keeper's Cookbook [1]
 2009345 St. Trina Disciple's Cookbook [2]
 2009500 Hefty Cracked Pot
+2009600 Tree Sentinel Spectral Steed Attire
+2009610 Silver of Caria Spectral Steed Attire
+2009620 Funereal Night Spectral Steed Attire
 2010000 Scadutree Fragment
 2010100 Revered Spirit Ash
 2011000 Viridian Hidden Tear

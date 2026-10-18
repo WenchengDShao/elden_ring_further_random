@@ -1308,6 +1308,7 @@
 10000975 [LD - Stormveil] Curved Sword Talisman
 10000980 [LD - Stormveil] Somber Smithing Stone [2]
 10000990 [LD - Stormveil] Godskin Prayerbook
+10000995 [LD - Stormveil] Tree Sentinel Spectral Steed Attire
 10001085 [LD - Stormveil] Somber Smithing Stone [1]
 10001086 [LD - Stormveil] Beast Blood
 10001087 [LD - Stormveil] Old Fang
@@ -1460,6 +1461,11 @@
 11001193 [LD - Leyndell] Golden Seed
 11001195 [LD - Leyndell] Somber Smithing Stone [7]
 11001198 [LD - Leyndell] Lord's Rune
+11001952 [LD - Leyndell] Golden Order Flail
+11001953 [LD - Leyndell] Broken Gold Mask
+11001954 [LD - Leyndell] Gold Tattoo (Chest)
+11001955 [LD - Leyndell] Gold Tattoo (Arm)
+11001956 [LD - Leyndell] Gold Tattoo (Leg)
 11001985 [LD - Leyndell] Raging Wolf Helm
 11001986 [LD - Leyndell] Raging Wolf Armor
 11001987 [LD - Leyndell] Raging Wolf Gauntlets
@@ -2280,6 +2286,8 @@
 20000090 Silver Horn Tender
 20000100 Silver Horn Tender
 20000110 Somber Smithing Stone [4]
+20000111 Golden Horn Tender
+20000112 Somber Smithing Stone [7]
 20000120 Rada Fruit
 20000130 Rada Fruit
 20000140 Rada Fruit
@@ -3331,14 +3339,14 @@
 99010010 Golden Rune [1]
 900003000 Golden Rune [1]
 900003100 Broken Rune
-934490010 [Troll Carriage] 
-942370020 [Troll Carriage] 
+934490010 [Troll Carriage]
+942370020 [Troll Carriage]
 942370060 [Troll Carriage] Flail
 942370070 [Troll Carriage] Lordsworn's Greatsword
 944350050 [Troll Carriage] Flame Sling
 944360200 [Troll Carriage] Greataxe
-944390010 [Troll Carriage] 
-945370040 [Troll Carriage] 
+944390010 [Troll Carriage]
+945370040 [Troll Carriage]
 1033400100 [Moonlight Altar] Ranni's Dark Moon
 1033410000 [Moonlight Altar] Smithing Stone [7]
 1033410010 [Moonlight Altar] Smithing Stone [8]
@@ -3414,6 +3422,7 @@
 1034500080 Golden Rune [3]
 1034500090 Black Wolf Mask
 1034500100 Memory Stone
+1034500300 Silver of Caria Spectral Steed Attire
 1034510900 Snow Witch Hat
 1034510901 Snow Witch Robe
 1034510902 Snow Witch Skirt
@@ -3653,6 +3662,7 @@
 1038400010 Glintstone Craftsman's Cookbook [1]
 1038410000 Glintstone Craftsman's Cookbook [2]
 1038410010 Sacrificial Twig
+1038410020 Idus Sword
 1038410100 Ash of War: Gravitas
 1038410200 Map: Liurnia- East
 1038420000 Smithing Stone [2]
@@ -4120,6 +4130,7 @@
 1044520000 Great Arrow
 1044520010 Golden Rune [6]
 1044520020 Golden Rune [2]
+1044520300 Funereal Night Spectral Steed Attire
 1044530010 Golden Rune [4]
 1044530200 Crimson Crystal Tear
 1044530201 Twiggy Cracked Tear
@@ -4233,6 +4244,7 @@
 1047400900 Rune Arc
 1047400910 Sword of St. Trina
 1047400920 Greatsword
+1047420000 Ritual Thrusting Shield
 1047510000 Drawstring Fire Grease
 1047510010 Golden Rune [7]
 1047510300 Dragonwound Grease
@@ -4412,6 +4424,7 @@
 1050390100 Golden Seed
 1050390900 [Sorcery] Night Comet
 1050390910 Imbued Sword Key
+1050400000 Reed Great Katana
 1050400800 Dragon Heart
 1050530000 Somber Smithing Stone [7]
 1050530300 Smoldering Butterfly
@@ -4535,6 +4548,11 @@
 1051570811 Beast Blood
 1051570812 Old Fang
 1051580800 Haligtree Secret Medallion (Left)
+1052390500 Leontiel's Greatsword
+1052390501 Leontiel's Hat
+1052390502 Leontiel's Armor
+1052390503 Leontiel's Leather Gloves
+1052390504 Leontiel's Boots
 1052410000 Golden Rune [8]
 1052410010 Golden Rune [6]
 1052410020 Golden Rune [3]
@@ -4613,6 +4631,7 @@
 2045410020 Sanguine Amaryllis
 2045410030 Somber Smithing Stone [4]
 2045410040 Smithing Stone [4]
+2045410041 Smithing Stone [5]
 2045410050 Great Arrow
 2045410700 Revered Spirit Ash
 2045410710 String-Seller's Bell Bearing
@@ -4840,6 +4859,7 @@
 2047440901 Royal Magic Grease
 2047450000 Black Pyrefly
 2047450010 Smithing Stone [3]
+2047450011 Smithing Stone [7]
 2047450020 Somber Smithing Stone [2]
 2047450030 Greater Potentate's Cookbook [3]
 2047450040 Messmerfire Grease
@@ -4850,16 +4870,19 @@
 2047450900 Serpent Flail
 2047450910 Arrow's Soaring Sting Talisman
 2047450920 Smithing Stone [7]
+2047450921 Smithing Stone [8]
 2047460000 Rune Arc
 2047460010 Rauh Burrow
 2047460030 Rauh Burrow
 2047460500 Scadutree Fragment
 2047470000 Somber Smithing Stone [8]
+2047470001 Somber Smithing Stone [8]
 2047470010 Golden Horn Tender
 2047470020 Spirit Calculus
 2047470030 Sacred Bloody Flesh
 2047470040 Sanguine Amaryllis
 2047470050 Smithing Stone [7]
+2047470051 Smithing Stone [7]
 2047470070 Shadow Realm Rune [3]
 2047470900 Pearl Shield Talisman
 2048370010 Grave Glovewort [9]
@@ -4916,6 +4939,7 @@
 2048460010 Golden Vow
 2048460020 Battlefield Priest's Cookbook [3]
 2048460030 Somber Smithing Stone [6]
+2048460031 Somber Smithing Stone [7]
 2048460040 Ember of Messmer
 2048460050 Drawstring Messmerfire Grease
 2048460060 Smithing Stone [3]
@@ -4961,6 +4985,7 @@
 2049430380 Festive Grease
 2049430400 Greater Potentate's Cookbook [7]
 2049430500 Smithing Stone [6]
+2049430501 Smithing Stone [7]
 2049430510 Battlefield Priest's Cookbook [2]
 2049430520 Smithing Stone [8]
 2049430600 Smithing Stone [5]
@@ -5027,6 +5052,7 @@
 2050430000 Silver Horn Tender
 2050430010 Scadutree Fragment
 2050430040 Smithing Stone [7]
+2050430041 Smithing Stone [7]
 2050430220 Smithing Stone [6]
 2050430500 Scadutree Fragment
 2050430720 Revered Spirit Ash
@@ -5075,6 +5101,7 @@
 2050470010 Grave Glovewort [6]
 2050470020 Blessed Bone Shard
 2051410000 Ghost Glovewort [7]
+2051410001 Ghost Glovewort [9]
 2051410010 Greater Potentate's Cookbook [6]
 2051410700 Aged One's Exultation
 2051410710 Swollen Grape
@@ -5101,6 +5128,7 @@
 2051470500 [Incantation] Minor Erdtree
 2051470510 Golden Braid
 2052400010 Somber Smithing Stone [6]
+2052400011 Somber Smithing Stone [9]
 2052410000 Shadow Realm Rune [7]
 2052410010 Clarifying Boluses
 2052410600 Map: Abyss
