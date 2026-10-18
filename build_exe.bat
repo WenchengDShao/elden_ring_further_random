@@ -44,14 +44,25 @@ del "%TKENV%"
 echo TCL_LIBRARY=%TCL_LIBRARY%
 echo TK_LIBRARY=%TK_LIBRARY%
 uv pip install --python "%VENV%\Scripts\python.exe" pyinstaller || goto :fail
+rem PyInstaller 的完整输出写进 build\pyinstaller.log（出问题时把这个文件发出来即可），失败时整段显示。
+if not exist build mkdir build
+set "LOG=%~dp0build\pyinstaller.log"
+echo 正在打包，约一两分钟，完整输出写在 %LOG% ...
 "%VENV%\Scripts\python.exe" -m PyInstaller --noconfirm --clean --onefile --windowed --name ERFurtherRandom ^
   --add-data "%~dp0tools\paramdef;paramdef" --add-data "%~dp0tools\names;names" --add-data "%~dp0tools\assets;assets" ^
-  --distpath dist --workpath build --specpath build tools\gui.py || goto :fail
+  --distpath dist --workpath build --specpath build tools\gui.py > "%LOG%" 2>&1 || (
+  type "%LOG%"
+  echo.
+  echo PyInstaller 失败，以上是它的完整输出，也保存在 %LOG% 里。
+  goto :fail
+)
+findstr /i /c:"WARNING" /c:"ERROR" "%LOG%"
 if not exist "dist\ERFurtherRandom.exe" (
   echo.
   echo PyInstaller 没有报错，但 dist\ERFurtherRandom.exe 不存在。多半是 Windows Defender 把刚生成的 exe 当成病毒
   echo 隔离了（PyInstaller 打包的程序常被误报）：打开“Windows 安全中心 - 病毒和威胁防护 - 保护历史记录”，
   echo 找到 ERFurtherRandom.exe 选“恢复”并“允许”，或者把本目录加入排除项后重新运行本脚本。
+  echo 保护历史里没有记录的话，把 %LOG% 发给开发者。
   goto :fail
 )
 echo.
