@@ -166,7 +166,8 @@ def round_price(v: float) -> int:
 def randomize_prices(reg: erreg.Regulation, rng: random.Random, mode: str,
                      pmin: int | None, pmax: int | None) -> list[str]:
     pd = erreg.load_paramdef(HERE / "paramdef" / "ShopLineupParam.xml")
-    names = erreg.load_names(HERE / "names" / "ShopLineupParam.txt")
+    slots = erreg.load_names(HERE / "names" / "ShopLineupParam.txt")     # vanilla "[merchant] item" per slot
+    goods = erreg.load_names(HERE / "names" / "EquipParamGoods.txt")
     Sh = reg.param("ShopLineupParam", pd)
     rows = [r for r in Sh.rows
             if Sh.get(r, "equipType") == SHOP_EQUIP_TYPE_GOODS
@@ -182,10 +183,18 @@ def randomize_prices(reg: erreg.Regulation, rng: random.Random, mode: str,
         if lo < 1 or hi < lo:
             raise SystemExit(f"bad price range {lo}..{hi}")
         new = [round_price(math.exp(rng.uniform(math.log(lo), math.log(hi)))) for _ in old]
-    lines = [f"# prices: mode={mode} entries={len(rows)}", "# shop entry : old -> new (runes)"]
+    lines = [f"# prices: mode={mode} entries={len(rows)}",
+             "# shop entry  [merchant] item sold  old -> new (runes)   (slot: what the slot sells in vanilla,"
+             " shown when an item randomizer put something else there)"]
     for r, o, n in zip(rows, old, new):
         Sh.set(r, "value", n)
-        lines.append(f"{r.id:>8}  {names.get(r.id, '?'):<60} {o:>7} -> {n}")
+        slot = slots.get(r.id, "")
+        merchant, _, slot_item = slot.rpartition("] ") if slot.startswith("[") else ("", "", slot)
+        merchant = merchant + "]" if merchant else ""
+        eid = Sh.get(r, "equipId")
+        item = goods.get(eid, f"goods {eid}")
+        note = f"   (slot: {slot_item})" if slot_item and slot_item != item else ""
+        lines.append(f"{r.id:>8}  {merchant:<44} {item:<40} {o:>7} -> {n:<6}{note}".rstrip())
     return lines
 
 
