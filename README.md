@@ -123,6 +123,7 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 ./randomize.sh --seed 1                        # 读 regulation.bin，写 randomized/regulation.bin 和映射表
 ./randomize.sh --input regulation_random.bin --output /path/to/mod/regulation.bin --seed 1848 --split-anim any --random-prices --weapons
 ./randomize.sh --dry-run                       # 只打印映射，不写文件
+./randomize.sh --random-flask-locations        # 圣杯瓶改到交界地随机一处必定掉落点获得（加 all：幽影之地也算）
 ./randomize.sh --help                          # 全部选项
 ```
 
@@ -138,6 +139,7 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 | `--mode shuffle\|random` | `shuffle`（默认）每个效果恰好用一次；`random` 允许重复 |
 | `--include-flasks`、`--include-remembrances` | 把圣杯瓶 / 追忆也加入道具池（默认都不加） |
 | `--split-anim [same\|any]` | 使用动作和效果分开随机；`same` 只在同类动作里挑，`any` 全池 |
+| `--random-flask-locations [base\|all]` | 红 / 蓝露滴圣杯瓶改到随机一处必定掉落点获得，第一个赐福改给那里原来的东西；`base`（默认）不含幽影之地，`all` 含 |
 | （总是） | 每个魔法/祷告拿到另一个法术的效果；`--no-spells` 关闭 |
 | `--random-prices` | 商店购买价和道具售价；`--price-mode shuffle\|range`、`--price-min N`、`--price-max N`、`--sell-min N`、`--sell-max N`、`--no-sell-prices`（售价不动）、`--sell-equipment`（武器、防具、战灰的售价也随机，默认不动） |
 | `--weapons` | = 下面四项 |
@@ -209,6 +211,30 @@ Release 里的 `ERFurtherRandom.exe`（见开头“快速开始”）、`randomi
 `mapping.txt` 的价格一段按“商人、槽位里实际卖的道具、旧价 -> 新价”列出；
 槽位被道具随机器换过的，行尾附 `(slot: 原版道具)`。
 
+## 圣杯瓶获得位置随机（--random-flask-locations）
+
+道具随机器不随机红 / 蓝露滴圣杯瓶：原版在第一次休息的赐福处由事件发放，走 `ItemLotParam_map` 的 2000 行
+（Flask of Crimson Tears ×3）和 2001 行（Flask of Cerulean Tears ×1），数量就是使用次数。这个选项把两行的道具槽
+各自与一个随机掉落行互换：圣杯瓶（连同次数）出现在那个掉落点，第一个赐福改给那里原来的东西；两边的标记、权重、
+组结构都不动，掉落点仍是一次性的。
+
+候选掉落行 = `tools/names/ItemLotParam_map.locations.txt` 里、输入文件里存在、必定给出且只给一样（只有一个带权重
+的槽，有获得标记；带概率的行和敌人掉落表 `ItemLotParam_enemy` 一律不用）、是掉落组第一行、原版内容在 Paramdex
+行名里唯一（报告才说得清"在原版 Dragonscale Blade 的位置"）的行。那个文件是原版与道具随机器输出之间内容不同的
+`ItemLotParam_map` 行：regulation.bin 自己看不出哪些行真的被地图 / 事件引用（表里混着被砍内容），道具随机器
+读地图文件知道、并且只改写这些行。由 `tools/lotdiff.py 原版.bin 道具随机器输出.bin` 生成（1.17.1 已附带），
+只取 boss / 野外 boss / 封印监牢 / 泪滴圣甲虫的事件奖励（10000–99999）和各处拾取物（10000000 以上），
+不取 NPC 赠礼 / 尸体（依赖任务）。`base`（默认）不含幽影之地，`all` 含；1.17.1 下 base 约 1200 个候选，all 约 1500 个。
+
+报告在控制台和 `mapping.txt` 末尾：
+
+```
+Flask of Crimson Tears x3    ->  lot 1050390070: Cerulean Tear Scarab (m60_50_39)  |  Golden Rune [5] x1
+```
+
+`lot` 后是行 id 和它在原版里的内容（"在原版 Cerulean Tear Scarab 的位置"），括号里是从 id 推出的地图块
+（野外 `m60_XX_YY` / `m61_XX_YY`，带 `[地点]` 前缀的行不再标），`|` 后是第一个赐福改给的东西。
+
 ## 武器
 
 武器 ID = 基础 ID + 质变×100 + 强化等级；`EquipParamWeapon` 每把武器每种质变一行，强化等级由
@@ -279,7 +305,8 @@ param 重新序列化（支持新增行），没动过的原字节写回，再�
 
 - 结构上做了校验（新增行可解析、ID 有序、引用指向存在的行、其余表字节一致），游戏内只验证了主要路径。
   未实测：`--split-anim any` 的跨类组合能否触发、新建的 `AttackElementCorrectParam` 行是否生效、弩换强化表后的加成、
-  `--weptype-follows` 的读档校验、`isEnhance` = 1 后原版不能上油的行是否真能涂油脂、`leviathan` 格式。
+  `--weptype-follows` 的读档校验、`isEnhance` = 1 后原版不能上油的行是否真能涂油脂、`leviathan` 格式、
+  `--random-flask-locations`（第一个赐福的事件是否照常给出换进去的道具、瓶子在新位置捡到后菜单 / 黄金种子是否正常）。
 - 做不到的：**任意地点召唤骨灰**（`BuddyStoneParam` 的范围字段只覆盖一个写死在程序里的默认半径，改了没效果，
   需要 DLL）；**强化等级上限随存档里已强化的最高等级变化**（regulation.bin 读不到存档；掉落表给固定 +N 可以，
   但动态上限要改事件脚本或写 DLL）。
@@ -290,6 +317,8 @@ param 重新序列化（支持新增行），没动过的原字节写回，再�
 - `tools/randomize.py` — 命令行入口，道具效果与价格随机
 - `tools/weapons.py` — 武器四项功能
 - `tools/spells.py` — 魔法 / 祷告随机
+- `tools/flasks.py` — 圣杯瓶获得位置随机；`tools/lotdiff.py` — 用原版 + 道具随机器输出生成候选掉落行表
+  `tools/names/ItemLotParam_map.locations.txt`
 - `tools/oodle.py`、`tools/linoodle/` — 通过游戏自带的 `oo2core_6_win64.dll` 做 Kraken / Leviathan 压缩
   （Linux / WSL 经 linoodle 加载，Windows 直接 ctypes 加载）
 - `tools/paramdef/*.xml`、`tools/names/*.txt` — 来自 soulsmods/Paramdex 的表结构和行名（1.17 Tarnished Pack

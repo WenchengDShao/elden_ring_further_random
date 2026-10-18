@@ -84,6 +84,10 @@ ZH = {
     "from another item of the same kind (--split-anim same)": "同类道具里另选 (--split-anim same)",
     "from any item (--split-anim any)": "任意道具 (--split-anim any)",
     "Flasks too (--include-flasks)": "圣杯瓶也随机 (--include-flasks)",
+    "Random flask locations (--random-flask-locations)": "圣杯瓶获得位置随机 (--random-flask-locations)",
+    "scope": "范围",
+    "(base = Lands Between only, all = Land of Shadow too; the first grace gives what was at the flask's new spot)":
+        "（base = 只在交界地，all = 含幽影之地；第一个赐福改给圣杯瓶新位置上原来的东西）",
     "Remembrances too (--include-remembrances)": "追忆也随机 (--include-remembrances)",
     "Sorcery / incantation effects (off = --no-spells)": "魔法 / 祷告效果随机（取消 = --no-spells）",
     "Shop prices (--random-prices)": "商店价格随机 (--random-prices)",

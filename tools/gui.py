@@ -26,6 +26,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import erreg      # noqa: E402
+import flasks     # noqa: E402
 import lang       # noqa: E402
 import oodle      # noqa: E402
 import randomize  # noqa: E402
@@ -144,6 +145,7 @@ class Gui:
         self.mode = S("shuffle")
         self.include_flasks, self.include_remembrances = B(False), B(False)
         self.split_anim = S("none")
+        self.flask_locations, self.flask_scope = B(False), S("base")
         self.spells = B(True)
         self.random_prices, self.price_mode = B(False), S("shuffle")
         self.price_min, self.price_max = S(""), S("")
@@ -155,6 +157,7 @@ class Gui:
         self.keep_standard, self.weptype = B(False), B(False)
         self.groups = {g: B(True) for g in weapons.STAT_GROUPS}
         self.stamina_lo, self.stamina_hi = S(STAMINA_DEFAULT[0]), S(STAMINA_DEFAULT[1])
+        self.dep_flasks: list = []
         self.dep_prices: list = []
         self.dep_sell: list = []
         self.dep_movesets: list = []
@@ -232,6 +235,20 @@ class Gui:
                         variable=self.spells).pack(side="left", **PAD)
         r = ttk.Frame(g)
         r.grid(row=3, column=0, sticky="w")
+        ttk.Checkbutton(r, text=_("Random flask locations (--random-flask-locations)"),
+                        variable=self.flask_locations).pack(side="left", **PAD)
+        w = ttk.Label(r, text=_("scope"))
+        w.pack(side="left", padx=(10, 2))
+        self.dep_flasks.append(w)
+        w = ttk.Combobox(r, textvariable=self.flask_scope, values=flasks.SCOPES, width=6, state="readonly")
+        w.pack(side="left")
+        self.dep_flasks.append(w)
+        w = ttk.Label(r, text=_("(base = Lands Between only, all = Land of Shadow too; the first grace gives "
+                                "what was at the flask's new spot)"), style="Hint.TLabel")
+        w.pack(side="left", **PAD)
+        self.dep_flasks.append(w)
+        r = ttk.Frame(g)
+        r.grid(row=4, column=0, sticky="w")
         ttk.Checkbutton(r, text=_("Shop prices (--random-prices)"), variable=self.random_prices).pack(side="left", **PAD)
         w = ttk.Radiobutton(r, text=_("shuffle: permute the existing prices"), variable=self.price_mode, value="shuffle")
         w.pack(side="left", **PAD)
@@ -247,7 +264,7 @@ class Gui:
             w.pack(side="left")
             self.dep_prices.append(w)
         r = ttk.Frame(g)
-        r.grid(row=4, column=0, sticky="w")
+        r.grid(row=5, column=0, sticky="w")
         w = ttk.Checkbutton(r, text=_("Sell prices of goods too (off = --no-sell-prices)"), variable=self.sell_prices)
         w.pack(side="left", **PAD)
         self.dep_prices.append(w)
@@ -259,7 +276,7 @@ class Gui:
             w.pack(side="left")
             self.dep_sell.append(w)
         r = ttk.Frame(g)
-        r.grid(row=5, column=0, sticky="w")
+        r.grid(row=6, column=0, sticky="w")
         w = ttk.Checkbutton(r, text=_("Sell prices of weapons / armor / Ashes of War too (--sell-equipment)"),
                             variable=self.sell_equipment)
         w.pack(side="left", **PAD)
@@ -449,6 +466,8 @@ class Gui:
             a.append("--include-remembrances")
         if self.split_anim.get() != "none":
             a += ["--split-anim", self.split_anim.get()]
+        if self.flask_locations.get():
+            a += ["--random-flask-locations", self.flask_scope.get()]
         if not self.spells.get():
             a.append("--no-spells")
         if self.random_prices.get():
@@ -510,7 +529,8 @@ class Gui:
         return a
 
     def _refresh(self) -> None:
-        for widgets, on in ((self.dep_prices, self.random_prices.get()),
+        for widgets, on in ((self.dep_flasks, self.flask_locations.get()),
+                            (self.dep_prices, self.random_prices.get()),
                             (self.dep_sell, self.random_prices.get()
                              and (self.sell_prices.get() or self.sell_equipment.get())),
                             (self.dep_movesets, self.movesets.get()),
@@ -533,6 +553,7 @@ class Gui:
         self.compression.set("auto")
         self.mode.set("shuffle")
         self.split_anim.set("none")
+        self.flask_scope.set("base")
         self.spells.set(True)
         self.price_mode.set("shuffle")
         self.price_min.set("")
@@ -541,8 +562,8 @@ class Gui:
         self.sell_equipment.set(False)
         self.sell_min.set("")
         self.sell_max.set("")
-        for v in (self.include_flasks, self.include_remembrances, self.random_prices, self.somber, self.movesets,
-                  self.default_ash, self.stats, self.keep_standard, self.weptype):
+        for v in (self.include_flasks, self.include_remembrances, self.flask_locations, self.random_prices,
+                  self.somber, self.movesets, self.default_ash, self.stats, self.keep_standard, self.weptype):
             v.set(False)
         self.moveset_mode.set("affinity")
         self.shield.set("shields")
