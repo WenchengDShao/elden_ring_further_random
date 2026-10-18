@@ -1,11 +1,13 @@
 @echo off
-rem Windows 一键运行（不需要 WSL）：randomize.bat [选项]，选项与 randomize.sh 相同。
-rem 需要 uv（https://github.com/astral-sh/uv）；虚拟环境建在 %USERPROFILE%\.venvs\er_mod。
+rem Windows one-shot run (no WSL): randomize.bat [options], same options as randomize.sh.
+rem Needs uv (https://github.com/astral-sh/uv); the virtual environment lives in %USERPROFILE%\.venvs\er_mod.
+rem All messages are ASCII on purpose: cmd shows UTF-8 text as garbage in the default code page.
 setlocal
 cd /d "%~dp0"
 set "VENV=%USERPROFILE%\.venvs\er_mod"
-rem 依赖包只给 Python 3.10-3.14 发了 wheel，所以限定版本范围（详见 build_exe.bat）；已有的虚拟环境
-rem 母体 Python 被卸载或版本不在范围内时删掉重建。
+rem The dependencies only ship wheels for Python 3.10-3.14, so the venv is created with a version range
+rem (see build_exe.bat); an existing venv whose base Python was uninstalled or whose version is out of
+rem range is deleted and recreated.
 set "PYMIN=3.10"
 set "PYMAX=3.15"
 set "RECREATE="
@@ -15,7 +17,7 @@ if not defined RECREATE (
 )
 if defined RECREATE (
   if exist "%VENV%" (
-    echo 虚拟环境 %VENV% 不可用或 Python 版本不在支持范围内，删掉重建。
+    echo The virtual environment %VENV% is unusable or its Python is out of range, recreating it.
     rmdir /s /q "%VENV%"
   )
   uv venv --python ">=%PYMIN%,<%PYMAX%" "%VENV%" || exit /b 1

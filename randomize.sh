@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
-# 一键运行：./randomize.sh [--seed N] [--include-flasks] [--include-remembrances] [--split-anim [same|any]] [--weapons] [--no-spells] [--dry-run] [--output path]
+# One-shot run: ./randomize.sh [--seed N] [--include-flasks] [--include-remembrances] [--split-anim [same|any]] [--weapons] [--no-spells] [--dry-run] [--output path]
 set -e
 cd "$(dirname "$0")"
-VENV="$HOME/.venvs/er_mod"   # 项目盘是 exFAT，放不了 venv 的符号链接，所以 venv 放在家目录
-# 依赖包只给 Python 3.10-3.14 发了 wheel（zstandard 还没有 3.15 的），所以限定版本范围：系统 Python 在范围内
-# 就用它，否则 uv 下载一个托管的。已有的虚拟环境坏了（母体 Python 没了）或版本越界时删掉重建。
+VENV="$HOME/.venvs/er_mod"   # the project drive is exFAT and cannot hold a venv's symlinks, so the venv lives in $HOME
+# The dependencies only ship wheels for Python 3.10-3.14 (zstandard has none for 3.15 yet), so the venv is created
+# with a version range: a system Python inside the range is used, otherwise uv downloads one.  An existing venv
+# whose base Python is gone or whose version is out of range is deleted and recreated.
 PYMIN=3.10
 PYMAX=3.15
 if [ ! -x "$VENV/bin/python" ] || ! "$VENV/bin/python" -I tools/pycheck.py "$PYMIN" "$PYMAX"; then
   if [ -e "$VENV" ]; then
-    echo "虚拟环境 $VENV 不可用或 Python 版本不在支持范围内，删掉重建"
+    echo "The virtual environment $VENV is unusable or its Python is out of range, recreating it"
     rm -rf "$VENV"
   fi
   uv venv --python ">=$PYMIN,<$PYMAX" "$VENV"

@@ -257,12 +257,13 @@ def randomize_prices(reg: erreg.Regulation, rng: random.Random, mode: str,
 
 
 DLL_HELP = f"""
-# 没有找到 {oodle.DLL_NAME}，无法用游戏自带的 Oodle 压成原版 KRAK 格式。
-# 默认只在当前目录找（./randomize.sh 会先切到项目目录，所以就是 er_mod/{oodle.DLL_NAME}）。
-# 这个文件在游戏目录（Steam\\steamapps\\common\\ELDEN RING\\Game\\）里，
-# 雾门/道具随机器的 mod 文件夹（如 mod/fog/、mod/randomizer/）里也各有一份，复制一份到当前目录即可；
-# 或者在下面输入它的完整路径，也可以用 --oodle-dll PATH 或环境变量 OODLE_DLL 指定。
-# 直接回车表示提供不了：那样会回退到 zstd 格式（64 KB 窗口），文件大约大 35%，可能超出大小限制。"""
+# {oodle.DLL_NAME} not found, so the output cannot be compressed with the game's own Oodle (KRAK format).
+# It is only looked for in the current directory (randomize.sh / .bat switch to the project directory first,
+# so that is er_mod/{oodle.DLL_NAME}).  The file is in the game folder (Steam\\steamapps\\common\\ELDEN RING\\Game\\)
+# and in the mod folders of the fog gate / item randomizer (mod/fog/, mod/randomizer/); copy it next to the tool,
+# enter its full path below, or pass --oodle-dll PATH / set the OODLE_DLL environment variable.
+# Press Enter without a path to go without it: the output is then zstd (64 KB window), about 35% larger,
+# and may exceed the game's size limit."""
 
 
 def choose_codec(wanted: str) -> str:
@@ -274,24 +275,24 @@ def choose_codec(wanted: str) -> str:
     while why and oodle.missing_dll():
         print(DLL_HELP)
         if sys.stdin is None or not sys.stdin.isatty():
-            raise SystemExit(f"# {oodle.DLL_NAME} 找不到，且无法交互询问。请用 --oodle-dll PATH 或 OODLE_DLL 指定，"
-                             "或明确加 --compression zstd 回退到 zstd 格式。")
+            raise SystemExit(f"# {oodle.DLL_NAME} not found and no terminal to ask for it. Pass --oodle-dll PATH or "
+                             "set OODLE_DLL, or add --compression zstd explicitly to use zstd instead.")
         try:
-            answer = input(f"{oodle.DLL_NAME} 的路径（回车 = 提供不了）: ").strip().strip('"').strip("'")
+            answer = input(f"Path to {oodle.DLL_NAME} (Enter = I do not have it): ").strip().strip('"').strip("'")
         except EOFError:
             answer = ""
         if not answer:
             if wanted != "auto":
-                raise SystemExit(f"--compression {wanted} 需要 {oodle.DLL_NAME}，已取消。")
-            print("# 没有提供 DLL，回退到 zstd 格式（64 KB 窗口，文件更大）。")
+                raise SystemExit(f"--compression {wanted} needs {oodle.DLL_NAME}; cancelled.")
+            print("# no DLL given, falling back to zstd (64 KB window, larger file).")
             return erreg.CODEC_ZSTD
         if not oodle.use_dll(answer):
-            print(f"# 文件不存在: {answer}")
+            print(f"# file not found: {answer}")
         why = oodle.available()
     if why:                                   # liblinoodle.so missing or the DLL unusable
         if wanted != "auto":
             raise SystemExit(f"--compression {wanted} unavailable: {why}")
-        print(f"# note: {why}; 回退到 zstd 格式（64 KB 窗口，文件更大）。")
+        print(f"# note: {why}; falling back to zstd (64 KB window, larger file).")
         return erreg.CODEC_ZSTD
     return erreg.CODEC_KRAKEN if wanted == "auto" else wanted
 

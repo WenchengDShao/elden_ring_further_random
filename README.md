@@ -61,7 +61,8 @@ SmartScreen 拦下（“更多信息 → 仍要运行”），Defender 偶尔会
 不需要 WSL。`randomize.bat`、`randomize_gui.bat` 和 `build_exe.bat` 打包出的 exe 都在 Windows 10 实测通过。
 三个 .bat 共用 `%USERPROFILE%\.venvs\er_mod` 这个虚拟环境，Python 需要 3.10–3.14（依赖包还没有 3.15 的 wheel）：
 机器上装的 Python 在范围内就用它，否则 uv 自动下载一个。虚拟环境失效（建它的 Python 被卸载）或版本不在范围内时
-脚本会自动删掉重建。`randomize_gui.bat` / `build_exe.bat` 出错时窗口会停住显示错误信息。
+脚本会自动删掉重建。`randomize_gui.bat` / `build_exe.bat` 出错时窗口会停住显示错误信息。脚本和命令行工具打印的
+提示全部是英文：cmd 在默认代码页下显示 UTF-8 中文是乱码。
 
 ### Linux / WSL
 

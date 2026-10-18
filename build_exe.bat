@@ -1,20 +1,24 @@
 @echo off
-rem 把图形界面打包成单个 exe：dist\ERFurtherRandom.exe（PyInstaller，首次运行会装进 %USERPROFILE%\.venvs\er_mod）。
-rem paramdef\、names\ 和 assets\（背景图）会打进 exe；oo2core_6_win64.dll 不会，使用时放在 exe 旁边或在界面里选择。
-rem 任何一步失败都会停住等你看完错误再关窗口（双击运行时窗口不会一闪而过）。
+rem Pack the GUI into one executable: dist\ERFurtherRandom.exe (PyInstaller; the first run installs it into
+rem %USERPROFILE%\.venvs\er_mod).  paramdef\, names\ and assets\ (backdrop image) go inside the exe;
+rem oo2core_6_win64.dll does not: keep it next to the exe or pick it in the window.
+rem Every failure stops with a pause so the error can be read (the window does not just flash and close).
+rem All messages are ASCII on purpose: cmd shows UTF-8 text as garbage in the default code page.
 setlocal
 cd /d "%~dp0"
 where uv >nul 2>&1 || (
-  echo 没找到 uv，请先安装（见 README 的“安装”一节），装完重开窗口再运行。
+  echo uv not found. Install it first (see the README, "Install"), then open a new window and run this again.
   goto :fail
 )
 set "VENV=%USERPROFILE%\.venvs\er_mod"
-rem 依赖包只给 Python 3.10-3.14 发了 wheel（zstandard 还没有 3.15 的），太新的 Python 会去编译源码然后失败，
-rem 所以建虚拟环境时限定版本范围：已装的 Python 在范围内就用它，否则 uv 下载一个托管的。
+rem The dependencies only ship wheels for Python 3.10-3.14 (zstandard has none for 3.15 yet); a newer Python
+rem makes pip compile from source and fail, so the venv is created with a version range: an installed Python
+rem inside the range is used, otherwise uv downloads a managed one.
 set "PYMIN=3.10"
 set "PYMAX=3.15"
-rem 已有的虚拟环境先试跑一次 tools\pycheck.py：母体 Python 被卸载时它的 python.exe 会报 "did not find executable"，
-rem Python 版本不在范围内也不能用，这两种情况都删掉重建。
+rem An existing venv is test-run with tools\pycheck.py first: when its base Python was uninstalled the
+rem launcher fails with "did not find executable", and a version outside the range is unusable too;
+rem both cases delete and recreate the venv.
 set "RECREATE="
 if not exist "%VENV%\Scripts\python.exe" set "RECREATE=1"
 if not defined RECREATE (
@@ -22,21 +26,22 @@ if not defined RECREATE (
 )
 if defined RECREATE (
   if exist "%VENV%" (
-    echo 虚拟环境 %VENV% 不可用或 Python 版本不在支持范围内，删掉重建。
+    echo The virtual environment %VENV% is unusable or its Python is out of range, recreating it.
     rmdir /s /q "%VENV%"
   )
   uv venv --python ">=%PYMIN%,<%PYMAX%" "%VENV%" || goto :fail
   uv pip install --python "%VENV%\Scripts\python.exe" -r tools\requirements.txt || goto :fail
 )
 "%VENV%\Scripts\python.exe" -I -c "import PIL" >nul 2>&1 || uv pip install --python "%VENV%\Scripts\python.exe" -r tools\requirements.txt || goto :fail
-rem tools\tkcheck.py 确认 Tk 可用，并输出 TCL_LIBRARY / TK_LIBRARY 的 set 语句：uv 托管的 Python 在虚拟环境里
-rem 自己找不到 init.tcl，PyInstaller 的 tkinter hook 需要这两个变量才能把 Tcl/Tk 的脚本库打进 exe。
+rem tools\tkcheck.py makes sure Tk works and prints "set" lines for TCL_LIBRARY / TK_LIBRARY: a uv-managed
+rem Python cannot find init.tcl from inside a venv on its own, and PyInstaller's tkinter hook needs the two
+rem variables to put the Tcl/Tk script libraries into the exe.
 set "TKENV=%TEMP%\er_tkenv.bat"
 "%VENV%\Scripts\python.exe" -I tools\tkcheck.py > "%TKENV%"
 if errorlevel 1 (
   echo.
-  echo 这个虚拟环境的 Python 没有可用的 tkinter，打包出来的 exe 不会有窗口，已停止。
-  echo 请安装 python.org 的 Python（安装时勾选 "tcl/tk and IDLE"），删除 %VENV% 后重新运行本脚本。
+  echo This virtual environment's Python has no usable tkinter; the packed exe would have no window. Stopped.
+  echo Install Python from python.org (tick "tcl/tk and IDLE"), delete %VENV% and run this script again.
   goto :fail
 )
 call "%TKENV%"
@@ -44,37 +49,38 @@ del "%TKENV%"
 echo TCL_LIBRARY=%TCL_LIBRARY%
 echo TK_LIBRARY=%TK_LIBRARY%
 uv pip install --python "%VENV%\Scripts\python.exe" pyinstaller || goto :fail
-rem PyInstaller 的完整输出写进 build\pyinstaller.log（出问题时把这个文件发出来即可），失败时整段显示。
+rem PyInstaller's full output goes to build\pyinstaller.log (send that file when something goes wrong);
+rem on failure it is shown in full.
 if not exist build mkdir build
 set "LOG=%~dp0build\pyinstaller.log"
-echo 正在打包，约一两分钟，完整输出写在 %LOG% ...
+echo Packing, this takes a minute or two; the full output is written to %LOG% ...
 "%VENV%\Scripts\python.exe" -m PyInstaller --noconfirm --clean --onefile --windowed --name ERFurtherRandom ^
   --add-data "%~dp0tools\paramdef;paramdef" --add-data "%~dp0tools\names;names" --add-data "%~dp0tools\assets;assets" ^
   --distpath dist --workpath build --specpath build tools\gui.py > "%LOG%" 2>&1 || (
   type "%LOG%"
   echo.
-  echo PyInstaller 失败，以上是它的完整输出，也保存在 %LOG% 里。
+  echo PyInstaller failed; the output above is its complete log, also saved as %LOG%.
   goto :fail
 )
 findstr /i /c:"WARNING" /c:"ERROR" "%LOG%"
 if not exist "dist\ERFurtherRandom.exe" (
   echo.
-  echo PyInstaller 没有报错，但 dist\ERFurtherRandom.exe 不存在。多半是 Windows Defender 把刚生成的 exe 当成病毒
-  echo 隔离了（PyInstaller 打包的程序常被误报）：打开“Windows 安全中心 - 病毒和威胁防护 - 保护历史记录”，
-  echo 找到 ERFurtherRandom.exe 选“恢复”并“允许”，或者把本目录加入排除项后重新运行本脚本。
-  echo 保护历史里没有记录的话，把 %LOG% 发给开发者。
+  echo PyInstaller reported no error, but dist\ERFurtherRandom.exe does not exist. Most likely Windows Defender
+  echo quarantined the fresh exe (PyInstaller programs are often false positives): open "Windows Security -
+  echo Virus and threat protection - Protection history", restore and allow ERFurtherRandom.exe, or add this
+  echo folder to the exclusions and run this script again. If the history shows nothing, send %LOG%.
   goto :fail
 )
 echo.
-for %%F in (dist\ERFurtherRandom.exe) do echo built %%~fF  (%%~zF 字节)
-echo 如果双击它没有窗口，错误信息会弹窗显示并写在 exe 旁边的 gui_error.log 里。
+for %%F in (dist\ERFurtherRandom.exe) do echo built %%~fF  (%%~zF bytes)
+echo If double-clicking it shows no window, the error is shown in a message box and written to gui_error.log next to the exe.
 pause
 exit /b 0
 
 :fail
 echo.
-echo 失败，错误信息见上方。
-echo 常见原因：uv 找不到 3.10-3.14 的 Python 又下载不了（没网或被墙）——安装 python.org 的 Python 3.13
-echo （勾选 "tcl/tk and IDLE"）后重新运行；或者下载依赖包失败——检查网络后重试。
+echo Failed, see the messages above.
+echo Common causes: uv finds no Python 3.10-3.14 and cannot download one (no network) - install Python 3.13 from
+echo python.org (tick "tcl/tk and IDLE") and run again; or a package download failed - check the network and retry.
 pause
 exit /b 1
