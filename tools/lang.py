@@ -83,7 +83,7 @@ ZH = {
     "follows the effect": "跟着效果走",
     "from another item of the same kind (--split-anim same)": "同类道具里另选 (--split-anim same)",
     "from any item (--split-anim any)": "任意道具 (--split-anim any)",
-    "Flasks too (--include-flasks)": "圣杯瓶也随机 (--include-flasks)",
+    "Flask effects too (--include-flasks)": "圣杯瓶效果也随机 (--include-flasks)",
     "Random flask locations (--random-flask-locations)": "圣杯瓶获得位置随机 (--random-flask-locations)",
     "(both flasks are found elsewhere: a pickup, boss, NPC or shop; the first grace gives what was there)":
         "（两个圣杯瓶改到别处获得：拾取物、boss、NPC 或商店；第一个赐福改给那里原来的东西）",
@@ -101,6 +101,8 @@ ZH = {
         "武器 / 防具 / 战灰的售价也随机 (--sell-equipment)",
     # weapons
     "Weapons (all four = --weapons)": "武器（四项全选 = --weapons）",
+    # item locations
+    "Item locations": "道具获取位置",
     "Somber weapons: affinities + Ashes of War (--somber-infusable)":
         "失色 / 独特武器可质变、可装战灰 (--somber-infusable)",
     "Random default skill and affinity on new weapons (--random-default-ash)":

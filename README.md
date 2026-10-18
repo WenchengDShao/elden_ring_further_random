@@ -162,7 +162,8 @@ Release 里的 `ERFurtherRandom.exe`（见开头“快速开始”）、`randomi
   输出和 `mapping.txt` 等清单始终是英文。
 - 文件：输入 regulation.bin、输出文件、Oodle DLL（启动时自动填入 exe / 仓库目录里的 `oo2core_6_win64.dll`，
   没有就留空，开始时会询问是否改用 zstd 格式）、随机种子（留空则随机抽一个，日志里会显示）、压缩格式。
-- “常用设定”按钮 = `--split-anim any --random-prices --weapons`；“预览（不写文件）” = `--dry-run`；
+- 选项分四块：文件、道具与法术、武器、道具获取位置（圣杯瓶获得位置随机，`--random-flask-locations`）。
+- “常用设定”按钮 = `--split-anim any --random-prices --weapons --random-flask-locations`；“预览（不写文件）” = `--dry-run`；
   “开始随机”生成文件，完成后提示输出位置，`mapping.txt / weapons.txt / spells.txt` 写在输出文件旁边。
 - 日志区显示命令行的全部输出；Kraken 压缩约需 2 分钟，期间窗口保持响应。
 - 外观：夜空配色，左侧是梅琳娜的立像（`tools/assets/melina.jpg`，游戏截图），随窗口高度重新裁切。背景图由

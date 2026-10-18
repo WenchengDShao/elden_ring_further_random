@@ -226,19 +226,13 @@ class Gui:
                         value="any").pack(side="left", **PAD)
         r = ttk.Frame(g)
         r.grid(row=2, column=0, sticky="w")
-        ttk.Checkbutton(r, text=_("Flasks too (--include-flasks)"), variable=self.include_flasks).pack(side="left", **PAD)
+        ttk.Checkbutton(r, text=_("Flask effects too (--include-flasks)"), variable=self.include_flasks).pack(side="left", **PAD)
         ttk.Checkbutton(r, text=_("Remembrances too (--include-remembrances)"),
                         variable=self.include_remembrances).pack(side="left", **PAD)
         ttk.Checkbutton(r, text=_("Sorcery / incantation effects (off = --no-spells)"),
                         variable=self.spells).pack(side="left", **PAD)
         r = ttk.Frame(g)
         r.grid(row=3, column=0, sticky="w")
-        ttk.Checkbutton(r, text=_("Random flask locations (--random-flask-locations)"),
-                        variable=self.flask_locations).pack(side="left", **PAD)
-        ttk.Label(r, text=_("(both flasks are found elsewhere: a pickup, boss, NPC or shop; the first grace gives "
-                            "what was there)"), style="Hint.TLabel").pack(side="left", **PAD)
-        r = ttk.Frame(g)
-        r.grid(row=4, column=0, sticky="w")
         ttk.Checkbutton(r, text=_("Shop prices (--random-prices)"), variable=self.random_prices).pack(side="left", **PAD)
         w = ttk.Radiobutton(r, text=_("shuffle: permute the existing prices"), variable=self.price_mode, value="shuffle")
         w.pack(side="left", **PAD)
@@ -254,7 +248,7 @@ class Gui:
             w.pack(side="left")
             self.dep_prices.append(w)
         r = ttk.Frame(g)
-        r.grid(row=5, column=0, sticky="w")
+        r.grid(row=4, column=0, sticky="w")
         w = ttk.Checkbutton(r, text=_("Sell prices of goods too (off = --no-sell-prices)"), variable=self.sell_prices)
         w.pack(side="left", **PAD)
         self.dep_prices.append(w)
@@ -266,7 +260,7 @@ class Gui:
             w.pack(side="left")
             self.dep_sell.append(w)
         r = ttk.Frame(g)
-        r.grid(row=6, column=0, sticky="w")
+        r.grid(row=5, column=0, sticky="w")
         w = ttk.Checkbutton(r, text=_("Sell prices of weapons / armor / Ashes of War too (--sell-equipment)"),
                             variable=self.sell_equipment)
         w.pack(side="left", **PAD)
@@ -332,6 +326,15 @@ class Gui:
         w.pack(side="left")
         self.dep_stats.append(w)
         sections.append((wf, "ew", False, 2))
+
+        il = ttk.LabelFrame(parent, text=_("Item locations"))
+        r = ttk.Frame(il)
+        r.grid(row=0, column=0, sticky="w")
+        ttk.Checkbutton(r, text=_("Random flask locations (--random-flask-locations)"),
+                        variable=self.flask_locations).pack(side="left", **PAD)
+        ttk.Label(r, text=_("(both flasks are found elsewhere: a pickup, boss, NPC or shop; the first grace gives "
+                            "what was there)"), style="Hint.TLabel").pack(side="left", **PAD)
+        sections.append((il, "ew", False, 2))
 
         b = ttk.Frame(parent, style="Bg.TFrame")
         ttk.Button(b, text=_("Preset"), command=self._preset).pack(side="left", **PAD)
