@@ -6,11 +6,11 @@ Goods:
   --random-prices       rune prices of goods in shops (ShopLineupParam.value) and the sell prices of goods
                         (EquipParamGoods.sellValue); --no-sell-prices keeps the sell prices
   --sell-equipment      with --random-prices: sell prices of weapons, armor and Ashes of War too
-  --random-flask-locations [base|all]
+  --random-flask-locations
                         the Flask of Crimson Tears and the Flask of Cerulean Tears are found somewhere
-                        else (a random one-time pickup or boss reward); the first Site of Grace gives
-                        what was there instead.  base (default): Lands Between only; all: Land of
-                        Shadow too.  Needs names/ItemLotParam_map.locations.txt (tools/lotdiff.py)
+                        else: a random one-time pickup, boss reward, NPC gift or shop slot (never a
+                        chance drop, never a map fragment, no Land of Shadow NPC); the first Site of
+                        Grace gives what was there.  Needs names/item_locations.txt (tools/locations.py)
 Weapons:
   --somber-infusable    somber / unique weapons get all 12 affinities and can mount Ashes of War
   --random-movesets     every melee weapon and shield gets the moveset of a random other weapon/shield
@@ -47,7 +47,7 @@ Usage:
                         [--no-spells] [--dry-run]
                         [--random-prices] [--price-mode shuffle|range] [--price-min N] [--price-max N]
                         [--no-sell-prices] [--sell-min N] [--sell-max N] [--sell-equipment]
-                        [--random-flask-locations [base|all]]
+                        [--random-flask-locations]
                         [--somber-infusable] [--random-movesets] [--random-default-ash]
                         [--random-stats] [--stat-groups attack,guard,...] [--stamina-rate 0.3,1.7] [--weapons]
 """
@@ -335,12 +335,11 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--sell-max", type=int, default=None, help="range mode: highest sell price (default: highest existing)")
     ap.add_argument("--sell-equipment", action="store_true",
                     help="--random-prices: also randomize the sell prices of weapons, armor and Ashes of War")
-    ap.add_argument("--random-flask-locations", nargs="?", const="base", default=None, choices=flasks.SCOPES,
-                    metavar="base|all",
+    ap.add_argument("--random-flask-locations", action="store_true",
                     help="the Flask of Crimson Tears and the Flask of Cerulean Tears are found somewhere else: each "
-                         "swaps places with a random one-time pickup or boss reward of ItemLotParam_map (never a "
-                         "chance drop), and the first Site of Grace gives that item instead; base (default when "
-                         "given): Lands Between only; all: Land of Shadow too")
+                         "swaps places with a random one-time pickup, boss reward, NPC gift or shop slot (never a "
+                         "chance drop or a map fragment; Land of Shadow NPCs and shops excluded), and the first "
+                         "Site of Grace gives that item instead")
     ap.add_argument("--somber-infusable", action="store_true", help="somber/unique weapons get all affinities and Ashes of War")
     ap.add_argument("--random-movesets", action="store_true",
                     help="random light/heavy attack moveset on every melee weapon and shield")
@@ -476,7 +475,7 @@ def main(argv: list[str] | None = None) -> int:
         print("\n".join(l for l in slines if l.startswith("#")))
 
     if args.random_flask_locations:
-        flines = flasks.Flasks(reg).randomize(rng, args.random_flask_locations)
+        flines = flasks.Flasks(reg).randomize(rng)
         print("\n".join(flines))
         report += "\n\n" + "\n".join(flines)
 
