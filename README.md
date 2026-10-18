@@ -28,7 +28,7 @@ SmartScreen 拦下（“更多信息 → 仍要运行”），Defender 偶尔会
 
 ## 兼容性
 
-- 当前适配游戏 **1.17.1**（2026 年 10 月）。Tarnished Pack 的新内容都在随机范围内：8 把新武器（含 Leontiel's
+- 当前适配游戏 **1.17.1**（2026 年 10 月游戏内测试通过）。Tarnished Pack 的新内容都在随机范围内：8 把新武器（含 Leontiel's
   Greatsword、Golden Order Flail 两把失色武器）参与全部武器随机，新职业 Idus Knight / Heavy Knight 的初始武器
   也随机质变，新防具参与售价随机。1.16.1 的文件表结构相同，仍能读，但不再以它测试。其他版本：只要
   regulation.bin 的表结构没变（小版本更新通常如此）就能用；生成的文件只能用于和输入文件同版本的游戏。
