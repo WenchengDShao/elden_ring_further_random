@@ -5,10 +5,11 @@ rem This black window stays open to show error messages; closing it closes the G
 rem the console window use the exe built by build_exe.bat.
 rem Every failure stops with a pause so the error can be read.
 rem All messages are ASCII on purpose: cmd shows UTF-8 text as garbage in the default code page.
+rem No parentheses inside echo lines within ( ) blocks: an unescaped ) there ends the block and kills the script.
 setlocal
 cd /d "%~dp0"
 where uv >nul 2>&1 || (
-  echo uv not found. Install it first (see the README, "Install"), then open a new window and run this again.
+  echo uv not found. Install it first - see the README section "Install" - then open a new window and run this again.
   goto :fail
 )
 set "VENV=%USERPROFILE%\.venvs\er_mod"

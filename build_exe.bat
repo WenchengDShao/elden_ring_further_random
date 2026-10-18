@@ -4,10 +4,11 @@ rem %USERPROFILE%\.venvs\er_mod).  paramdef\, names\ and assets\ (backdrop image
 rem oo2core_6_win64.dll does not: keep it next to the exe or pick it in the window.
 rem Every failure stops with a pause so the error can be read (the window does not just flash and close).
 rem All messages are ASCII on purpose: cmd shows UTF-8 text as garbage in the default code page.
+rem No parentheses inside echo lines within ( ) blocks: an unescaped ) there ends the block and kills the script.
 setlocal
 cd /d "%~dp0"
 where uv >nul 2>&1 || (
-  echo uv not found. Install it first (see the README, "Install"), then open a new window and run this again.
+  echo uv not found. Install it first - see the README section "Install" - then open a new window and run this again.
   goto :fail
 )
 set "VENV=%USERPROFILE%\.venvs\er_mod"
@@ -41,7 +42,7 @@ set "TKENV=%TEMP%\er_tkenv.bat"
 if errorlevel 1 (
   echo.
   echo This virtual environment's Python has no usable tkinter; the packed exe would have no window. Stopped.
-  echo Install Python from python.org (tick "tcl/tk and IDLE"), delete %VENV% and run this script again.
+  echo Install Python from python.org with "tcl/tk and IDLE" ticked, delete %VENV% and run this script again.
   goto :fail
 )
 call "%TKENV%"
@@ -66,7 +67,7 @@ findstr /i /c:"WARNING" /c:"ERROR" "%LOG%"
 if not exist "dist\ERFurtherRandom.exe" (
   echo.
   echo PyInstaller reported no error, but dist\ERFurtherRandom.exe does not exist. Most likely Windows Defender
-  echo quarantined the fresh exe (PyInstaller programs are often false positives): open "Windows Security -
+  echo quarantined the fresh exe - PyInstaller programs are often false positives. Open "Windows Security -
   echo Virus and threat protection - Protection history", restore and allow ERFurtherRandom.exe, or add this
   echo folder to the exclusions and run this script again. If the history shows nothing, send %LOG%.
   goto :fail
