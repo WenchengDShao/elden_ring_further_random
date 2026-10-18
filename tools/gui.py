@@ -137,6 +137,7 @@ class Gui:
         self.random_prices, self.price_mode = B(False), S("shuffle")
         self.price_min, self.price_max = S(""), S("")
         self.sell_prices, self.sell_min, self.sell_max = B(True), S(""), S("")
+        self.sell_equipment = B(False)
         # weapons
         self.somber, self.movesets, self.default_ash, self.stats = B(False), B(False), B(False), B(False)
         self.moveset_mode, self.shield, self.bow, self.variety = S("affinity"), S("shields"), S("bows"), S("3")
@@ -233,6 +234,11 @@ class Gui:
             w = ttk.Entry(r, textvariable=var, width=8)
             w.pack(side="left")
             self.dep_sell.append(w)
+        r = ttk.Frame(g)
+        r.grid(row=5, column=0, sticky="w")
+        w = ttk.Checkbutton(r, text="武器 / 防具 / 战灰的售价也随机 (--sell-equipment)", variable=self.sell_equipment)
+        w.pack(side="left", **PAD)
+        self.dep_prices.append(w)
         sections.append((g, "ew", False, 2))
 
         wf = ttk.LabelFrame(parent, text="武器（四项全选 = --weapons）")
@@ -395,7 +401,9 @@ class Gui:
                         a += [flag, str(self._int(var.get(), what))]
             if not self.sell_prices.get():
                 a.append("--no-sell-prices")
-            elif self.price_mode.get() == "range":
+            if self.sell_equipment.get():
+                a.append("--sell-equipment")
+            if self.price_mode.get() == "range" and (self.sell_prices.get() or self.sell_equipment.get()):
                 for var, flag, what in ((self.sell_min, "--sell-min", "最低售价"),
                                         (self.sell_max, "--sell-max", "最高售价")):
                     if var.get().strip():
@@ -443,7 +451,8 @@ class Gui:
 
     def _refresh(self) -> None:
         for widgets, on in ((self.dep_prices, self.random_prices.get()),
-                            (self.dep_sell, self.random_prices.get() and self.sell_prices.get()),
+                            (self.dep_sell, self.random_prices.get()
+                             and (self.sell_prices.get() or self.sell_equipment.get())),
                             (self.dep_movesets, self.movesets.get()),
                             (self.dep_stats, self.stats.get())):
             for w in widgets:
@@ -469,6 +478,7 @@ class Gui:
         self.price_min.set("")
         self.price_max.set("")
         self.sell_prices.set(True)
+        self.sell_equipment.set(False)
         self.sell_min.set("")
         self.sell_max.set("")
         for v in (self.include_flasks, self.include_remembrances, self.random_prices, self.somber, self.movesets,

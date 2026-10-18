@@ -5,6 +5,7 @@ Goods:
   (always)              each consumable item gets the use-effect of another consumable
   --random-prices       rune prices of goods in shops (ShopLineupParam.value) and the sell prices of goods
                         (EquipParamGoods.sellValue); --no-sell-prices keeps the sell prices
+  --sell-equipment      with --random-prices: sell prices of weapons, armor and Ashes of War too
 Weapons:
   --somber-infusable    somber / unique weapons get all 12 affinities and can mount Ashes of War
   --random-movesets     every melee weapon and shield gets the moveset of a random other weapon/shield
@@ -40,7 +41,7 @@ Usage:
                         [--mode shuffle|random] [--include-flasks] [--include-remembrances] [--split-anim [same|any]]
                         [--no-spells] [--dry-run]
                         [--random-prices] [--price-mode shuffle|range] [--price-min N] [--price-max N]
-                        [--no-sell-prices] [--sell-min N] [--sell-max N]
+                        [--no-sell-prices] [--sell-min N] [--sell-max N] [--sell-equipment]
                         [--somber-infusable] [--random-movesets] [--random-default-ash]
                         [--random-stats] [--stat-groups attack,guard,...] [--stamina-rate 0.3,1.7] [--weapons]
 """
@@ -165,27 +166,14 @@ def round_price(v: float) -> int:
     return max(1, int(round(v / step)) * step)
 
 
-def floor_price(v: int) -> int:
-    """Round down to 2 significant digits (617 -> 610)."""
-    v = max(1, int(v))
-    step = 10 ** max(0, int(math.log10(v)) - 1)
-    return max(1, v // step * step)
-
-
 def new_prices(old: list[int], rng: random.Random, mode: str, lo: int | None, hi: int | None,
                what: str) -> list[int]:
-    """shuffle: a permutation of the existing prices in which no entry keeps its own price (where the
-    values allow it); range: log-uniform draws between lo and hi (default: the lowest / highest
-    existing price), rounded to 2 significant digits."""
+    """shuffle: a permutation of the existing prices (an entry may land on its own price again);
+    range: log-uniform draws between lo and hi (default: the lowest / highest existing price),
+    rounded to 2 significant digits."""
     if mode == "shuffle":
         new = old[:]
         rng.shuffle(new)
-        for i in range(len(new)):
-            if new[i] == old[i]:                   # swap with an entry that can take this value and give a new one
-                for j in range(len(new)):
-                    if new[j] != old[i] and old[j] != new[i]:
-                        new[i], new[j] = new[j], new[i]
-                        break
         return new
     lo = lo if lo is not None else min(old)
     hi = hi if hi is not None else max(old)
@@ -194,14 +182,44 @@ def new_prices(old: list[int], rng: random.Random, mode: str, lo: int | None, hi
     return [round_price(math.exp(rng.uniform(math.log(lo), math.log(hi)))) for _ in old]
 
 
+EQUIPMENT_SELL = (("EquipParamWeapon", "weapon"), ("EquipParamProtector", "armor"), ("EquipParamGem", "ash of war"))
+
+
+def randomize_equipment_sell(reg: erreg.Regulation, rng: random.Random, mode: str,
+                             smin: int | None, smax: int | None) -> list[str]:
+    """--sell-equipment: sellValue of weapons, armor pieces and Ashes of War, one pool per table.
+    A weapon is one entry (its base row, id % 10000 == 0) and every affinity row of it gets the same
+    new price.  Rows with sellValue <= 0 (unsellable, dummies) stay as they are; unnamed rows (cut
+    content, DLC pieces Paramdex has no name for) take part and are listed by id."""
+    lines: list[str] = []
+    for param, what in EQUIPMENT_SELL:
+        P = reg.param(param, erreg.load_paramdef(HERE / "paramdef" / f"{param}.xml"))
+        names = erreg.load_names(HERE / "names" / f"{param}.txt")
+        weapon = param == "EquipParamWeapon"
+        heads = [r for r in P.rows if P.get(r, "sellValue") > 0 and (not weapon or r.id % 10000 == 0)]
+        members: dict[int, list] = {}
+        for r in P.rows:
+            members.setdefault(r.id - r.id % 10000 if weapon else r.id, []).append(r)
+        old = [P.get(r, "sellValue") for r in heads]
+        new = new_prices(old, rng, mode, smin, smax, f"{what} sell price")
+        lines += ["", f"# {what} sell prices: mode={mode} entries={len(heads)}  ({param}.sellValue"
+                  + ("; every affinity row of a weapon gets its price)" if weapon else ")"),
+                  "# item  old -> new (runes)"]
+        for r, o, n in zip(heads, old, new):
+            for m in members[r.id]:
+                P.set(m, "sellValue", n)
+            lines.append(f"{r.id:>8}  {names.get(r.id, f'{what} {r.id}'):<40} {o:>7} -> {n}")
+    return lines
+
+
 def randomize_prices(reg: erreg.Regulation, rng: random.Random, mode: str,
                      pmin: int | None, pmax: int | None,
                      sell: bool = True, smin: int | None = None, smax: int | None = None) -> list[str]:
     """Shop prices: ShopLineupParam.value of every goods entry priced in runes (whatever the slot sells,
     so items an item randomizer put into shops are included).  Sell prices (unless sell is False):
     EquipParamGoods.sellValue of every named goods row that can be sold (sellValue > 0; -1 = unsellable).
-    An item a shop sells for runes keeps its sell price at or below half its cheapest shop price,
-    so buying and selling it back cannot generate runes."""
+    Shop prices and sell prices are drawn independently, so an item may well sell back for more
+    than a merchant asks for it; the user prefers that to a cap."""
     pd = erreg.load_paramdef(HERE / "paramdef" / "ShopLineupParam.xml")
     slots = erreg.load_names(HERE / "names" / "ShopLineupParam.txt")     # vanilla "[merchant] item" per slot
     goods = erreg.load_names(HERE / "names" / "EquipParamGoods.txt")
@@ -215,11 +233,9 @@ def randomize_prices(reg: erreg.Regulation, rng: random.Random, mode: str,
     lines = [f"# prices: mode={mode} entries={len(rows)}",
              "# shop entry  [merchant] item sold  old -> new (runes)   (slot: what the slot sells in vanilla,"
              " shown when an item randomizer put something else there)"]
-    cheapest: dict[int, int] = {}                  # goods id -> lowest rune price any shop asks after the shuffle
     for r, o, n in zip(rows, old, new):
         Sh.set(r, "value", n)
         eid = Sh.get(r, "equipId")
-        cheapest[eid] = min(n, cheapest.get(eid, n))
         slot = slots.get(r.id, "")
         merchant, _, slot_item = slot.rpartition("] ") if slot.startswith("[") else ("", "", slot)
         merchant = merchant + "]" if merchant else ""
@@ -232,17 +248,11 @@ def randomize_prices(reg: erreg.Regulation, rng: random.Random, mode: str,
     srows = [r for r in G.rows if G.get(r, "sellValue") > 0 and r.id in goods]   # named rows only: ids 23-99 are debug items
     sold = [G.get(r, "sellValue") for r in srows]
     snew = new_prices(sold, rng, mode, smin, smax, "sell price")
-    capped = sum(1 for r, n in zip(srows, snew) if r.id in cheapest and n > floor_price(cheapest[r.id] // 2))
-    lines += ["", f"# sell prices: mode={mode} entries={len(srows)} capped={capped}  (EquipParamGoods.sellValue;"
-              " an item a shop sells for runes is capped at half its cheapest shop price)",
+    lines += ["", f"# sell prices: mode={mode} entries={len(srows)}  (EquipParamGoods.sellValue)",
               "# item  old -> new (runes)"]
     for r, o, n in zip(srows, sold, snew):
-        note = ""
-        if r.id in cheapest and n > floor_price(cheapest[r.id] // 2):
-            note = f"   (capped: cheapest shop price {cheapest[r.id]}, drawn {n})"
-            n = floor_price(cheapest[r.id] // 2)
         G.set(r, "sellValue", n)
-        lines.append(f"{r.id:>8}  {goods.get(r.id, '?'):<40} {o:>7} -> {n:<6}{note}".rstrip())
+        lines.append(f"{r.id:>8}  {goods.get(r.id, '?'):<40} {o:>7} -> {n}")
     return lines
 
 
@@ -315,6 +325,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--no-sell-prices", action="store_true", help="--random-prices: leave the sell prices of goods alone")
     ap.add_argument("--sell-min", type=int, default=None, help="range mode: lowest sell price (default: lowest existing)")
     ap.add_argument("--sell-max", type=int, default=None, help="range mode: highest sell price (default: highest existing)")
+    ap.add_argument("--sell-equipment", action="store_true",
+                    help="--random-prices: also randomize the sell prices of weapons, armor and Ashes of War")
     ap.add_argument("--somber-infusable", action="store_true", help="somber/unique weapons get all affinities and Ashes of War")
     ap.add_argument("--random-movesets", action="store_true",
                     help="random light/heavy attack moveset on every melee weapon and shield")
@@ -418,6 +430,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.random_prices:
         lines += [""] + randomize_prices(reg, rng, args.price_mode, args.price_min, args.price_max,
                                          not args.no_sell_prices, args.sell_min, args.sell_max)
+        if args.sell_equipment:
+            lines += randomize_equipment_sell(reg, rng, args.price_mode, args.sell_min, args.sell_max)
     report = "\n".join(lines)
     print(report)
 
