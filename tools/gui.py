@@ -188,6 +188,9 @@ class Gui:
         ttk.Combobox(top, textvariable=self.lang_name, values=[n for c, n in lang.LANGUAGES], width=8,
                      state="readonly").pack(side="right", padx=(0, 6))
         ttk.Label(top, text=_("Language"), style="Bg.TLabel").pack(side="right", padx=6)
+        self.btn_repack = ttk.Button(top, text=_("Repack only (no randomization)"),
+                                     command=lambda: self._start(False, repack=True))
+        self.btn_repack.pack(side="right", padx=(0, 12))      # left of the language selector
         sections.append((top, "ew", False, (6, 0)))
 
         f = ttk.LabelFrame(parent, text=_("Files"))
@@ -346,9 +349,6 @@ class Gui:
         self.btn_run.pack(side="right", **PAD)
         self.btn_dry = ttk.Button(b, text=_("Preview (no file written)"), command=lambda: self._start(True))
         self.btn_dry.pack(side="right", **PAD)
-        self.btn_repack = ttk.Button(b, text=_("Repack only (no randomization)"),
-                                     command=lambda: self._start(False, repack=True))
-        self.btn_repack.pack(side="right", **PAD)
         sections.append((b, "ew", False, 4))
 
         c = ttk.Frame(parent, style="Bg.TFrame")
