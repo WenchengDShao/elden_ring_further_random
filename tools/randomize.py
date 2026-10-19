@@ -323,6 +323,10 @@ def main(argv: list[str] | None = None) -> int:
                          "(same: donor with the same ref-slot signature)")
     ap.add_argument("--no-spells", action="store_true", help="do not randomize sorceries / incantations (Magic.param)")
     ap.add_argument("--dry-run", action="store_true", help="only print the mapping, write nothing")
+    ap.add_argument("--repack", action="store_true",
+                    help="only re-compress --input into --output, randomize nothing and write no report: "
+                         "repairs regulation.bin files other tools wrote in a form the game rejects, e.g. "
+                         "Fog Gate Randomizer v0.2.3 output, which crashes game 1.17.1 at startup")
     ap.add_argument("--random-prices", action="store_true",
                     help="also randomize rune prices of goods in all shops (ShopLineupParam.value) and the sell "
                          "prices of goods (EquipParamGoods.sellValue)")
@@ -396,6 +400,17 @@ def main(argv: list[str] | None = None) -> int:
     if args.oodle_dll is not None and not oodle.use_dll(args.oodle_dll):
         raise SystemExit(f"--oodle-dll: {args.oodle_dll} does not exist")
     codec = erreg.CODEC_ZSTD if args.dry_run else choose_codec(args.compression)
+    if args.repack:
+        if args.dry_run:
+            print("# --repack with --dry-run: nothing to do")
+            return 0
+        reg = erreg.Regulation(args.input)
+        out = Path(args.output)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        size = reg.save(out, window_log=args.zstd_window, codec=codec)
+        print(f"# repacked {args.input} -> {out} ({codec}, {size} bytes, limit {erreg.REGULATION_MAX_SIZE}; "
+              "content unchanged)")
+        return 0
     stat_groups = [x.strip() for x in args.stat_groups.split(",") if x.strip()]
     bad = [x for x in stat_groups if x not in weapons.STAT_GROUPS]
     if bad:

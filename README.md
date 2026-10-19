@@ -150,6 +150,7 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 | `--random-default-ash` | 默认战技随机；掉落表 / 商店 / 初始职业给出的武器改成随机质变 |
 | `--random-stats` | 攻击、防御、必需能力值、能力加成、异常积累、出招耐力随机；`--stat-groups` 选子集，`--stamina-rate LO,HI` |
 | `--compression auto\|kraken\|zstd\|leviathan` | 输出压缩格式，见下文 |
+| `--repack` | 只重新压缩输入文件，不做任何随机、不写报告；用来修复别的工具写出的游戏不认的 regulation.bin（见下文 Fog Gate Randomizer） |
 
 ### 图形界面
 
@@ -310,6 +311,22 @@ Flask of Cerulean Tears x1   ->  shop 100633: [Merchant - Liurnia of the Lakes] 
 `regulation.bin` = 16 字节 IV + AES-256-CBC（公开密钥）加密的 DCX，加密前补零到 16 字节再加一整块 PKCS#7 填充
 （缺了游戏启动闪退）。DCX 解压后是 BND4，内含 194 个 `.param`，用 Paramdex 的 paramdef 解析行结构。改过的
 param 重新序列化（支持新增行），没动过的原字节写回，再压缩、加密。`tools/erreg.py` 是这部分的全部实现。
+
+## 与 Fog Gate Randomizer、me3 配合
+
+- **me3 的覆盖顺序和 ModEngine2 相反**：me3 的 `[[packages]]` 里后列出的包优先，ME2 是先列出的优先。FogMod 的 README
+  要求 fog 排第一是针对 ME2 说的；在 me3 里要写成 randomizer 在前、fog 在后，否则 fog 的文件全被 randomizer 盖掉，游戏能跑
+  但没有雾门。randomizer 的两个 DLL 用 `[[natives]]` 加载，默认时机即可。
+- **Fog Gate Randomizer v0.2.3 写出的 regulation.bin 在游戏 1.17.1 上一启动就闪退**（me3 和 ME2 都一样）。内容没有问题，
+  是它那条 zstd 流的具体字节触发了游戏解码器的缺陷（文件大小、窗口、级别、块结构都和能跑的文件一样）。用本工具重新压缩
+  一遍就能用：
+
+  ```
+  randomize.bat --input "...\mod\fog\regulation.bin" --output "...\mod\fog_fix\regulation.bin" --repack
+  ```
+
+  然后把 `fog_fix` 作为最后一个包加进 me3 profile（randomizer → fog → fog_fix）；FogMod 每次重新生成后再做一次。
+  如果本来就把本工具的输出当最终 regulation.bin 用（输入是 fog 的文件），不需要这一步，输出本来就是重新压缩的。
 
 ## 已知限制
 
