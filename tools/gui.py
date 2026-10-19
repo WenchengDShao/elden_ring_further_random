@@ -126,6 +126,7 @@ class Gui:
         self.q: queue.Queue = queue.Queue()
         self.running = False
         self.dry_run = False
+        self.repack = False
         self.out = Path("randomized/regulation.bin")
         self.vars: list[tk.Variable] = []
         self.cmd = tk.StringVar()                      # command preview, not traced
@@ -345,6 +346,9 @@ class Gui:
         self.btn_run.pack(side="right", **PAD)
         self.btn_dry = ttk.Button(b, text=_("Preview (no file written)"), command=lambda: self._start(True))
         self.btn_dry.pack(side="right", **PAD)
+        self.btn_repack = ttk.Button(b, text=_("Repack only (no randomization)"),
+                                     command=lambda: self._start(False, repack=True))
+        self.btn_repack.pack(side="right", **PAD)
         sections.append((b, "ew", False, 4))
 
         c = ttk.Frame(parent, style="Bg.TFrame")
@@ -405,7 +409,7 @@ class Gui:
         if text:
             self._append(text)
         if self.running:
-            for b in (self.btn_dry, self.btn_run):
+            for b in (self.btn_dry, self.btn_repack, self.btn_run):
                 b.state(["disabled"])
         self._refresh()
 
@@ -447,9 +451,16 @@ class Gui:
         except ValueError:
             raise ValueError(_("{} must be an integer: {}").format(_(what), s)) from None
 
-    def argv(self, dry_run: bool) -> list[str]:
+    def argv(self, dry_run: bool, repack: bool = False) -> list[str]:
         a = ["--input", self.input.get().strip() or "regulation.bin",
              "--output", self.output.get().strip() or "randomized/regulation.bin"]
+        if repack:                                    # re-compress only: no randomization options at all
+            a.append("--repack")
+            if self.compression.get() != "auto":
+                a += ["--compression", self.compression.get()]
+            if self.dll.get().strip():
+                a += ["--oodle-dll", self.dll.get().strip()]
+            return a
         if self.seed.get().strip():
             a += ["--seed", str(self._int(self.seed.get(), "Seed"))]
         if self.mode.get() != "shuffle":
@@ -568,11 +579,11 @@ class Gui:
         self.stamina_hi.set(STAMINA_DEFAULT[1])
 
     # ---------------------------------------------------------------- running
-    def _start(self, dry_run: bool) -> None:
+    def _start(self, dry_run: bool, repack: bool = False) -> None:
         if self.running:
             return
         try:
-            argv = self.argv(dry_run)
+            argv = self.argv(dry_run, repack)
         except ValueError as e:
             messagebox.showerror(TITLE, str(e))
             return
@@ -598,9 +609,9 @@ class Gui:
                     argv[argv.index("--compression") + 1] = erreg.CODEC_ZSTD
                 else:
                     argv += ["--compression", erreg.CODEC_ZSTD]
-        self.running, self.dry_run = True, dry_run
+        self.running, self.dry_run, self.repack = True, dry_run, repack
         self.out = Path(self.output.get().strip() or "randomized/regulation.bin")
-        for b in (self.btn_dry, self.btn_run):
+        for b in (self.btn_dry, self.btn_repack, self.btn_run):
             b.state(["disabled"])
         self.log.configure(state="normal")
         self.log.delete("1.0", "end")
@@ -648,10 +659,14 @@ class Gui:
 
     def _finished(self, rc: int, msg: str | None) -> None:
         self.running = False
-        for b in (self.btn_dry, self.btn_run):
+        for b in (self.btn_dry, self.btn_repack, self.btn_run):
             b.state(["!disabled"])
         if rc == 0 and self.dry_run:
             self._set_status("Preview finished, no file written")
+        elif rc == 0 and self.repack:
+            self._set_status("Done: {}", self.out)
+            messagebox.showinfo(TITLE, _("Written: {}\n\nContent unchanged, only re-compressed. Replace the regulation.bin "
+                                         "in the mod folder with it to use it.").format(self.out))
         elif rc == 0:
             self._set_status("Done: {}", self.out)
             messagebox.showinfo(TITLE, _("Written: {}\n\nReplace the regulation.bin in the mod folder with it to use it.\n"

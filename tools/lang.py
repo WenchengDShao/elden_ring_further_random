@@ -124,6 +124,7 @@ ZH = {
     "Reset options": "恢复默认选项",
     "Randomize": "开始随机",
     "Preview (no file written)": "预览（不写文件）",
+    "Repack only (no randomization)": "只重新压缩（不随机）",
     "Command line": "等价命令",
     "Bad option: {}": "参数有误：{}",
     "Running…": "运行中…",
@@ -153,6 +154,8 @@ ZH = {
     "mapping.txt / weapons.txt / spells.txt (what was randomized) are in the same folder.":
         "已写入 {}\n\n要覆盖 mod 目录里的 regulation.bin 才会生效。\n"
         "mapping.txt / weapons.txt / spells.txt（随机结果清单）在同一目录。",
+    "Written: {}\n\nContent unchanged, only re-compressed. Replace the regulation.bin in the mod folder with it to use it.":
+        "已写入 {}\n\n内容没有改动，只是重新压缩。要覆盖 mod 目录里的 regulation.bin 才会生效。",
     "The run failed, see the log": "运行失败，详见日志",
     "Still running. Quit anyway? The output file may be incomplete.": "还在运行中，确定退出？输出文件可能不完整。",
     # start-up failures

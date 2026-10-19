@@ -164,7 +164,7 @@ Release 里的 `ERFurtherRandom.exe`（见开头“快速开始”）、`randomi
 - 文件：输入 regulation.bin、输出文件、Oodle DLL（启动时自动填入 exe / 仓库目录里的 `oo2core_6_win64.dll`，
   没有就留空，开始时会询问是否改用 zstd 格式）、随机种子（留空则随机抽一个，日志里会显示）、压缩格式。
 - 选项分四块：文件、道具与法术、武器、道具获取位置（圣杯瓶获得位置随机，`--random-flask-locations`）。
-- “常用设定”按钮 = `--split-anim any --random-prices --weapons --random-flask-locations`；“预览（不写文件）” = `--dry-run`；
+- “常用设定”按钮 = `--split-anim any --random-prices --weapons --random-flask-locations`；“预览（不写文件）” = `--dry-run`；“只重新压缩（不随机）” = `--repack`（修复 Fog Gate Randomizer 的输出等，见下文）；
   “开始随机”生成文件，完成后提示输出位置，`mapping.txt / weapons.txt / spells.txt` 写在输出文件旁边。
 - 日志区显示命令行的全部输出；Kraken 压缩约需 2 分钟，期间窗口保持响应。
 - 外观：夜空配色，左侧是梅琳娜的立像（`tools/assets/melina.jpg`，游戏截图），随窗口高度重新裁切。背景图由
@@ -318,7 +318,9 @@ param 重新序列化（支持新增行），没动过的原字节写回，再�
   要求 fog 排第一是针对 ME2 说的；在 me3 里要写成 randomizer 在前、fog 在后，否则 fog 的文件全被 randomizer 盖掉，游戏能跑
   但没有雾门。randomizer 的两个 DLL 用 `[[natives]]` 加载，默认时机即可。
 - **Fog Gate Randomizer v0.2.3 写出的 regulation.bin 在游戏 1.17.1 上一启动就闪退**（me3 和 ME2 都一样）。内容没有问题，
-  是它那条 zstd 流的具体字节触发了游戏解码器的缺陷（文件大小、窗口、级别、块结构都和能跑的文件一样）。用本工具重新压缩
+  是它那条 zstd 流的具体字节触发了游戏解码器的缺陷：文件大小、窗口、级别、块结构都和能跑的文件一样，libzstd 1.3.3～1.5.2
+  都能正常解；和本工具用 libzstd 1.5 在同样 level 15 压出的流相比，匹配序列完全相同，差别只在熵编码那一层（907 块里
+  839 块字节不同），游戏的解码器对其中某个构造处理有误。具体是哪一块还没定位，要定位得用拼接流做约 10 次启动二分。用本工具重新压缩
   一遍就能用：
 
   ```
@@ -327,6 +329,10 @@ param 重新序列化（支持新增行），没动过的原字节写回，再�
 
   然后把 `fog_fix` 作为最后一个包加进 me3 profile（randomizer → fog → fog_fix）；FogMod 每次重新生成后再做一次。
   如果本来就把本工具的输出当最终 regulation.bin 用（输入是 fog 的文件），不需要这一步，输出本来就是重新压缩的。
+- **圣杯瓶**：Fog Gate Randomizer 不改 regulation.bin 里任何原有的道具行，它在礼拜堂新增的拾取物只有 Bell of Return
+  （lot 1040290100）。礼拜堂第一个拾取点同时给出的红 / 蓝露滴圣杯瓶来自原版的两行 lot 2000 / 2001（整个文件里只有这两行
+  装着 +0 圣杯瓶且带获取标志），只是 FogMod 的开局脚本把发放时机提前了。`--random-flask-locations` 改的正是这两行的内容，
+  所以配合 FogMod 时它照常生效：那个时机给出的是换过去的两件道具，圣杯瓶在清单写的两个随机位置。不需要额外选项。
 
 ## 已知限制
 
