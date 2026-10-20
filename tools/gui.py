@@ -363,9 +363,9 @@ class Gui:
         w = ttk.Button(r, text=_("Browse…"), command=self._pick_jokes)
         w.grid(row=0, column=2, **PAD)
         self.dep_jokes.append(w)
-        w = ttk.Label(r, text=_("(the cut lines show a joke and join the shuffle; text archives: empty = the "
-                                "msg\\<language>\\menu_dlc02.msgbnd.dcx next to the input regulation.bin, in its mod folder "
-                                "or the sibling mod folders; or pick them yourself)"), style="Hint.TLabel")
+        w = ttk.Label(r, text=_("(the cut lines show a joke and join the shuffle; text archives: empty = the English and "
+                                "Chinese msg\\<language>\\menu_dlc02.msgbnd.dcx shipped with the program; or pick the game's "
+                                "own, one per language)"), style="Hint.TLabel")
         w.grid(row=1, column=0, columnspan=3, sticky="w", **PAD)
         self.dep_jokes.append(w)
         dg.columnconfigure(0, weight=1)

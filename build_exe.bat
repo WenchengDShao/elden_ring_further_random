@@ -2,6 +2,9 @@
 rem Pack the GUI into one executable: dist\ERFurtherRandom.exe (PyInstaller; the first run installs it into
 rem %USERPROFILE%\.venvs\er_mod).  paramdef\, names\ and assets\ (backdrop image) go inside the exe;
 rem oo2core_6_win64.dll does not: keep it next to the exe or pick it in the window.
+rem The text archives tools\msg\<language>\menu_dlc02.msgbnd.dcx (joke shifu) are copied next to the exe as
+rem dist\msg\<language>\...: upload the exe together with the msg folder. The DLL is never shipped - it is RAD Game
+rem Tools' and comes with the game - the user copies it from the game folder.
 rem Every failure stops with a pause so the error can be read (the window does not just flash and close).
 rem All messages are ASCII on purpose: cmd shows UTF-8 text as garbage in the default code page.
 rem No parentheses inside echo lines within ( ) blocks: an unescaped ) there ends the block and kills the script.
@@ -72,8 +75,17 @@ if not exist "dist\ERFurtherRandom.exe" (
   echo folder to the exclusions and run this script again. If the history shows nothing, send %LOG%.
   goto :fail
 )
+for /d %%L in (tools\msg\*) do (
+  if exist "%%L\menu_dlc02.msgbnd.dcx" (
+    if not exist "dist\msg\%%~nxL" mkdir "dist\msg\%%~nxL"
+    copy /y "%%L\menu_dlc02.msgbnd.dcx" "dist\msg\%%~nxL\" >nul || goto :fail
+  )
+)
 echo.
 for %%F in (dist\ERFurtherRandom.exe) do echo built %%~fF  (%%~zF bytes)
+dir /b /s dist\msg
+echo Upload ERFurtherRandom.exe together with the msg folder: the joke shifu reads msg\engus and msg\zhocn next to the exe.
+echo The game's oo2core_6_win64.dll is not shipped; users copy it from the game folder.
 echo If double-clicking it shows no window, the error is shown in a message box and written to gui_error.log next to the exe.
 pause
 exit /b 0

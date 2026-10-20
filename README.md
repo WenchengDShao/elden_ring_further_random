@@ -8,9 +8,10 @@
 
 不需要安装任何东西：
 
-1. 到 [Releases](https://github.com/WenchengDShao/elden_ring_further_random/releases/latest) 下载 `ERFurtherRandom.exe`。
+1. 到 [Releases](https://github.com/WenchengDShao/elden_ring_further_random/releases/latest) 下载压缩包，整个解压：
+   里面是 `ERFurtherRandom.exe` 和笑话大师用的文本档 `msg\engus\`、`msg\zhocn\`（exe 和 msg 目录保持在一起）。
 2. 把游戏目录 `Steam\steamapps\common\ELDEN RING\Game\` 里的 `oo2core_6_win64.dll` 复制到 exe 旁边
-   （没有它只能输出体积更大的 zstd 格式）。
+   （没有它只能输出体积更大的 zstd 格式；这个 DLL 是 RAD Game Tools 的，不随本工具分发）。
 3. 双击 exe，几秒后出现窗口（默认英文，右上角 Language 可切换为中文，下次启动沿用）：选“输入 regulation.bin”
    （Input regulation.bin；原版，或雾门 / 道具随机器已经改过的文件），点“常用设定”（Preset，= 道具动作与效果分开
    随机 + 商店价格随机 + 武器四项全开 + 圣杯瓶获得位置随机 + 对话字幕随机 + 笑话大师），再点“开始随机”（Randomize）。
@@ -119,9 +120,9 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
   获得，第一个赐福改给那里原来的东西。
 - `--random-dialogue`：NPC 对话字幕在所有 NPC 的台词之间打乱，语音不动，NPC 念的还是自己那句
   （见下文“对话字幕随机”）。
-- `--dialogue-jokes`（笑话大师）：被砍的台词改成冷笑话并加入随机；不带路径时用输入文件旁边的文本档
-  （`msg/<语言>/menu_dlc02.msgbnd.dcx`，先找输入所在的 mod 目录，再找同级的其他 mod 目录），改好的副本写到
-  输出旁的 `msg/<语言>/`，要和 regulation.bin 一起放进 mod 目录。
+- `--dialogue-jokes`（笑话大师）：被砍的台词改成冷笑话并加入随机；不带路径时用工具自带的英文、中文文本档
+  （`tools/msg/<语言>/menu_dlc02.msgbnd.dcx`，exe 版是旁边的 `msg\` 目录），改好的副本写到输出旁的
+  `msg/<语言>/`，要和 regulation.bin 一起放进 mod 目录。
 - 没给 `--seed`，种子随机生成并打印在开头；想复现就把它加回去（`--seed N`）。压缩用默认的 Kraken（需要 DLL）。
 
 ### 其他示例
@@ -132,7 +133,7 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 ./randomize.sh --dry-run                       # 只打印映射，不写文件
 ./randomize.sh --random-flask-locations        # 圣杯瓶改到随机一处必定给出的位置（拾取物 / boss / NPC / 商店）获得
 ./randomize.sh --random-dialogue         # NPC 对话字幕在所有 NPC 的台词之间打乱，语音不动；报告在 dialogue.txt
-./randomize.sh --random-dialogue --dialogue-jokes   # 笑话大师：被砍的台词改成冷笑话并加入随机，文本档在输入旁边自动找
+./randomize.sh --random-dialogue --dialogue-jokes   # 笑话大师：被砍的台词改成冷笑话并加入随机，用自带的英文、中文文本档
 ./randomize.sh --random-dialogue --dialogue-jokes /path/to/mod/randomizer/msg/zhocn/menu_dlc02.msgbnd.dcx   # 自己指定文本档
 ./randomize.sh --help                          # 全部选项
 ```
@@ -151,7 +152,7 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 | `--split-anim [same\|any]` | 使用动作和效果分开随机；`same` 只在同类动作里挑，`any` 全池 |
 | `--random-flask-locations` | 红 / 蓝露滴圣杯瓶改到随机一处必定给出的位置（拾取物、boss 奖励、NPC 赠礼或商店货架）获得，第一个赐福改给那里原来的东西 |
 | `--random-dialogue` | NPC 对话字幕在所有 NPC 的台词之间打乱，语音不动（NPC 念的还是自己那句）；报告 `dialogue.txt` |
-| `--dialogue-jokes [MSGBND...]` | 笑话大师，与 `--random-dialogue` 合用：被砍的台词（有 id 没文本）改成冷笑话并加入随机；MSGBND 是每种游戏语言的 `msg/<语言>/menu_dlc02.msgbnd.dcx`，不给时用输入文件旁边的（先找它所在的 mod 目录，再找同级的其他 mod 目录）；改好的副本写到输出旁的 `msg/<语言>/`，要和 regulation.bin 一起放进 mod 目录 |
+| `--dialogue-jokes [MSGBND...]` | 笑话大师，与 `--random-dialogue` 合用：被砍的台词（有 id 没文本）改成冷笑话并加入随机；MSGBND 是每种游戏语言的 `msg/<语言>/menu_dlc02.msgbnd.dcx`，不给时用自带的英文、中文两份（`tools/msg/`，exe 版在旁边的 `msg\`）；改好的副本写到输出旁的 `msg/<语言>/`，要和 regulation.bin 一起放进 mod 目录 |
 | （总是） | 每个魔法/祷告拿到另一个法术的效果；`--no-spells` 关闭 |
 | `--random-prices` | 商店购买价和道具售价；`--price-mode shuffle\|range`、`--price-min N`、`--price-max N`、`--sell-min N`、`--sell-max N`、`--no-sell-prices`（售价不动）、`--sell-equipment`（武器、防具、战灰的售价也随机，默认不动） |
 | `--weapons` | = 下面四项 |
@@ -174,7 +175,7 @@ Release 里的 `ERFurtherRandom.exe`（见开头“快速开始”）、`randomi
 - 文件：输入 regulation.bin、输出文件、Oodle DLL（启动时自动填入 exe / 仓库目录里的 `oo2core_6_win64.dll`，
   没有就留空，开始时会询问是否改用 zstd 格式）、随机种子（留空则随机抽一个，日志里会显示）、压缩格式。
 - 选项分五块：文件、道具与法术、武器、道具获取位置（圣杯瓶获得位置随机，`--random-flask-locations`）、娱乐（fun）：
-  对话字幕随机（`--random-dialogue`）和笑话大师（joke shifu，`--dialogue-jokes`；文本档留空就在输入文件旁边自动找）。
+  对话字幕随机（`--random-dialogue`）和笑话大师（joke shifu，`--dialogue-jokes`；文本档留空就用自带的英文、中文两份）。
 - “常用设定”按钮 = `--split-anim any --random-prices --weapons --random-flask-locations --random-dialogue --dialogue-jokes`；“预览（不写文件）” = `--dry-run`；右上角“语言”左边的“只重新压缩（不随机）” = `--repack`（修复 Fog Gate Randomizer 的输出等，见下文）；
   “开始随机”生成文件，完成后提示输出位置，`mapping.txt / weapons.txt / spells.txt / dialogue.txt` 写在输出文件旁边。
 - 日志区显示命令行的全部输出；Kraken 压缩约需 2 分钟，期间窗口保持响应。
@@ -183,8 +184,10 @@ Release 里的 `ERFurtherRandom.exe`（见开头“快速开始”）、`randomi
 - 打包出的程序带 `--` 开头的参数运行时就是命令行工具（参数与 `randomize.py` 相同；Windows 的 windowed 程序
   没有控制台输出，结果看输出文件旁的 `mapping.txt` 等）。
 - 自己打包的 exe 和 Release 里的一样，可以复制到别的 64 位 Windows 10 / 11 电脑上用，对方不用装 uv 或 Python，
-  只要把 `oo2core_6_win64.dll` 放在 exe 旁边；每次启动先解压到临时目录，要等几秒。仓库本身不收 exe（`dist/`
-  已忽略），发布时作为 Release 附件上传。
+  只要 `oo2core_6_win64.dll` 和 `msg\` 目录在 exe 旁边；每次启动先解压到临时目录，要等几秒。`build_exe` 打包后把
+  `tools\msg\` 的两份文本档复制到 `dist\msg\`，Release 把 `dist\` 里的 exe 和 msg 目录一起打包上传。仓库和 Release
+  都不含 exe 以外的游戏文件：`oo2core_6_win64.dll` 是 RAD Game Tools 的，随游戏分发，用户自己从游戏目录复制（`*.dll`、
+  `dist/` 已忽略）。
 - 窗口没有出现时：错误信息会弹窗显示，并写进程序（exe 或仓库目录）旁边的 `gui_error.log`。uv 自动下载的
   Python 在虚拟环境里自己找不到 Tcl 的脚本库（init.tcl），`gui.py` 启动时会补上路径，`build_exe.bat` 打包前用
   `tools/tkcheck.py` 检查 Tk 并把 `TCL_LIBRARY` / `TK_LIBRARY` 传给 PyInstaller。Python 根本没带 tkinter 时
@@ -266,13 +269,15 @@ NPC 对话的每一句都是 `TalkParam` 的一行：`msgId` 是字幕（TalkMsg
 
 不参与的：占位行和测试行，以及 `tools/names/TalkMsg.txt` 里没有文本的句子（被砍内容，这样不会把空字幕换给正常台词）——
 除非用冷笑话把它们填上（“笑话大师”）：`--dialogue-jokes` 接每种游戏语言的 `msg/<语言>/menu_dlc02.msgbnd.dcx`（道具随机器的
-mod 目录里就有，`mod\randomizer\msg\zhocn\...`，游戏自己用的语言放第一个；不给路径就在输入 regulation.bin 旁边自动找：先它
-所在的 mod 目录，再同级的其他 mod 目录，已经装着本工具笑话的旧输出会跳过），每个文本档里没有文本的对话 id 各填一条 `tools/names/jokes_<语言>.txt`
+mod 目录里就有，`mod\randomizer\msg\zhocn\...`，游戏自己用的语言放第一个；不给路径就用工具自带的英文、中文两份——
+`tools/msg/<语言>/`，exe 版在 exe 旁边的 `msg\` 目录里：中文是 1.17.1 原版文本，英文是雾门随机器写出的版本，比原版多
+它自己的几条菜单文本，对话文本相同，不用雾门随机器也没影响），每个文本档里没有文本的对话 id 各填一条 `tools/names/jokes_<语言>.txt`
 里的冷笑话（中文、英文各 955 条，逐行对应，多于没文本的 id 数，所以每句拿到的都不同，可自行增删；哪些 id 没文本因语言而异，
 中文约 830 个、英文约 850 个），这些行也加入
 随机，正常对话里就会时不时蹦出一条冷笑话。改好的文本档写到输出文件旁的
 `msg/<语言>/menu_dlc02.msgbnd.dcx`，要和 regulation.bin 一起放进 mod 目录（图形界面里是“娱乐”区的“笑话大师”，文本档
-可以多选，留空自动找）。1.17.1 原版上参与的句子从 9135 增加到 10033。
+可以多选，留空用自带的）。输出文件不要和 exe 放在同一目录：那样改好的文本档会落在自带文本档的位置上，程序会拒绝并提示
+换个输出目录（默认的 `randomized\` 就行），不会覆盖自带的或你指定的原文件。1.17.1 原版上参与的句子从 9135 增加到 10033。
 
 语音不随机：语音 id `xxxoooooo` 存在 `sd/enus/vcxxx.bnk` 里，而游戏只在用到它的 NPC 附近加载那个声音库（Nexus 的 Elden Ring
 音频修改帖里有人想在别处播放尤拉的台词，只有在尤拉营地旁才放得出来），换到别的 NPC 身上预计是没声的，一句没声还可能要等
@@ -404,6 +409,8 @@ param 重新序列化（支持新增行），没动过的原字节写回，再�
 - `tools/spells.py` — 魔法 / 祷告随机
 - `tools/flasks.py` — 圣杯瓶获得位置随机；`tools/locations.py` — 用原版 + 道具随机器输出生成候选位置表
   `tools/names/item_locations.txt`
+- `tools/msg/engus/`、`tools/msg/zhocn/` — 笑话大师默认改写的文本档 `menu_dlc02.msgbnd.dcx`（1.17.1 文本：中文原版，
+  英文是雾门随机器写出的版本）；`build_exe` 把它们复制到 exe 旁边的 `msg\`，Release 里和 exe 一起
 - `tools/dialogue.py` — 对话字幕随机和冷笑话填充；`tools/talkmsg.py` — 读写 FMG：生成台词文本表 `tools/names/TalkMsg.txt`、
   把 `tools/names/jokes_zhocn.txt` / `jokes_engus.txt` 写进 `msg/<语言>/menu_dlc02.msgbnd.dcx`
 - `tools/oodle.py`、`tools/linoodle/` — 通过游戏自带的 `oo2core_6_win64.dll` 做 Kraken / Leviathan 压缩

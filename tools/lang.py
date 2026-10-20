@@ -108,11 +108,11 @@ ZH = {
     "(every NPC line shows the subtitle of another line; the voices stay, so the NPC still speaks its own line)":
         "（每句 NPC 台词显示另一句的字幕；语音不动，NPC 念的还是自己原来那句）",
     "Joke shifu (--dialogue-jokes)": "笑话大师（joke shifu）(--dialogue-jokes)",
-    "(the cut lines show a joke and join the shuffle; text archives: empty = the "
-    "msg\\<language>\\menu_dlc02.msgbnd.dcx next to the input regulation.bin, in its mod folder "
-    "or the sibling mod folders; or pick them yourself)":
-        "（被砍的台词改成冷笑话并加入随机；文本档留空 = 用输入 regulation.bin 旁边的 msg\\<语言>\\menu_dlc02.msgbnd.dcx，"
-        "先找它所在的 mod 目录，再找同级的其他 mod 目录；也可以自己选）",
+    "(the cut lines show a joke and join the shuffle; text archives: empty = the English and "
+    "Chinese msg\\<language>\\menu_dlc02.msgbnd.dcx shipped with the program; or pick the game's "
+    "own, one per language)":
+        "（被砍的台词改成冷笑话并加入随机；文本档留空 = 用程序自带的英文、中文 msg\\<语言>\\menu_dlc02.msgbnd.dcx；"
+        "也可以自己选游戏里的，每种语言一个）",
     "Somber weapons: affinities + Ashes of War (--somber-infusable)":
         "失色 / 独特武器可质变、可装战灰 (--somber-infusable)",
     "Random default skill and affinity on new weapons (--random-default-ash)":

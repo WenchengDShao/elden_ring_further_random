@@ -41,8 +41,8 @@ Dialogue (TalkParam):
                         "joke shifu": the cut rows (text id without a text) get a joke each from
                         names/jokes_<language>.txt and join the shuffle; MSGBND is the game's
                         msg/<language>/menu_dlc02.msgbnd.dcx (one per language); without paths the archives
-                        next to the input are used (its mod folder, then the sibling mod folders, e.g. the item
-                        randomizer's); the patched copy is written next to the output as msg/<language>/...
+                        shipped with the tool are used (tools/msg/<language>/, or the msg folder next to the
+                        executable); the patched copy is written next to the output as msg/<language>/...
 Spells (Magic.param):
   (always)              each sorcery / incantation gets the effect of another spell (one pool for both);
                         --split-anim also splits cast animation and effect; --random-stats (group
@@ -363,10 +363,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--dialogue-jokes", nargs="*", default=None, metavar="MSGBND",
                     help="joke shifu, with --random-dialogue: the cut rows (a text id without a text) get a joke each "
                          "from tools/names/jokes_<language>.txt and join the shuffle; MSGBND = the game's "
-                         "msg/<language>/menu_dlc02.msgbnd.dcx, one per language; without paths the archives next to "
-                         "the input regulation.bin are used (its mod folder, then the sibling mod folders: the item "
-                         "randomizer writes one into mod/randomizer/msg/); the patched copy goes next to the output "
-                         "as msg/<language>/...")
+                         "msg/<language>/menu_dlc02.msgbnd.dcx, one per language; without paths the archives shipped "
+                         "with the tool are used (tools/msg/<language>/, or the msg folder next to the executable); the "
+                         "patched copy goes next to the output as msg/<language>/...")
     ap.add_argument("--somber-infusable", action="store_true", help="somber/unique weapons get all affinities and Ashes of War")
     ap.add_argument("--random-movesets", action="store_true",
                     help="random light/heavy attack moveset on every melee weapon and shield")
@@ -522,15 +521,30 @@ def main(argv: list[str] | None = None) -> int:
     if args.dialogue_jokes is not None and not args.random_dialogue:
         raise SystemExit("--dialogue-jokes needs --random-dialogue")
     if args.random_dialogue and args.dialogue_jokes is not None:
-        archives = args.dialogue_jokes or [str(p) for p in dialogue.find_archives(Path(args.input))]
+        archives = args.dialogue_jokes or [str(p) for p in dialogue.default_archives()]
         if not archives:
-            raise SystemExit(f"--dialogue-jokes: no msg/<language>/{dialogue.ARCHIVE} found next to {args.input} (in its "
-                             "folder or the sibling mod folders) for the languages with a joke list "
-                             f"({', '.join(dialogue.joke_languages())}). The item randomizer writes one into its mod "
-                             "folder (mod/randomizer/msg/), or extract it from Data0.bdt with UXM; or pass the path(s).")
+            raise SystemExit(f"--dialogue-jokes: the shipped text archives are missing: {dialogue.MSG_DIR}/<language>/"
+                             f"{dialogue.ARCHIVE} for {', '.join(dialogue.joke_languages())}. "
+                             + ("Put the msg folder from the Release zip next to the executable, "
+                                if getattr(sys, "frozen", False) else "Restore tools/msg/ from the repository, ")
+                             + "or pass the path(s) of the game's msg/<language>/menu_dlc02.msgbnd.dcx.")
         if not args.dialogue_jokes:
-            print("# jokes: text archives found next to the input: " + ", ".join(archives))
+            print("# jokes: using the shipped text archives: " + ", ".join(archives))
         jokes = dialogue.Jokes(archives)
+        # Guard: the patched archives go to <output folder>/msg/<language>/; never on top of their own source or
+        # the archives shipped next to the program (an output written into the program's folder would do that).
+        out_dir = Path(args.output).resolve().parent
+        for src in jokes.archives:
+            dst = out_dir / "msg" / src.parent.name / src.name
+            if dst.resolve() == src.resolve() or dialogue.MSG_DIR.resolve() in dst.resolve().parents:
+                what = ("its own source" if dst.resolve() == src.resolve()
+                        else f"the text archives shipped with the program ({dialogue.MSG_DIR})")
+                msg = (f"--dialogue-jokes: the patched {dst} would overwrite {what}. Write the output into another "
+                       "folder, e.g. randomized/regulation.bin, and copy the msg folder from there into the mod folder.")
+                if args.dry_run:
+                    print("# warning: " + msg)
+                    break
+                raise SystemExit(msg)
     if args.random_dialogue:
         dlines.append(f"# seed={seed}")
         dlines += dialogue.Dialogue(reg).randomize(rng, args.mode, jokes)

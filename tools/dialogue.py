@@ -23,6 +23,7 @@ lines vanish into rows nobody ever plays.
 from __future__ import annotations
 
 import random
+import sys
 from collections import Counter
 from pathlib import Path
 
@@ -33,6 +34,9 @@ HERE = Path(__file__).resolve().parent
 TEXT_FILE = HERE / "names" / "TalkMsg.txt"        # text id -> English line (tools/talkmsg.py builds it)
 
 ARCHIVE = "menu_dlc02.msgbnd.dcx"                 # the text archive that holds TalkMsg*.fmg (msg/<language>/)
+# The archives shipped with the tool (game 1.17.1 text, base + DLC, DCX DFLT): tools/msg/<language>/ when run from
+# the source, the msg/ folder next to the executable when packed (build_exe copies it there, the Release zip has it).
+MSG_DIR = (Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else Path(__file__).resolve().parent) / "msg"
 TEXT_FIELDS = ("msgId", "msgId_female")
 DUMMY_ROWS = {100, 200}
 SYSTEM_ROWS = 990_000_000                          # 99xxxxxxx: test / debug / system rows
@@ -53,28 +57,10 @@ def joke_languages() -> list[str]:
     return sorted(p.stem[len("jokes_"):] for p in (HERE / "names").glob("jokes_*.txt"))
 
 
-def find_archives(regulation: Path) -> list[Path]:
-    """--dialogue-jokes without paths: the text archives next to the input regulation.bin, one per language
-       that has a joke list: <mod>/msg/<language>/menu_dlc02.msgbnd.dcx in the input's own mod folder first,
-       then in the sibling mod folders (the item randomizer writes every language, the fog gate randomizer
-       only its own), in name order.  An archive that already holds our jokes (an earlier output of this
-       tool copied into a mod folder) is passed over, unless it is the only one."""
-    mod = regulation.resolve().parent
-    dirs = [mod]
-    try:
-        dirs += sorted(d for d in mod.parent.iterdir() if d.is_dir() and d != mod)
-    except OSError:
-        pass
-    found = []
-    for lang in joke_languages():
-        jokes = set(load_jokes(HERE / "names" / f"jokes_{lang}.txt"))
-        candidates = [d / "msg" / lang / ARCHIVE for d in dirs if (d / "msg" / lang / ARCHIVE).is_file()]
-        fresh = [p for p in candidates if not any(t in jokes for t in talkmsg.read_archive(p).values())]
-        if fresh:
-            found.append(fresh[0])
-        elif candidates:
-            found.append(candidates[0])
-    return found
+def default_archives() -> list[Path]:
+    """--dialogue-jokes without paths: the shipped archives MSG_DIR/<language>/menu_dlc02.msgbnd.dcx, one per
+       language that has a joke list (whichever of them exist)."""
+    return [MSG_DIR / lang / ARCHIVE for lang in joke_languages() if (MSG_DIR / lang / ARCHIVE).is_file()]
 
 
 def has_text(t: str | None) -> bool:
