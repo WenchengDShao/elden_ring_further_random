@@ -421,6 +421,17 @@ def main(argv: list[str] | None = None) -> int:
         args.somber_infusable = args.random_movesets = args.random_default_ash = args.random_stats = True
     if args.oodle_dll is not None and not oodle.use_dll(args.oodle_dll):
         raise SystemExit(f"--oodle-dll: {args.oodle_dll} does not exist")
+    # Guard: the output folder also receives the reports and (with jokes) a msg folder, so an output in the input's
+    # folder would litter or overwrite a mod folder, and an output named like the input would replace it.
+    if Path(args.input).resolve().parent == Path(args.output).resolve().parent:
+        msg = (f"the output {args.output} is in the same folder as the input {args.input}. The output folder also gets "
+               "mapping.txt & co. and the msg folder of the joke shifu, which would land in the input's (mod) folder, and "
+               "an output named regulation.bin would replace the input. Create a new folder for the output; that "
+               "also keeps the mods easy to manage.")
+        if args.dry_run:
+            print("# warning: " + msg)
+        else:
+            raise SystemExit(msg)
     codec = erreg.CODEC_ZSTD if args.dry_run else choose_codec(args.compression)
     if args.repack:
         if args.dry_run:
@@ -539,8 +550,8 @@ def main(argv: list[str] | None = None) -> int:
             if dst.resolve() == src.resolve() or dialogue.MSG_DIR.resolve() in dst.resolve().parents:
                 what = ("its own source" if dst.resolve() == src.resolve()
                         else f"the text archives shipped with the program ({dialogue.MSG_DIR})")
-                msg = (f"--dialogue-jokes: the patched {dst} would overwrite {what}. Write the output into another "
-                       "folder, e.g. randomized/regulation.bin, and copy the msg folder from there into the mod folder.")
+                msg = (f"--dialogue-jokes: the patched {dst} would overwrite {what}. Create a new folder for the "
+                       "output; that also keeps the mods easy to manage.")
                 if args.dry_run:
                     print("# warning: " + msg)
                     break

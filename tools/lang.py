@@ -153,6 +153,11 @@ ZH = {
         "出招耐力倍率范围应满足 0 < 最低 <= 最高，例如 0.3 到 1.7",
     "The folder does not exist yet: {}": "目录还不存在：{}",
     "Input file not found: {}": "找不到输入文件：{}",
+    "The output file must not be in the same folder as the input ({}): the reports and the joke shifu's msg folder "
+    "are written next to the output and would end up in that folder, and an output named regulation.bin would "
+    "replace the input. Create a new folder for the output; that also keeps the mods easy to manage.":
+        "输出文件不能和输入文件放在同一目录（{}）：随机结果清单和笑话大师的 msg 目录会写在输出文件旁边，落进那个目录，"
+        "而且同名的 regulation.bin 会把输入覆盖掉。建议创建新目录以方便 mod 管理。",
     "DLL not found: {}": "找不到 DLL：{}",
     "No {} given and there is none in the current folder ({}).\n\n"
     "It is in the game's Game\\ folder; pick it with Browse… to write the game's own KRAK format.\n\n"

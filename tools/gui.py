@@ -640,6 +640,14 @@ class Gui:
         if not inp.is_file():
             messagebox.showerror(TITLE, _("Input file not found: {}").format(inp))
             return
+        outp = Path(self.output.get().strip() or "randomized/regulation.bin")
+        if not dry_run and inp.resolve().parent == outp.resolve().parent:
+            messagebox.showerror(TITLE, _("The output file must not be in the same folder as the input ({}): the reports "
+                                          "and the joke shifu's msg folder are written next to the output and would end up "
+                                          "in that folder, and an output named regulation.bin would replace the input. "
+                                          "Create a new folder for the output; that also keeps the mods easy to "
+                                          "manage.").format(inp.resolve().parent))
+            return
         dll = self.dll.get().strip()
         if dll and not Path(dll).is_file():
             messagebox.showerror(TITLE, _("DLL not found: {}").format(dll))
