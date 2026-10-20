@@ -8,6 +8,7 @@ from __future__ import annotations
 import re
 import struct
 import xml.etree.ElementTree as ET
+import zlib
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -44,7 +45,8 @@ def encrypt_regulation(plain: bytes, iv: bytes = bytes(16)) -> bytes:
 # ----------------------------------------------------------------------------
 
 CODEC_ZSTD, CODEC_KRAKEN, CODEC_LEVIATHAN = "zstd", "kraken", "leviathan"
-CODECS = (CODEC_ZSTD, CODEC_KRAKEN, CODEC_LEVIATHAN)
+CODECS = (CODEC_ZSTD, CODEC_KRAKEN, CODEC_LEVIATHAN)          # what write_dcx can produce
+CODEC_DEFLATE = "deflate"                                      # DCX DFLT (zlib), not for regulation.bin
 
 
 @dataclass
@@ -67,8 +69,11 @@ def read_dcx(buf: bytes) -> Dcx:
     elif fmt == b"KRAK":
         out = oodle.decompress(payload, uncomp)
         codec = CODEC_KRAKEN
+    elif fmt == b"DFLT":                      # zlib: msgbnd / msb / emevd written by the randomizers; read only
+        out = zlib.decompress(payload)
+        codec = CODEC_DEFLATE
     else:
-        raise ValueError(f"unsupported DCX compression {fmt!r} (ZSTD and KRAK are implemented)")
+        raise ValueError(f"unsupported DCX compression {fmt!r} (ZSTD, KRAK and DFLT are implemented)")
     if len(out) != uncomp:
         raise ValueError(f"DCX size mismatch {len(out)} != {uncomp}")
     return Dcx(level=level, data=out, codec=codec)
@@ -94,6 +99,9 @@ def write_dcx(dcx: Dcx, window_log: int = 16) -> bytes:
             dcx.level, window_log=window_log, write_content_size=0, write_checksum=0, threads=0)
         comp = zstandard.ZstdCompressor(compression_params=params).compress(dcx.data)
         tag, level = b"ZSTD", dcx.level
+    elif dcx.codec == CODEC_DEFLATE:          # DCX DFLT level 9: what the randomizers write for msgbnd / msb / emevd
+        comp = zlib.compress(dcx.data, 9)
+        tag, level = b"DFLT", 9
     else:
         comp = oodle.compress(dcx.data, oodle.CODECS[dcx.codec], oodle.LEVEL_OPTIMAL5)
         tag, level = b"KRAK", 6

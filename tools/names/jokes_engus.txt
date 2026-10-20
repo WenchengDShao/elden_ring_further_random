@@ -1,0 +1,957 @@
+# --dialogue-jokes: one joke per line, shown as the subtitle of a cut dialogue line (game language engus)
+# Parallel to jokes_zhocn.txt: line N here and line N there are the same joke (translated or adapted), so the English report matches.
+Why is the sea salty? The fish have been crying in it for ages.
+Two tomatoes cross the road. One gets hit by a cart. The other says: ketchup!
+What gets dirtier the more you wash it? Water.
+Why does the moon only come out at night? It works during the day.
+A potato walks into a tavern. The keeper says: sorry, we don't serve chips.
+Why does a snowman never lie? One lie and he breaks into a sweat.
+Why can't penguins fly? Their dinner jackets are too tight.
+A man tells his mirror: you look good today. The mirror says: likewise.
+Why are books always tired? Too many pages to turn.
+Someone asks a snail: why so slow? The snail says: you try carrying a house.
+Why does the cat sit on the keyboard? To see what you're writing about it.
+Why don't ghosts use the internet? Everyone online says "I don't believe in ghosts".
+A chicken walks into a library, borrows a book and says: one more. It's working on its chicken basics.
+A pupil asks: why do we have exams? The teacher says: or you wouldn't study. The pupil says: then don't, and I won't.
+Bread asks the steamed bun: where's your filling? The bun says: that's a dumpling, wrong person.
+Why is the clock always nervous? It's forever counting down.
+An ant travels to the desert and comes back saying: sand everywhere, nothing to see.
+Why does milk go in the cold box? It can't stand heat, it turns sour at once.
+One day zero said to eight: nice belt, bit tight though.
+Why does rain always fall down? It never learned to climb.
+Why do Tarnished keep jumping off cliffs? The grace is down there.
+Why do knights drop runes when they die? Their purses have no zip.
+Why doesn't the Tree Sentinel dismount? He can't get down.
+One Tarnished asks another: why are you back? "I died." "And why are you back again?" "I died again."
+Why doesn't the Omen get a haircut? The barber ran first.
+Why does the merchant charge so much? His customers always come back to life, and back to buy.
+Why is the giant's pot so big? He only knows one dish: boil everything.
+What does Torrent hate most? Stairs.
+Why are the gates of Stormveil always shut? The gatekeeper left to find a better job.
+Melina says: I can turn your runes into strength. The Tarnished says: can you turn it back?
+Why does the Red Wolf never stop howling? Nobody taught it quiet.
+Why is the crow staring at you? It's waiting for your drops.
+Why do chests have traps? Chests need burglar protection too.
+Why do sorcerers keep running? Spells don't chase people on their own.
+Why do dragons breathe fire? They never learned to whistle.
+A shield says to a sword: you're always so sharp. The sword says: you're always in the way.
+Why aren't rats afraid of the Tarnished? The Tarnished is more afraid of them.
+Why did the demigods shatter the Elden Ring? Everyone wanted their own piece.
+Why does grace glow? It's afraid of the dark too.
+Why do Tarnished roll everywhere? Walking is slow and running is tiring.
+Coffee tells tea: you're weak. Tea says: you're bitter. Water says: you're both my children.
+Why does the physician wear a mask? Too many patients, he can't hold the laugh.
+Why can't fish play ball games? They're afraid of the net.
+A cat catches a mouse. The mouse says: I'm a vegetarian. The cat says: I'm not.
+Why is the sun always on time? It never sleeps in.
+Why is the dictionary so popular? It has a word for everything.
+Why does the kite love windy days? It's the only time it gets out.
+"My alarm is broken." "How do you know?" "I woke up far too early today."
+Why doesn't the bridge get tired? It lies down all day.
+Why don't clouds talk? Every time they open their mouth it rains.
+Why do crabs walk sideways? So they don't bump into the crab in front.
+Why is the arithmetic book so sad? It has too many problems.
+Why do keys get lost? They like watching you look for them.
+Someone asks the sea: why so blue? The sea says: you stand here for a million years.
+Why isn't the rabbit cold? It was born in a jumper.
+A watermelon asks the melon: why so sweet? The melon says: I've no seeds to feed.
+Why is the candle afraid of birthdays? It gets blown out every year.
+Why do stars only come out at night? Nobody looks at them by day.
+Why do shoes come in pairs? They hate walking alone.
+Why is the lift always silent? It doesn't want things more awkward.
+Why is the spatula so confident? It can flip anything.
+Why does the Tarnished never complain about the bonfire? It's the only place he's allowed to sit.
+Why does the witch turn invisible? She owes too many runes.
+Why is the sage in the jar so quiet? The jar has no mouth... fine, it does.
+An old man asks: have you seen the Elden Ring? The Tarnished says: only the pieces.
+Why are skills so expensive? Each use costs focus, and focus costs money.
+Why does the thief wait round the corner? He read the script.
+Why do the prisoners in the gaol keep calling you? They want to swap cells.
+The merchant says: five thousand runes. The Tarnished says: that pile I dropped yesterday, did you pick it up?
+Why is the giant still hungry after eating so much? His stomach is a giant too.
+Why do dragons live on mountains? They're afraid of water.
+Why doesn't the gargoyle move? It's waiting for you to move first.
+Why do sorcerers wear pointed hats? To warn you there's a sharp mind underneath.
+Why do red phantoms keep invading? Nobody at home will play with them.
+Why do Tarnished love picking herbs? Herbs don't fight back.
+The knight tells his horse: faster. The horse says: lighter.
+Why is the chest sometimes just stones? Someone got there before you.
+Why are spell books so thick? Every page explains why it happened.
+Why does the shield never complain? It was born to take it.
+Why isn't the bonfire afraid of rain? It's grace, not fire.
+The Tarnished asks the smith: how high can this sword go? The smith says: as high as you live.
+Why do castles have so many stairs? The builders liked climbing.
+Why are the catacombs so cold? Nobody down there turns the heating on.
+Why do fruits fall from the tree? The tree wants to lose weight.
+Someone asks the tortoise shell: why so hard? It says: everything I own is in here.
+Why does the archer stand so far away? He doesn't like close company.
+Why does the river always go forward? It never learned to turn around.
+Why do caves echo? Caves get lonely too.
+Why do wolves come in packs? Alone, they get lost.
+Why does the shepherd count sheep? He can't sleep.
+Someone asks the mountain: why so tall? The mountain says: I've been standing a long time.
+Why does the mirror never lie? It only repeats what it's shown.
+Why does the traveller carry a map? The map knows the way better than he does.
+Why does night always come? Because day always leaves.
+Why does Melina always sit? Standing up has a price.
+Why does Ranni have four arms? Two to play chess, two to take the moves back.
+Why does Blaidd keep howling? He can't find his wolf food.
+Why is Alexander stuck in a hole? He mistook himself for a plug.
+Why does Patches kick people off cliffs? He calls it a shortcut.
+Why does Varré keep saying you're maidenless? He is too.
+Why does Hewg the smith cry? The hammer is heavy and the tears are light.
+Why can Roderika hear spirits? They're all complaining about her stitching.
+Why does Boc keep apologising? He doesn't even own a sewing machine.
+Why does Millicent travel so far? She's looking for a place that doesn't rot.
+Why does Gowry keep sending you for needles? His own eyes are nearly gone.
+Why does Sellen hide her head? She doesn't want the academy to see her marks.
+Why does Rya keep falling over? Her legs came later.
+Why does Kenneth Haight want his fort back? He left the keys inside.
+Why is Nepheli so quiet? She's counting her axes.
+Why does Gostoc steal? Nobody respects a gatekeeper.
+Why does Yura wait at his camp? His horse left ages ago.
+Why does Diallos always fail? He's a noble; nobles don't need to succeed.
+Why does Fia hug you? Her life is borrowed, and someone has to pay it back.
+Why does D always wear armour? His pyjamas are iron too.
+Why did Rogier fall asleep? Too many books about the night.
+Why does Corhyn wander? Goldmask won't talk, so someone has to.
+Why is the Dung Eater locked up? He never washes his hands after dinner.
+Why does Seluvis want puppets? Real people won't talk to him.
+Why is Iji so tall? He ate too many rocks as a child.
+Why doesn't Ensha speak? Every word is docked from his pay.
+Why does Enia want your remembrances? She wants to see what's inside too.
+Why are the Two Fingers bent? They're typing.
+Why do the Three Fingers like yellow? Their eyes are burnt out.
+Why does Shabriri keep staring? The eyes aren't his.
+Why does Hyetta eat grapes? They're not grapes, she just won't admit it.
+Why does Irina sit by the road? The one she waits for went very far.
+Why is Edgar always late? The castle door is hard to open.
+Why does Tanith never leave her chair? Standing up means seeing guests.
+Why did Rykard eat so many people? He mistook himself for a digestive system.
+Why does Godrick graft limbs? He never feels he has enough hands.
+Why does Rennala keep crying? All her students graduated.
+Why does Radahn ride such a small horse? It's the only one willing.
+Why does Morgott keep cursing you? His nose can smell Tarnished.
+Why does Mohg count to three? He can only count to three.
+Why has Malenia never known defeat? She doesn't remember the times she lost.
+Why is Miquella always asleep? Growing up is exhausting.
+Why does Maliketh hide? Someone stole his dog food.
+Why does Placidusax have only two heads left? The others went somewhere quieter.
+Why does the Fire Giant run? With feet that size, walking is running.
+Why does Godfrey bring a lion? The lion wanted to see what a king looks like.
+Why can the Elden Beast swim? Its home has no floor.
+Why does Margit throw daggers? The one he throws keeps coming back.
+Why does the Tree Sentinel guard the tree? He couldn't find another one.
+Why does the Grafted Scion have so many hands? It wants to pick up every item at once.
+Why does the Erdtree Avatar like sitting? Standing up costs a lot of leaves.
+Why does the Crucible Knight turn into a dragon? Wrong medicine.
+Why does the Bell Bearing Hunter come at night? By day he collects bell bearings.
+Why does the Black Knife assassin turn invisible? She doesn't want you to see the knife is borrowed.
+Why do the Albinaurics sit in wheelchairs? The legs were a gift, and it's not back yet.
+Why can Torrent double jump? The first jump was too low.
+Why can the Mimic Tear become you? It watched you too long.
+Why does the jellyfish float in the air? It can't find the sea.
+Why is a Rune Arc so expensive? It's curved; that's hard to make.
+Why are Golden Seeds planted in a flask? The dogs ate the ones in the ground.
+Why are Sacred Tears so precious? It hurts to cry them.
+Why do smithing stones have numbers? The smith can't remember their names.
+Why does a Stonesword Key shatter? Its job was one-time only.
+Why does the lantern hang from the belt? The hands are holding weapons.
+Why can't the telescope show the enemy's weak point? The weak point is you.
+Why does a Memory Stone hold one more spell? Its memory is better than yours.
+Why can a Larval Tear rebirth you? It hasn't grown up; the grown ones can't.
+Why eat Preserving Boluses? You don't want to smell like rot.
+Why does Pickled Turtle Neck restore stamina? Turtles never hurry.
+Why does Boiled Prawn reduce damage? The shell is thick enough.
+Why is Boiled Crab dearer than prawn? It walks sideways and is hard to catch.
+Why are Rowa fruits everywhere? Birds don't like them.
+Why does glintstone glow? It's afraid of the dark.
+Why can you throw a Rainbow Stone? It doesn't break on landing; your heart does.
+Why are Starlight Shards rare? Stars rarely drop.
+Why craft a Furlcalling Finger Remedy? Fingers can't speak for themselves.
+Why is the Bloody Finger red? It never stops bleeding.
+Why is the Warming Stone warm? It never calms down.
+Why is it called Cuckoo Glintstone? It sings.
+Why buy the Crafting Kit? Kalé doesn't give things away.
+Why pick up cookbooks? Nobody writes a second copy.
+Why does rolling dodge attacks? Enemies only hit people who stand still.
+Why is parrying so hard? You always press too early.
+Why are jump attacks so strong? Gravity is on your side.
+Why guard before a guard counter? Hit first and you get hit.
+Why summon only inside the summoning range? Spirits hate long walks.
+Why do invasions come right before you finish? The red phantom wants to finish too.
+Why is "try finger but hole" so popular? Everyone has tried.
+Why are there "dog" messages everywhere? They aren't dogs.
+Why does grace point the way? It doesn't know either, so it just picks one.
+Why do dropped runes disappear? Another Tarnished picked them up.
+Why must a Great Rune be restored? It's broken, and broken things get fixed.
+Why go on to the next journey? The first one doesn't count.
+Why count deaths? Somebody needs comforting.
+Why is "maidenless" still popular? That line never gets old.
+Why does the Lord of Frenzied Flame burn everything? He thinks it's tidy.
+Why does the Roundtable Hold float? No room on the ground.
+Why is the smith always at the Roundtable? His foot is chained.
+Why does Fia's hug cost something? Hugs have to eat too.
+Why does Patches' chest teleport? Chests want to travel too.
+Why does Volcano Manor recruit? They ate all their own people.
+Why is Jarburg full of jars? People wouldn't fit.
+Why does Caelid rot? Nobody takes the rubbish out.
+Why queue for Radahn's festival? Everyone wants to die first.
+Why does Rennala's rebirth need a Larval Tear? She doesn't know the recipe either.
+Why is Nokron underground? Rent above ground is too high.
+Why is Deeproot Depths all roots? Trees need to drink too.
+Why are there stars in the Siofra River? The sky fell in.
+Why is the Haligtree so tall? It wants to see who's hitting it.
+Why is the Mohgwyn Dynasty all blood? Nobody mops.
+Why does Sellia have magic? Nobody borrows the books there.
+Why can the Turtle Pope talk? He's lived long enough.
+Why does Boc's tailoring need clothes? He doesn't want to sew people.
+Why is Alexander called Iron Fist? His fists are the jar.
+Why does Hoarah Loux want a fight? He's waited a thousand years.
+Why is "I'll sing a song for you" terrifying? The singer is a jellyfish.
+Why can't dogs play cards? They wag their tails whenever they get a good hand.
+Why doesn't the owl sleep at night? It slept too much in the daytime.
+Why can't the giraffe talk? Words take too long to reach its mouth.
+Why does the elephant have a good memory? There's nothing else in its head.
+Why is the hippo always in the water? It doesn't want anyone to see its belly.
+Why does the zebra have stripes? It never changed out of its pyjamas.
+Why does the camel have humps? It carries luggage it never unpacks.
+Why is the tortoise shell so hard? It never moves house; the house is on its back.
+Why are bees so busy? The boss is the queen.
+Why do mosquitoes come at night? They don't want you to see their faces.
+Why do frogs jump? Walking was too slow; they tried it once and gave up.
+Why do ducks waddle? They're wearing slippers.
+Why are geese so fierce? They think they're swans.
+Why does the rooster crow at dawn? It wants to sleep too, but nobody lets it.
+Why is the pig so fat? It left the diet to tomorrow.
+Why does the cow keep chewing? It eats fast and regrets slowly.
+Why do sheep queue? The shepherd is counting.
+Why are mice afraid of cats? The cat ate a relative.
+Why do rabbits have long ears? They're always listening to gossip about them.
+Why do squirrels hide nuts? They fear forgetting they've eaten by winter.
+Why is the hedgehog covered in spines? It doesn't want hugs.
+Why has the snake no legs? It saved on shoes.
+Why does the spider spin a web? It can't use chopsticks.
+Why do bats sleep upside down? They want to see what the ceiling looks like.
+Why are whales so big? Nobody in the sea tells them to diet.
+Why do dolphins always smile? They don't know any other face.
+Why does the octopus have eight legs? It uses one at a time; the rest are spares.
+Why do crabs blow bubbles? They're brushing their teeth.
+Why do sharks keep swimming? If they stop they have to think about life.
+Why does the goldfish remember seven seconds? Its life restarts every seven seconds.
+Why does the snail carry a house? It can't afford a cart.
+Why do butterflies fly slowly? They keep looking at their own wings.
+Why can ants carry such big things? Nobody told them it was heavy.
+Why do fireflies glow? They forgot to turn the light off.
+Why does the dragonfly hover over water? It wants to check whether the reflection is really itself.
+Why do wolves howl at the moon? The moon never answers.
+Why is the fox cunning? It has read too many fables.
+Why do bears hibernate? Winter dinners are too hard to find.
+Why do monkeys climb trees? There are people on the ground.
+Why does the peacock fan its tail? It's the only outfit in the wardrobe.
+Why do parrots copy speech? They have nothing of their own to say.
+Why are sparrows so small? They never eat breakfast.
+Why are crows black? They don't bathe.
+Why do pigeons carry letters? They can't send messages.
+Why do eagles fly so high? It's too noisy down below.
+Why do penguins walk slowly? They're in formal wear.
+Why is the polar bear white? Too much snow; it couldn't be bothered to change.
+Why does the tiger have stripes? It had no excuse like the zebra.
+Why do lions sleep so long? Kings are allowed to.
+Why are leopards so fast? They're never full.
+Why are noodles so long? They want to be eaten in one go.
+Why do dumplings have pleats? They're afraid the filling will escape.
+Why are buns round? Square ones won't roll.
+Why are steamed buns white? No make-up.
+Why is rice sticky? It likes to stay together.
+Why does bread rise? It wants to grow up too.
+Why do you cut a cake? One person can't finish it.
+Why drink soup while it's hot? It sulks when it goes cold.
+Why are chillies hot? They want to be remembered.
+Why are lemons sour? Nobody ever smiled at them.
+Why are watermelons so big? They drank too much water.
+Why are bananas bent? They bent to pick something up and never straightened.
+Why do apples fall? They want to see what Newton is doing.
+Why do grapes come in bunches? They're afraid of getting lost.
+Why does the strawberry wear its seeds outside? There was no room inside.
+Why do peaches have fuzz? They're cold.
+Why is a pear pear-shaped? It doesn't know any other shape.
+Why do you peel an orange? It's too shy to undress itself.
+Why is the pineapple so prickly? It doesn't want to be touched.
+Why is the coconut so hard? It has fallen out of a tree before.
+Why do potatoes grow underground? They don't want a tan.
+Why do onions make you cry? They tell their story layer by layer.
+Why are radishes white? They've never seen the sun.
+Why does the cabbage have so many layers? Winter is cold.
+Why are cucumbers green? They get eaten before they ripen.
+Why are tomatoes red? They saw themselves in the salad.
+Why are aubergines purple? They got hit... just kidding, they were born that way.
+Why does corn have silk? It's old.
+Why do beans jump? The pan is too hot.
+Why do peanuts have shells? They live underground and need damp-proofing.
+Why do eggs roll? They have no corners.
+Why is milk white? The cow drinks very clean water.
+Why does cheese have holes? The mouse got there first.
+Why does butter melt? It can't take the heat.
+Why is salt salty? It comes from the sea, and the sea is always crying.
+Why is sugar sweet? It wants you to eat a bit more.
+Why is vinegar sour? It sat around too long and its temper changed.
+Why is soy sauce black? Too much sun.
+Why does tea need brewing? It won't jump into the water by itself.
+Why is coffee bitter? It gets up too early.
+Why does beer have foam? It's too excited.
+Why does ice cream melt? It can't bear your smile.
+Why does chocolate melt in your hand? It wants to stay.
+Why do biscuits crumble? They're fragile, like my heart.
+Why does popcorn pop? It can't take the pressure.
+Why are rice balls triangular? Round ones roll away.
+Why is sushi rolled? It's cold.
+Why is hotpot boiled? Nobody eats it raw.
+Why do you turn the barbecue? It wants a tan on both sides.
+Why is porridge so thin? Not enough rice.
+Why fry the egg before the rice? The egg arrived first.
+Why are mooncakes round? They want to look like the moon.
+Why are sticky rice dumplings tied up? They'd run off.
+Why do glutinous rice balls float? They're done and want to tell you.
+Why is it called spicy hotpot? It's numbing, spicy and hot, all three.
+Why does roast sweet potato smell so good? It sat in the fire a long time.
+Why is tofu so soft? It never exercises.
+Why do fried dough sticks come in twos? One would be lonely.
+Why must soy milk be hot? Cold, it gets cross.
+Why are bread and milk friends? They get eaten together.
+Why do chairs have four legs? Three fall over and five cost too much.
+Why doesn't the table talk? Someone's always eating on it.
+Why does the door creak? It wants to tell you someone came in.
+Why are windows transparent? They want to see outside.
+Why does the bulb light up? It wants to be noticed.
+Why does the clock never stop? If it stops, it gets thrown out.
+Why is the pillow soft? It has to hold your dreams.
+Why is the blanket warm? It's hugging you.
+Why doesn't the bed move? It wants to sleep too.
+Why does the mirror reflect? It doesn't want to look alone.
+Why does the cup have a handle? It's afraid of the heat.
+Why are bowls round? Soup doesn't like corners.
+Why are chopsticks two? One can't grip.
+Why is the spoon hollow? It wants to hold a bit more.
+Why is the knife sharp? Blunt ones get thrown out.
+Why is the pot black? It gets roasted every day.
+Why does the fridge hum? It's singing so the vegetables aren't scared.
+Why does the washing machine spin? Clothes love the merry-go-round.
+Why does the broom go bald? It works too hard.
+Why is the mop always wet? It keeps crying.
+Why does the bin have a lid? It doesn't want to see what it ate.
+Why do keys get lost? They want to travel.
+Why is the lock so stubborn? It only knows one key.
+Why does the umbrella flip in the wind? It wants to fly.
+Why are rain boots rubber? They don't want to drink.
+Why is a hat worn on the head? It falls off the feet.
+Why is the scarf so long? It needs two turns to be warm.
+Why do gloves have five fingers? Hands have five fingers.
+Why does one sock always go missing? The other went looking for it.
+Why do shoelaces come undone? They want a rest.
+Why do pockets tear? They hold too many secrets.
+Why does the zip get stuck? It wakes up grumpy too.
+Why do buttons fall off? They want to see the floor.
+Why do glasses fog up? They're breathing.
+Why is the watch on the left wrist? The right hand is writing.
+Why is the wallet always thin? The money went shopping.
+Why is the schoolbag so heavy? Knowledge has weight.
+Why does the pen run dry? It wrote so much it cried itself out.
+Why does the eraser get smaller? It's sacrificing itself.
+Why is the ruler straight? A bent one would be mistaken for a banana.
+Why do you turn the page? Notebooks can't scroll.
+Why does the bookmark fall out? The book fell asleep when it closed.
+Why is the dictionary so thick? It wants to explain everything.
+Why seal the envelope? The words mustn't leak out.
+Why lick the stamp? It wants something sweet before it sticks.
+Why does the candle cry? It's burning itself.
+Why does a match work only once? It burns once in a lifetime.
+Why do batteries run out? They gave all their strength to you.
+Why does the socket have two holes? It has two eyes.
+Why is the cable so long? Electricity can't jump.
+Why does the switch break? It's been pressed too many times.
+Why can't you find the remote? It's watching TV from the sofa crack.
+Why is the TV so loud? It's afraid nobody's watching.
+Why does the radio talk? There's someone in its belly.
+Why does the phone run out of battery? You stared at it too long.
+Why does the charger get warm? It's trying hard.
+Why do earphone cables tangle? They're lonely.
+Why does the keyboard get dirty? You type while eating.
+Why is it called a mouse? It has a tail... the wireless one has none, so it costs more.
+Why does the screen go dark? It needs a rest too.
+Why does the computer freeze? It's thinking about life.
+Why is the internet slow? Too much data on the road, it's a traffic jam.
+Why do you forget passwords? They're so secure even you don't know them.
+Why does the mail go to the junk folder? It looks like an advert.
+Why is the alarm so loud? Your dream was louder.
+Why do you tear the calendar? The day is gone.
+Why do maps fold? They want to be a bit smaller.
+Why do you hammer a nail? It won't go in by itself.
+Why is the hammer so heavy? A light one won't drive a nail.
+Why do you twist a screw? Hammered in, it cries.
+Why does the ladder fall? Nobody was holding it.
+Why are walls straight? Leaning ones fall over.
+Why is the roof sloped? Rain doesn't like to linger.
+Why is the chimney tall? Smoke wants to go a bit further.
+Why do stairs turn? Straight up is too tiring.
+Why does the lift stop? It wants a moment too.
+Why do cars have four wheels? Three lean and five are too many.
+Why does a bicycle have two wheels? It could only afford two.
+Why is the bus always late? It waits for too many people.
+Why do trains need rails? They can't turn.
+Why do planes fly? They have tickets.
+Why do boats float? They learned not to look down.
+Why do traffic lights have three colours? Two aren't enough for an argument.
+Why are roads black? The wheels are too dirty.
+Why do streetlights come on at night? Nobody looks at them by day.
+Why does the bridge sway? It's dancing.
+Why are tunnels dark? The mountain doesn't turn the lights on.
+Why is petrol so expensive? Oil has to eat too.
+Why is the car park always full? Cars need a rest too.
+Why are tyres black? They roll on the ground all day.
+Why is the steering wheel round? A square one won't turn.
+Why do headlights flash? They're blinking.
+Why is the horn so loud? It wants to be heard.
+Why do wipers swing? They're waving goodbye to the rain.
+Why is the rear-view mirror small? Everything behind you is small.
+Why fasten the seat belt? It wants to hug you.
+Why does the car door lock? It doesn't want strangers opening it.
+Why does petrol burn? It has a short temper.
+Why does the ship sound its horn? It can't talk.
+Why does the train whistle? It's telling the cows to move.
+Why do planes have wings? Without wings it's a bus.
+Why does the hot-air balloon rise? It's enthusiastic.
+Why has the skateboard no brakes? It trusts you to jump off.
+Why does a wheelchair have wheels? Without wheels it's a chair.
+Why does the pram have a hood? Babies don't want a tan.
+Why does the shopping trolley run off? It wants to see the other shelves.
+Why push a cart? It can't walk by itself.
+Why does a tricycle have three wheels? It bought one extra.
+Why is the sun round? A square one would get stuck in the mountains.
+Why does the moon change? It diets and bounces back.
+Why do stars twinkle? They're sleepy.
+Why is the sky blue? The sea lent it the colour.
+Why are clouds white? They haven't rained yet.
+Why does rain fall straight? It's in a hurry to land.
+Why is snow white? It just washed.
+Why does thunder roar? The clouds are arguing.
+Why is lightning so fast? It's afraid the thunder will catch up.
+Why can't you see the wind? It runs too fast.
+Why is the fog so thick? The clouds came down for a walk.
+Why is the rainbow bent? It's bowing.
+Why is ice cold? It isn't wearing anything.
+Why is fire hot? It has a short temper.
+Why does water flow downhill? It can't be bothered to climb.
+Why are mountains tall? They've stood all this time and never sat down.
+Why do rivers wind? They sightsee as they go.
+Why is the lake flat? It's asleep.
+Why is the sea so big? It took in every river.
+Why has the desert no water? The water all went to the seaside.
+Why is the forest so quiet? Trees don't talk.
+Why is the grass green? It sunbathes every day.
+Why do flowers bloom? So the bees can find them.
+Why do trees drop their leaves? They dress lighter for winter.
+Why are roots underground? They don't want to be stepped on.
+Why is bamboo hollow? It gave its heart to someone else.
+Why are pines green in winter? They never got the memo about changing clothes.
+Why does the willow bend? It's looking for something it dropped in the river.
+Why does the cactus have spines? Nobody in the desert hugs it anyway.
+Why do mushrooms grow in the shade? They don't want a tan.
+Why is moss so short? It doesn't want to compete.
+Why bury seeds? They're too shy to meet people.
+Why did spring come? Winter left.
+Why is summer hot? The sun works overtime.
+Why do leaves fall in autumn? The tree is lightening its load.
+Why is winter cold? The sun went south.
+Why does it get light in the morning? The sun clocked in.
+Why does it get dark at night? The sun clocked off.
+Why is noon the hottest? The sun is staring down at you.
+Why does a day have twenty-four hours? Twenty-three isn't enough sleep.
+Why does a week have seven days? Six is too short and eight too long.
+Why does a year have twelve months? The moon got round twelve times.
+Why does time pass so fast? It never waits for anyone.
+Why can't you go back to yesterday? Today is blocking the road.
+Why is tomorrow always tomorrow? The moment it arrives it becomes today.
+Why is Monday so hard? The weekend was too good.
+Why is Friday so happy? The weekend is coming.
+Why are holidays so short? Happiness runs fast.
+Why does the alarm ring in the best dream? It's jealous.
+Why is a nap so sweet? It's stolen.
+Why do doctors write so badly? Their hands are ill too.
+Why do nurses walk fast? Patients can't wait.
+Why do teachers ask questions? They want to know the answer too.
+Why do pupils sleep in class? The lesson sounds like hypnosis.
+Why do chefs wear tall hats? They want to be a bit further from the pot.
+Why do waiters run? The food gets cold.
+Why do drivers talk so much? The passengers don't.
+Why do police wear caps? There's hair under them.
+Why do firefighters wear red? Fire can't see red.
+Why do farmers get up early? The rooster gets up earlier.
+Why are fishermen patient? The fish are more patient.
+Why does the carpenter measure twice? He can only cut once.
+Why does the smith have thick arms? The hammer won't fall by itself.
+Why do barbers chat? The customer can't leave.
+Why are painters so messy? The paint won't behave.
+Why do singers drink honey? The throat wants sweetness too.
+Why do actors cry? The script says so.
+Why do writers stay up late? Inspiration only comes at night.
+Why do programmers drink coffee? Code only recognises the smell of coffee.
+Why do accountants love counting? Numbers don't lie; people do.
+Why do lawyers talk in circles? Straight talk costs extra.
+Why is the boss late? He doesn't clock in.
+Why do employees work overtime? The boss was late.
+Why do couriers run? The parcel is nagging.
+Why does the guard stand? Someone stole the chair.
+Why do cleaners get up early? Rubbish waits for no one.
+Why are gardeners' hands dirty? Flowers don't grow in gloves.
+Why do postmen cycle? Too many letters to walk.
+Why do shop assistants smile? The goods can't.
+Why do cashiers count so fast? It isn't their money.
+Why are nannies patient? The children aren't.
+Why do guides talk loudly? The people at the back can't hear.
+Why do pilots wear sunglasses? The clouds are too bright.
+Why does the captain stand at the bow? You can't see the way from the stern.
+Why do soldiers march in step? Walking any old how, they'd tread on each other.
+Why do tailors carry needles? Clothes won't sew themselves.
+Why do cobblers look down? The shoes are down there.
+Why do dentists wear masks? So they don't laugh at your teeth.
+Why do eye doctors wear glasses? They've looked at too many eyes.
+Why do vets love animals? Animals never complain about the bill.
+Why answer the exam? Blank means zero.
+Why so much homework? The teacher is afraid you'll get bored.
+Why is break so short? Happiness always is.
+Why is the blackboard black? It's written so much it's worn dark.
+Why does chalk snap? The teacher pressed too hard.
+Why are textbooks so thick? Knowledge refuses to be brief.
+Why is the home-time bell the sweetest? It says you may go.
+Why are uniforms all the same? The school is afraid of mixing people up.
+Why is PE the happiest lesson? No sitting.
+Why is maths hard? It doesn't speak human.
+Why memorise literature? The author won't tell it again.
+Why does English have grammar? Say it any old how and nobody understands.
+Why learn dates in history? The past won't announce its own time.
+Why use maps in geography? The Earth won't fit in the classroom.
+Why does physics have formulas? The world has to be calculated.
+Why does chemistry smell? It wants you to remember it.
+Why dissect in biology? The frog in the book doesn't move.
+Why sing in music class? The teacher wants to sing too.
+Why draw in art class? The teacher can't sing.
+Why take photos at graduation? You won't see each other again.
+Why are classmates late to the reunion? They were thinking of what to say on the way.
+Why does Messmer set fires? He thinks the Scadutree is too dark.
+Why does Rellana carry two swords? One isn't enough for her temper.
+Why is Bayle so big? He ate too many dragons.
+Why does Igon keep shouting for Bayle? Bayle never picks up.
+Why is Leda so loyal? She saves her doubts for other people.
+Why does Ansbach love telling stories? In the stories he's still young.
+Why does Freyja follow Radahn? She wants to see a hero's back.
+Why is Thiollier always lying down? Sleep is his faith.
+Why doesn't Dane use weapons? Weapons drop; fists don't.
+Why does Moore like picking things up? Nobody wants what's on the ground.
+Why are the Hornsent angry? Their horns don't come off.
+Why does St. Trina make people sleep? Being awake is exhausting.
+Why does Count Ymir play the organ? He can't sing.
+Why is Jolán so quiet? Her voice stayed somewhere else.
+Why does Gaius ride a boar? Horses think he's too heavy.
+Why is Romina covered in flowers? She never weeds.
+Why does Midra hold it in? If he laughs he catches fire.
+Why does Metyr have so many fingers? It's counting how many fingers it has.
+Why is Radahn back again? Miquella booked the ticket.
+Why pick up Scadutree Fragments? The tree won't grow back by itself.
+Why is the Land of Shadow a shadow? The light went elsewhere.
+Why are the finger ruins all fingers? Nobody trims them.
+Why is Belurat so tall? The Hornsent like climbing.
+Why does Enir-Ilim have so many stairs? Gods don't take lifts.
+Why are the Abyssal Woods frightening? The things in there look at you.
+Why is the Shaman Village so quiet? The singing stopped.
+Why do Furnace Golems walk? Everything they stand on catches fire.
+Why is there someone in the jar? Jars need contents.
+Why does dragon communion eat hearts? The rest of the dragon doesn't taste good.
+Why are the dogs in the Land of Shadow bigger? They eat better.
+Why is grace brighter in the shadow? Everything stands out in the dark.
+Why do the statues move? You looked at them too long.
+Why is cursed blood red? All blood is red.
+Why aren't the Fire Knights afraid of fire? Their armour got scared first.
+Why do the coffin ships move? The people inside want a change of scenery.
+Why doesn't the shadow talk? It only follows you.
+Why does the foundry have so many jars? The failed ones were kept too.
+Why are there only two flasks? A third would go off.
+Why do spirit ashes need a bell? Spirits can't hear shouting.
+Why are there so many Ashes of War? Every weapon wants a new move.
+Why only four talismans? The neck is only so long.
+Why is armour so heavy? It wants to protect you, and protection is heavy.
+Why upgrade weapons? The enemies are upgrading too.
+Why can't a staff cut anyone? Its temper is scholarly.
+Why can a seal smack people? It's round, and round things smack.
+Why is the greatsword so slow? Every swing takes a lot of thought.
+Why is the dagger so fast? It doesn't want to be seen.
+Why draw a bow? Arrows won't fly on their own.
+Why is the crossbow so accurate? It doesn't get nervous.
+Why do shields break? They blocked too many times.
+Why is the whip so long? It wants to keep its distance from the enemy.
+Why do fire pots explode? They've been angry the whole time.
+Why do throwing knives come in threes? One is lonely and two argue.
+Why are darts so small? They have to fit in a pocket.
+Why grease a weapon? Weapons need skincare too.
+Why are boluses so bitter? Sweet ones don't work.
+Why is jerky so hard? It dried for a long time.
+Why doesn't honey go off? Bees are thorough.
+Why gather herbs? They won't come to you.
+Why crush the flower? Whole, it's too big.
+Why are feathers so light? Birds have to fly.
+Why are bones so hard? Soft ones get eaten.
+Why is leather so tough? It used to be someone else's clothes.
+Why is iron so heavy? It has never dieted.
+Why is gold so expensive? It never goes on sale.
+Why do runes glow? They want to be found.
+Why spend runes? Saved ones get lost.
+Why does levelling cost runes? Melina charges too.
+Why is there a level cap? Any higher and the ceiling cracks.
+Why assign attribute points? Stats don't grow by themselves.
+Why does HP go down? You keep getting hit.
+Why does FP run out? Magic costs money.
+Why does stamina empty? You run too much.
+Why is there a weight limit? Your back would break.
+Why does rolling get slow? You're dressed too thickly.
+Why do weapons have stat requirements? They're picky about people.
+Why memorise spells? Forgotten, they can't be cast.
+Why is there an item cap? Pockets are only so big.
+Why is the storage chest so big? It doesn't have to be carried.
+Why find map fragments? The whole map is too heavy.
+Why rest at grace? You can't save standing up.
+Why can't you take the bonfire with you? It's a landmark.
+Why sit at grace before travelling? There's no teleporting in mid-air.
+Why is the night more dangerous? The enemies can't sleep either.
+Why is it slippery in the rain? The floor was just mopped.
+Why do enemies respawn? So do you.
+Why does the boss have two health bars? It saw how many you have.
+Why touch the fog gate? It won't open by itself.
+Why does the dungeon door need a key? It doesn't recognise faces.
+Why open chests? They won't tell you what's inside.
+Why is there something in the pot? Pots don't stay empty.
+Why climb ladders? The lift is broken.
+Why do jumps kill you? The ground is too far.
+Why is fall damage so high? The ground is very hard.
+Why do you die in water? You can't swim.
+Why does poison build up? It comes a bit at a time.
+Why does rot hurt so much? It's in no hurry.
+Why is bleeding so fast? Blood is in a hurry.
+Why is frostbite so cold? It comes from the north.
+Why does sleep put you to sleep? You really are tired.
+Why does frenzy burn the eyes? It sees too clearly.
+Why is death blight so scary? It doesn't listen to reason.
+Why does hair grow? It wants to see outside.
+Why cut nails? They don't know when to stop.
+Why two eyes? One can't judge distance.
+Why is the nose in the middle? It has to smell both sides.
+Why only one mouth? Two would argue.
+Why are the ears on both sides? They have to hear both sides.
+Why are teeth white? They brushed.
+Why is the tongue so soft? It has to speak softly.
+Why five fingers? Six would count one too many.
+Why do feet have toes? They grip the ground.
+Why do knees bend? Straight ones can't sit.
+Why does the stomach rumble? It's hungry and wants to talk.
+Why does the heart beat? It never rests.
+Why do lungs breathe? Air won't come in by itself.
+Why do bones crack? They're protesting.
+Why does skin tan? It wants a change of colour.
+Why close your eyes when sneezing? You don't want to see what you look like.
+Why are yawns contagious? Tiredness is public.
+Why do hiccups stop? They get tired.
+Why do we sweat? The body is crying.
+Why do we blush? The blood came up to watch.
+Why do we get goosebumps? The skin is surprised.
+Why do we dream? The brain doesn't clock off at night.
+Why do we snore? The nose is asleep too.
+Why do heads ache? Too much thinking.
+Why do we catch colds? The nose had nothing on.
+Why do we run a fever? The body is angry.
+Why is medicine so bitter? It wants you to remember what being ill tastes like.
+Why do injections hurt? The needle is saying hello.
+Why do plasters have patterns? Wounds want to look nice too.
+Why are hospitals so white? They want to look clean.
+Why do hospital beds have wheels? Patients want a change of scenery too.
+Why is a football round? A square one won't go far.
+Why does a basketball bounce? It's in a hurry to come back.
+Why is a ping-pong ball so small? The table isn't big either.
+Why does a shuttlecock have feathers? It wants to fly like a bird.
+Why are tennis balls yellow? Green ones vanish on the grass.
+Why wear trainers to run? Dress shoes would laugh.
+Why wear a swimsuit to swim? Ordinary clothes sink.
+Why are weights so heavy? Nobody watches light ones.
+Why do boxers wear gloves? Fists hurt too.
+Why jump in the high jump? You can't walk over.
+Why run up for the long jump? Standing still you don't get far.
+Why is a marathon so long? A short one is called a walk.
+Why does skating need ice? You can't slide on the ground.
+Why does skiing need snow? Grass is prickly.
+Why does archery need arrows? The bow can't fly out by itself.
+Why think at chess? The pieces won't move themselves.
+Why does a deck have fifty-four cards? Fifty-two was two jokes short.
+Why does a die have six faces? With seven it would never stop rolling.
+Why wash mahjong tiles? They're dirty... no, it's called shuffling.
+Why does a jigsaw have so many pieces? One piece isn't a jigsaw.
+Why is the cube scrambled? You turned it.
+Why save a game? Games fear death too.
+Why does the game lag? It's thinking about the next step.
+Why do games update? They want to get better too.
+Why does the controller vibrate? It's nervous on your behalf.
+Why does a piano have black and white keys? Coloured ones would be too loud.
+Why does a guitar have six strings? Five isn't enough and seven is too many.
+Why is the drum so loud? It got hit.
+Why bow a violin? It can't sing.
+Why does a flute have holes? It needs to breathe.
+Why sing songs? Spoken, they don't sound good.
+Why does dancing need music? Without music it's called cramp.
+Why is the cinema dark? The screen is afraid of light.
+Why do films end? The reel ran out.
+Why do books end? The author got tired.
+Why do poems rhyme? They want to be remembered.
+Why hang paintings? On the floor they'd get stepped on.
+Why do photos age? They remember time.
+Why lock a diary? Some things in it can't be said.
+Why post letters? Words can't walk that far.
+Why is there news every day? The world does something every day.
+Why are adverts so long? They want to be remembered.
+Why tell jokes? Written down they aren't funny.
+Why are cold jokes cold? Nobody laughed.
+Why are riddles hard? The answer is hiding.
+Why do stories need a beginning? Without one you can't tell them.
+Why do fairy tales have princes? A princess alone is hard to tell.
+Why do myths have gods? There weren't enough people.
+Why are legends so far away? Nearby ones get found out.
+Why does one plus one equal two? Three is too many.
+Why is zero round? It has nothing, so it drew a circle.
+Why is seven thinner than eight? It skipped a meal.
+Why is nine so proud? It's the biggest single digit.
+Why does ten need two digits? One wasn't enough room.
+Why is a hundred smaller than a thousand? It's one zero short.
+Why is infinity so big? Nobody can finish counting it.
+Why has the circle no corners? They all got worn off.
+Why is the triangle stable? It has three legs.
+Why is the square so proper? All four sides are the same.
+Why is a straight line the shortest? It doesn't take detours.
+Why are curves beautiful? They can turn.
+Why divide fractions? The whole thing is too big.
+Why does a decimal have a point? It needs a pause.
+Why are negative numbers negative? They owe money.
+Why is multiplication fast? Addition is too slow.
+Why does division leave a remainder? It doesn't split cleanly.
+Why solve equations? They won't say the answer themselves.
+Why draw in geometry? Words can't explain it.
+Why average in statistics? Everyone is about the same.
+Why is probability a half? The coin only has two sides.
+Why can the calculator calculate? It can't do anything else.
+Why does the abacus have beads? Not enough fingers.
+Why do mathematicians love coffee? Theorems get proved at night.
+Why does the clock have twelve numbers? Thirteen is unlucky.
+Why is there a zero degrees? Ice needs somewhere to stand.
+Why does the ruler have marks? Eyes aren't accurate.
+Why does the scale tip? It's biased.
+Why does the alarm have snooze? You taught it.
+Father asks: where are your marks? The son says: like your hair, fewer and fewer.
+Mother says: stop playing. The child says: I'm learning how to play.
+Grandpa says: I walked to school when I was young. Grandson says: so did I, last week.
+Grandma knits a jumper; the cat waits beside her, all winter.
+Big brother says: I'm bigger than you. Little brother says: you're older than me.
+Big sister says: I was born first. Little sister says: so you get old first.
+Uncle came with a present. The present was himself.
+Auntie says: you've grown. The child says: you've shrunk.
+My cousin says: I've got a new car. I say: I've got new shoes, they go places too.
+The neighbour's dog barked all night; next day it slept all day.
+The landlord says: the rent's gone up. I say: my pay hasn't, so we're even.
+My flatmate says: you snore. I say: that's me singing.
+A friend says: lend me some money. I say: I was about to say the same.
+A colleague says: overtime again today. I say: yesterday was today too.
+The boss says: the company belongs to everyone. Everyone says: then where's our share?
+The customer says: make it cheaper. I say: then the quality gets cheaper too.
+The doctor says: less sugar. I say: fine, less each time, but more times.
+The teacher says: no sleeping in class. I say: I'm not asleep, I'm thinking with my eyes shut.
+A classmate says: copy mine. I say: you haven't written anything either.
+The waiter says: what would you like? I say: something that doesn't need waiting for.
+The driver says: we're here. I say: how did you know I wanted to come here?
+The barber says: shorter? I say: shorter, but not less.
+The postman says: a letter for you. I say: a bill? He says: how did you know?
+The courier says: your parcel. I say: I didn't order anything. He says: it's your IOU.
+The guard says: who are you? I say: I live here. He says: so do I.
+The guide says: this place is a thousand years old. A tourist says: it must be tired.
+The shop says: buy one get one free. I say: I'll buy one and you give me a different one.
+The bank says: insufficient funds. I say: I know, I just wanted to hear you say it.
+The alarm says: get up. I say: you first.
+The phone says: battery low. I say: same.
+The computer says: updating. I say: I'm waiting. It says: so am I.
+The fridge says: I'm empty. I say: same.
+The mirror says: you look tired. I say: so do you.
+The shoe says: I rub. I say: the foot rubs you too.
+The chair says: you've sat too long. I say: you've stood too long.
+The bed says: get up. I say: five more minutes. The bed says: that's the thirtieth five minutes.
+The door says: knock. I say: I've got a key. The door says: knock anyway, it's polite.
+The window says: open me. I say: it's windy. The window says: I want to see the wind.
+The lamp says: turn me off. I say: I'm afraid of the dark. The lamp says: so am I, that's why I'm on.
+The book says: read me. I say: tomorrow. The book says: you said that yesterday.
+The pen says: write. I say: nothing to say. The pen says: then draw.
+The cup says: drink. I say: not thirsty. The cup says: then I got filled for nothing.
+The rain says: take an umbrella. I say: you won't fall. The rain says: I will if you don't.
+The wind says: wear more. I say: not cold. The wind says: let me blow and see.
+The sun says: come out and sunbathe. I say: too hot. The sun says: that's my job.
+The moon says: sleep. I say: can't. The moon says: then count me.
+The star says: make a wish. I say: done. The star says: then I'm off, busy.
+The cloud says: it's going to rain. I say: you lied last time. The cloud says: this time it's true.
+The mountain says: climb me. I say: too high. The mountain says: then look at me.
+The sea says: come and swim. I say: cold. The sea says: I'm always cold.
+The tree says: lean on me. I say: there are bugs. The tree says: they lean on me too.
+The flower says: smell me. I say: allergies. The flower says: then look at me.
+The grass says: don't step on me. I say: nowhere else to walk. The grass says: then gently.
+The rock says: sit on me. I say: hard. The rock says: I'm always hard.
+The road says: walk me. I say: far. The road says: every road is far.
+The bridge says: cross me. I say: scared. The bridge says: I'm more scared.
+The river says: don't fall in. I say: I wasn't planning to. The river says: nobody plans to.
+The cat says: feed me. I say: just did. The cat says: that was a past life.
+The dog says: let's go out. I say: it's raining. The dog says: that's water, not rain.
+The bird says: good morning. I say: too early. The bird says: for me it's noon.
+The fish says: change the water. I say: did it yesterday. The fish says: I forgot.
+The mosquito says: lend me some blood. I say: no. The mosquito says: then I'll help myself.
+The ant says: make way. I say: you're so small. The ant says: all the more reason.
+The spider says: don't touch the web. I say: I didn't see it. The spider says: that's the point.
+The tortoise says: wait for me. I say: it's been a year. The tortoise says: only a year.
+The hare says: I'm fast. The tortoise says: we tried that last time.
+The mouse says: don't tell the cat. The cat says: I heard that.
+The hen says: me first. The egg says: me first. The farmer says: both in the pot.
+The sheep says: don't count me. The shepherd says: I count you because I can't sleep.
+The cow says: don't squeeze. The farmer says: milk won't come out by itself.
+The horse says: don't whip me. The knight says: then go faster.
+The donkey says: I'm not going. The owner says: nor am I. The donkey says: then who is?
+The pig says: I'm not fat. The mirror says: I've cracked.
+The bear says: see you in winter. I say: you'll be asleep. The bear says: then spring.
+The wolf says: I don't eat sheep. The sheep says: then what? The wolf says: sheep who ask that.
+The fox says: I'm not cunning. The crow says: then give the meat back.
+The monkey says: I look human. The human says: do I look like a monkey? The monkey says: no, no tail.
+The elephant says: my memory is great. I say: remember me? The elephant says: who are you?
+The giraffe says: I can see far. I say: can you see my keys?
+The penguin says: I can fly. I say: show me. The penguin says: underwater.
+The whale says: I'm small. The sea says: you haven't seen me.
+The octopus says: I've got lots of hands. I say: hold this for me. The octopus says: all busy.
+The crab says: I walk straight. I say: show me. The crab says: isn't this straight?
+The snail says: I'm here. I say: you set off three days ago. The snail says: hence here.
+The bee says: leave my honey. I say: that's my bread. The bee says: that's my honey on your bread.
+The firefly says: I'm a lamp. The lamp says: you're too small. The firefly says: you're too big.
+The butterfly says: I used to be a caterpillar. The caterpillar says: I'll be you later.
+The frog says: I'm a prince. The princess says: bath first.
+The snake says: I have no feet. The centipede says: borrow a few of mine.
+The fly says: I'm annoying. I say: I know. The fly says: then why don't you swat me?
+The bat says: I see the world upside down. I say: is the world upside down? The bat says: you are.
+The parrot says: hello. I say: hello. The parrot says: hello. I say: enough. The parrot says: enough.
+The crow says: I'm black. I say: I know. The crow says: are you white? I say: I didn't say that.
+The peacock says: look at me. I say: I did. The peacock says: again.
+The pigeon says: letter delivered. I say: I didn't send one. The pigeon says: then it's someone else's.
+The eagle says: I fly high. The sparrow says: I fly low, but I get fed.
+The penguin and the polar bear have never met: one's south, one's north, and neither can be bothered to walk.
+The cat and the dog finally made peace: they found the owner was the common enemy.
+The lion and the tiger had a fight. The result: neither wants another.
+Someone asks the Tarnished: aren't you afraid of dying? He says: I am, I'm just used to it.
+Someone asks grace: why are you here? Grace says: I'd like to know too.
+Someone asks the merchant: how come you never get killed? The merchant says: I'm not worth anything.
+Someone asks the smith: why don't you go to war? The smith says: the hammer costs more than the sword.
+Someone asks Torrent: why don't you talk? Torrent says: I did, you weren't listening.
+Someone asks the bonfire: why don't you go out? The bonfire says: then what would you do?
+Someone asks the fog gate: why must I touch you to open? The fog gate says: I want to know who it is.
+Someone asks the chest: why are you locked? The chest says: I'm not, you just can't open me.
+Someone asks the jar: why do you walk? The jar says: I'd like to know who's inside too.
+Someone asks the crow: why don't you fly? The crow says: if I fly I can't eat you.
+Someone asks the dog: why aren't you a dog? The dog says: the messages say I am.
+Someone asks the turtle: how can you talk? The turtle says: live long enough and you learn.
+Someone asks the tree: why do you glow? The tree says: so you can find me.
+Someone asks the castle: why so tall? The castle says: the builder was scared of heights, so he looked up.
+Someone asks the stairs: why so many? The stairs say: the lift hasn't been invented.
+Someone asks the bridge: why did you break? The bridge says: too many people crossed.
+Someone asks the river: why so deep? The river says: too many people fell in.
+Someone asks the cave: why so dark? The cave says: saving electricity.
+Someone asks the graveyard: why so quiet? The graveyard says: the guests are resting.
+Someone asks the rain: why fall on me? The rain says: you're standing here.
+Someone asks the wind: why blow? The wind says: if I don't, I'm not wind.
+Someone asks the night: why come? The night says: the day invited me.
+Someone asks the dawn: why so slow? The dawn says: I'm waiting for you to sleep enough.
+Someone asks the runes: why did you drop? The runes say: you dropped first.
+Someone asks the level: why won't you go up? The level says: pay first.
+Someone asks the weapon: why so blunt? The weapon says: you never sharpened me.
+Someone asks the armour: why so heavy? The armour says: light stuff doesn't block.
+Someone asks the shield: why did you crack? The shield says: I cracked for you.
+Someone asks the staff: why are you useless? The staff says: you've no intelligence.
+Someone asks the seal: why are you useless? The seal says: you've no faith.
+Someone asks the bow: why so short a range? The bow says: you never draw me fully.
+Someone asks the arrows: why aren't there enough? The arrows say: you shoot too many.
+Someone asks the potion: why only one bottle? The potion says: the other one is blue.
+Someone asks the blue flask: why does nobody drink you? The blue flask says: they don't use magic.
+Someone asks the ashes: why won't you come out? The ashes say: no summoning here.
+Someone asks the red phantom: why did you come? The phantom says: bored.
+Someone asks the white phantom: why did you come? The phantom says: I was called.
+Someone asks the Erdtree: why must you burn? The Erdtree says: ask Melina.
+Someone asks Melina: why must it burn? Melina says: ask the Erdtree.
+Someone asks the Elden Ring: why did you shatter? The ring says: someone dropped me.
+Someone asks the shards: why fight over you? The shards say: we didn't want this either.
+Someone asks the demigods: why do you fight? The demigods say: family matters.
+Someone asks the king: why be king? The king says: nobody else wanted to.
+Someone asks the Tarnished: why be king? The Tarnished says: people told me to.
+The weather was lovely today, so I stayed in, so as not to waste it.
+I decided to start my diet today, starting tomorrow.
+I bought an alarm clock; every day it reminds me on time that I haven't slept enough.
+I kept a plant; it lived three days, longer than my fish.
+I learned to cook; the pan learned to smoke.
+I wrote a book; the only reader was me.
+I ran five kilometres; it took an afternoon, because I napped in the middle.
+I saved some money; then it went shopping.
+I made a wish; the wish said: join the queue.
+I found my keys, in my hand.
+I lost my phone, in my pocket.
+I lost my glasses, on my head.
+I forgot my umbrella; the rain remembered.
+I finished my homework, in a dream.
+My cat learned to open doors, not to close them.
+My dog learned to sit, not to stand.
+My fish learned to swim, from birth.
+My plant learned to wither, quickly.
+My alarm learned to ring, not to stop.
+My computer learned to update, not to finish.
+My car learned to stop, in the middle of the road.
+My shoes learned to rub, on day one.
+My hat learned to fly, when it's windy.
+My money learned to vanish, every month.
+My time learned to run, faster than me.
+My hair learned to fall, more diligently than me.
+My memory learned to forget, thoroughly.
+My dreams learned to end, at the best part.
+My dinner learned to go cold, when I wasn't looking.
+My coffee learned to spill, on the keyboard.
+Last year I planted a tree; this year it's still that tree.
+Last week I bought a fish; this week it's still a fish, just not moving.
+Yesterday I said I'd start tomorrow; today I said I'd start tomorrow.
+I got up very early this morning, then went back to sleep.
+I had lunch at noon, then got hungry.
+I went to bed early tonight, at two in the morning.
+It rained; the umbrella was at home and I was out; we were both where we belonged.
+The wind blew; my hat flew; it went further than I ever have.
+It snowed; the snowman stood for a day; next day only the hat was left.
+It cleared up; I wanted to go out; then I thought about it all day.
+Spring came; the flowers opened; so did my nose.
+Summer came; the sun came out; I went in.
+Autumn came; the leaves fell; so did my hair.
+Winter came; the blanket won.
+The moon was full; so was my face, from eating.
+The stars came out; I made a wish; the star said: your turn, but I've clocked off.
+There's wind at the seaside, sand in the wind, and my shoes in the sand.
+There's snow on the mountain, footprints in the snow; they're mine, I never came down.
+The forest is so quiet you can hear me getting lost.
+The desert is so hot even my shadow hides under my feet.
+The city is so loud I miss the village chickens.
+The village is so quiet I miss the city cars.
+My home is so messy I can't find the cause of the mess.
+The office is so busy nobody knows what they're busy with.
+The school is so big I spend every day looking for the classroom.
+The hospital is so white I thought I'd recovered.
+The shop is so bright my wallet opened by itself.
+The restaurant smells so good I forgot what I came for.
+The park is so green I thought I was a tree.
+The station is so crowded I got there without walking.
+The airport is so big my gate is in another city.

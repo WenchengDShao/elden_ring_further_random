@@ -146,6 +146,9 @@ class Gui:
         self.include_flasks, self.include_remembrances = B(False), B(False)
         self.split_anim = S("none")
         self.flask_locations = B(False)
+        self.dialogue = B(False)
+        self.jokes = B(False)                        # "joke shifu", --dialogue-jokes
+        self.joke_archives = S("")                   # its optional paths, ';' separated (empty = found next to the input)
         self.spells = B(True)
         self.random_prices, self.price_mode = B(False), S("shuffle")
         self.price_min, self.price_max = S(""), S("")
@@ -161,6 +164,8 @@ class Gui:
         self.dep_sell: list = []
         self.dep_movesets: list = []
         self.dep_stats: list = []
+        self.dep_dialogue: list = []
+        self.dep_jokes: list = []
         self._build()
         for v in self.vars:
             v.trace_add("write", lambda *a: self._refresh())
@@ -340,9 +345,35 @@ class Gui:
                             "what was there)"), style="Hint.TLabel").pack(side="left", **PAD)
         sections.append((il, "ew", False, 2))
 
+        dg = ttk.LabelFrame(parent, text=_("Fun"))
+        r = ttk.Frame(dg)
+        r.grid(row=0, column=0, sticky="w")
+        ttk.Checkbutton(r, text=_("Random dialogue subtitles (--random-dialogue)"), variable=self.dialogue).pack(side="left", **PAD)
+        ttk.Label(r, text=_("(every NPC line shows the subtitle of another line; the voices stay, so the NPC still speaks "
+                            "its own line)"), style="Hint.TLabel").pack(side="left", **PAD)
+        r = ttk.Frame(dg)
+        r.grid(row=1, column=0, sticky="ew")
+        r.columnconfigure(1, weight=1)
+        w = ttk.Checkbutton(r, text=_("Joke shifu (--dialogue-jokes)"), variable=self.jokes)
+        w.grid(row=0, column=0, sticky="w", **PAD)
+        self.dep_dialogue.append(w)
+        w = ttk.Entry(r, textvariable=self.joke_archives)
+        w.grid(row=0, column=1, sticky="ew", **PAD)
+        self.dep_jokes.append(w)
+        w = ttk.Button(r, text=_("Browse…"), command=self._pick_jokes)
+        w.grid(row=0, column=2, **PAD)
+        self.dep_jokes.append(w)
+        w = ttk.Label(r, text=_("(the cut lines show a joke and join the shuffle; text archives: empty = the "
+                                "msg\\<language>\\menu_dlc02.msgbnd.dcx next to the input regulation.bin, in its mod folder "
+                                "or the sibling mod folders; or pick them yourself)"), style="Hint.TLabel")
+        w.grid(row=1, column=0, columnspan=3, sticky="w", **PAD)
+        self.dep_jokes.append(w)
+        dg.columnconfigure(0, weight=1)
+        sections.append((dg, "ew", False, 2))
+
         b = ttk.Frame(parent, style="Bg.TFrame")
         ttk.Button(b, text=_("Preset"), command=self._preset).pack(side="left", **PAD)
-        ttk.Label(b, text="= --split-anim any --random-prices --weapons --random-flask-locations",
+        ttk.Label(b, text="= --split-anim any --random-prices --weapons --random-flask-locations --random-dialogue --dialogue-jokes",
                   style="Bg.TLabel").pack(side="left")
         ttk.Button(b, text=_("Reset options"), command=self._reset).pack(side="left", padx=(16, 6))
         self.btn_run = ttk.Button(b, text=_("Randomize"), style="Accent.TButton", command=lambda: self._start(False))
@@ -403,7 +434,7 @@ class Gui:
         text = self.log.get("1.0", "end-1c")
         for w in self.root.winfo_children():
             w.destroy()
-        for dep in (self.dep_prices, self.dep_sell, self.dep_movesets, self.dep_stats):
+        for dep in (self.dep_prices, self.dep_sell, self.dep_movesets, self.dep_stats, self.dep_dialogue, self.dep_jokes):
             dep.clear()
         self._build()
         if text:
@@ -426,6 +457,13 @@ class Gui:
                                          defaultextension=".bin", filetypes=[("regulation.bin", "*.bin")])
         if p:
             self.output.set(p)
+
+    def _pick_jokes(self) -> None:
+        ps = filedialog.askopenfilenames(title=_("Joke shifu (--dialogue-jokes)"),
+                                         filetypes=[("menu_dlc02.msgbnd.dcx", "*.msgbnd.dcx"), (_("All files"), "*.*")])
+        if ps:
+            have = [x for x in self.joke_archives.get().split(";") if x.strip()]
+            self.joke_archives.set(";".join(have + [p for p in ps if p not in have]))
 
     def _pick_dll(self) -> None:
         p = filedialog.askopenfilename(title=oodle.DLL_NAME,
@@ -473,6 +511,11 @@ class Gui:
             a += ["--split-anim", self.split_anim.get()]
         if self.flask_locations.get():
             a.append("--random-flask-locations")
+        if self.dialogue.get():
+            a.append("--random-dialogue")
+            if self.jokes.get():
+                a.append("--dialogue-jokes")
+                a += [x.strip() for x in self.joke_archives.get().split(";") if x.strip()]
         if not self.spells.get():
             a.append("--no-spells")
         if self.random_prices.get():
@@ -538,7 +581,9 @@ class Gui:
                             (self.dep_sell, self.random_prices.get()
                              and (self.sell_prices.get() or self.sell_equipment.get())),
                             (self.dep_movesets, self.movesets.get()),
-                            (self.dep_stats, self.stats.get())):
+                            (self.dep_stats, self.stats.get()),
+                            (self.dep_dialogue, self.dialogue.get()),
+                            (self.dep_jokes, self.dialogue.get() and self.jokes.get())):
             for w in widgets:
                 w.state(["!disabled"] if on else ["disabled"])
         try:
@@ -550,6 +595,8 @@ class Gui:
         self.split_anim.set("any")
         self.random_prices.set(True)
         self.flask_locations.set(True)
+        self.dialogue.set(True)
+        self.jokes.set(True)
         for v in (self.somber, self.movesets, self.default_ash, self.stats):
             v.set(True)
 
@@ -566,9 +613,11 @@ class Gui:
         self.sell_equipment.set(False)
         self.sell_min.set("")
         self.sell_max.set("")
-        for v in (self.include_flasks, self.include_remembrances, self.flask_locations, self.random_prices,
-                  self.somber, self.movesets, self.default_ash, self.stats, self.keep_standard, self.weptype):
+        for v in (self.include_flasks, self.include_remembrances, self.flask_locations, self.dialogue, self.jokes,
+                  self.random_prices, self.somber, self.movesets, self.default_ash, self.stats, self.keep_standard,
+                  self.weptype):
             v.set(False)
+        self.joke_archives.set("")
         self.moveset_mode.set("affinity")
         self.shield.set("shields")
         self.bow.set("bows")
@@ -670,8 +719,9 @@ class Gui:
         elif rc == 0:
             self._set_status("Done: {}", self.out)
             messagebox.showinfo(TITLE, _("Written: {}\n\nReplace the regulation.bin in the mod folder with it to use it.\n"
-                                         "mapping.txt / weapons.txt / spells.txt (what was randomized) are in the same "
-                                         "folder.").format(self.out))
+                                         "mapping.txt / weapons.txt / spells.txt / dialogue.txt (what was randomized) "
+                                         "are in the same folder; with jokes, copy its msg folder into the mod folder "
+                                         "too.").format(self.out))
         else:
             if msg:
                 self._append("\n" + msg.rstrip() + "\n")

@@ -6,6 +6,7 @@ randomized/
 /mapping.txt
 /weapons.txt
 /spells.txt
+/dialogue.txt
 # python
 __pycache__/
 *.pyc

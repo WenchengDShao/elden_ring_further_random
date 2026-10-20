@@ -33,6 +33,16 @@ Weapons:
   --stamina-rate LO,HI  range of the random staminaConsumptionRate (attack stamina cost multiplier)
                         per row, group "stamina" (default 0.3,1.7)
   --weapons             shortcut for the four weapon options
+Dialogue (TalkParam):
+  --random-dialogue     the subtitles of NPC dialogue are shuffled over every NPC's lines: the NPC speaks
+                        its own line while another line is shown (voices are never moved, the game loads a
+                        voice bank only near the NPC it belongs to).  Report in dialogue.txt
+  --dialogue-jokes [MSGBND ...]
+                        "joke shifu": the cut rows (text id without a text) get a joke each from
+                        names/jokes_<language>.txt and join the shuffle; MSGBND is the game's
+                        msg/<language>/menu_dlc02.msgbnd.dcx (one per language); without paths the archives
+                        next to the input are used (its mod folder, then the sibling mod folders, e.g. the item
+                        randomizer's); the patched copy is written next to the output as msg/<language>/...
 Spells (Magic.param):
   (always)              each sorcery / incantation gets the effect of another spell (one pool for both);
                         --split-anim also splits cast animation and effect; --random-stats (group
@@ -47,7 +57,7 @@ Usage:
                         [--no-spells] [--dry-run]
                         [--random-prices] [--price-mode shuffle|range] [--price-min N] [--price-max N]
                         [--no-sell-prices] [--sell-min N] [--sell-max N] [--sell-equipment]
-                        [--random-flask-locations]
+                        [--random-flask-locations] [--random-dialogue] [--dialogue-jokes [MSGBND ...]]
                         [--somber-infusable] [--random-movesets] [--random-default-ash]
                         [--random-stats] [--stat-groups attack,guard,...] [--stamina-rate 0.3,1.7] [--weapons]
 """
@@ -60,10 +70,12 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import dialogue  # noqa: E402
 import erreg  # noqa: E402
 import flasks  # noqa: E402
 import oodle  # noqa: E402
 import spells  # noqa: E402
+import talkmsg  # noqa: E402
 import weapons  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
@@ -344,6 +356,17 @@ def main(argv: list[str] | None = None) -> int:
                          "swaps places with a random one-time pickup, boss reward, NPC gift or shop slot (never a "
                          "chance drop or a map fragment; Land of Shadow NPCs and shops excluded), and the first "
                          "Site of Grace gives that item instead")
+    ap.add_argument("--random-dialogue", action="store_true",
+                    help="shuffle the subtitles of NPC dialogue (TalkParam.msgId) over every NPC's lines: the NPC "
+                         "speaks its own line while another line is shown; voices are never moved (the game loads a "
+                         "voice bank only near the NPC it belongs to, a moved voice would be silent)")
+    ap.add_argument("--dialogue-jokes", nargs="*", default=None, metavar="MSGBND",
+                    help="joke shifu, with --random-dialogue: the cut rows (a text id without a text) get a joke each "
+                         "from tools/names/jokes_<language>.txt and join the shuffle; MSGBND = the game's "
+                         "msg/<language>/menu_dlc02.msgbnd.dcx, one per language; without paths the archives next to "
+                         "the input regulation.bin are used (its mod folder, then the sibling mod folders: the item "
+                         "randomizer writes one into mod/randomizer/msg/); the patched copy goes next to the output "
+                         "as msg/<language>/...")
     ap.add_argument("--somber-infusable", action="store_true", help="somber/unique weapons get all affinities and Ashes of War")
     ap.add_argument("--random-movesets", action="store_true",
                     help="random light/heavy attack moveset on every melee weapon and shield")
@@ -494,6 +517,25 @@ def main(argv: list[str] | None = None) -> int:
         print("\n".join(flines))
         report += "\n\n" + "\n".join(flines)
 
+    dlines: list[str] = []
+    jokes = None
+    if args.dialogue_jokes is not None and not args.random_dialogue:
+        raise SystemExit("--dialogue-jokes needs --random-dialogue")
+    if args.random_dialogue and args.dialogue_jokes is not None:
+        archives = args.dialogue_jokes or [str(p) for p in dialogue.find_archives(Path(args.input))]
+        if not archives:
+            raise SystemExit(f"--dialogue-jokes: no msg/<language>/{dialogue.ARCHIVE} found next to {args.input} (in its "
+                             "folder or the sibling mod folders) for the languages with a joke list "
+                             f"({', '.join(dialogue.joke_languages())}). The item randomizer writes one into its mod "
+                             "folder (mod/randomizer/msg/), or extract it from Data0.bdt with UXM; or pass the path(s).")
+        if not args.dialogue_jokes:
+            print("# jokes: text archives found next to the input: " + ", ".join(archives))
+        jokes = dialogue.Jokes(archives)
+    if args.random_dialogue:
+        dlines.append(f"# seed={seed}")
+        dlines += dialogue.Dialogue(reg).randomize(rng, args.mode, jokes)
+        print("\n".join(l for l in dlines if l.startswith("#")))
+
     if args.dry_run:
         return 0
     out = Path(args.output)
@@ -505,9 +547,23 @@ def main(argv: list[str] | None = None) -> int:
         out.with_name("weapons.txt").write_text("\n".join(wlines) + "\n", encoding="utf-8")
     if slines:
         out.with_name("spells.txt").write_text("\n".join(slines) + "\n", encoding="utf-8")
+    if jokes is not None:
+        for src, lang in zip(jokes.archives, jokes.langs):
+            dst = out.parent / "msg" / src.parent.name / src.name
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            data, written = talkmsg.patch_archive(src, jokes.texts(lang))
+            dst.write_bytes(data)
+            note = (f"# jokes: {dst} <- {src}: " + ", ".join(f"{n} entries in {name}" for name, n in written.items())
+                    + f" (names/jokes_{lang}.txt, {len(jokes.lists[lang])} jokes); put the msg folder next to "
+                    "regulation.bin in the mod folder")
+            print(note)
+            dlines.append(note)
+    if dlines:
+        out.with_name("dialogue.txt").write_text("\n".join(dlines) + "\n", encoding="utf-8")
     print(f"\nwritten: {out}  (mapping: {out.with_name('mapping.txt')}"
           + (f", weapons: {out.with_name('weapons.txt')}" if wlines else "")
-          + (f", spells: {out.with_name('spells.txt')}" if slines else "") + f")  seed={seed}")
+          + (f", spells: {out.with_name('spells.txt')}" if slines else "")
+          + (f", dialogue: {out.with_name('dialogue.txt')}" if dlines else "") + f")  seed={seed}")
     return 0
 
 

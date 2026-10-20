@@ -103,6 +103,16 @@ ZH = {
     "Weapons (all four = --weapons)": "武器（四项全选 = --weapons）",
     # item locations
     "Item locations": "道具获取位置",
+    "Fun": "娱乐（fun）",
+    "Random dialogue subtitles (--random-dialogue)": "对话字幕随机 (--random-dialogue)",
+    "(every NPC line shows the subtitle of another line; the voices stay, so the NPC still speaks its own line)":
+        "（每句 NPC 台词显示另一句的字幕；语音不动，NPC 念的还是自己原来那句）",
+    "Joke shifu (--dialogue-jokes)": "笑话大师（joke shifu）(--dialogue-jokes)",
+    "(the cut lines show a joke and join the shuffle; text archives: empty = the "
+    "msg\\<language>\\menu_dlc02.msgbnd.dcx next to the input regulation.bin, in its mod folder "
+    "or the sibling mod folders; or pick them yourself)":
+        "（被砍的台词改成冷笑话并加入随机；文本档留空 = 用输入 regulation.bin 旁边的 msg\\<语言>\\menu_dlc02.msgbnd.dcx，"
+        "先找它所在的 mod 目录，再找同级的其他 mod 目录；也可以自己选）",
     "Somber weapons: affinities + Ashes of War (--somber-infusable)":
         "失色 / 独特武器可质变、可装战灰 (--somber-infusable)",
     "Random default skill and affinity on new weapons (--random-default-ash)":
@@ -151,9 +161,10 @@ ZH = {
         "它在游戏目录 Game\\ 里，用“浏览…”选中它就能输出原版的 KRAK 格式。\n\n"
         "改用 zstd 格式继续吗？文件会大 35% 左右，可能超过游戏的大小上限。",
     "Written: {}\n\nReplace the regulation.bin in the mod folder with it to use it.\n"
-    "mapping.txt / weapons.txt / spells.txt (what was randomized) are in the same folder.":
+    "mapping.txt / weapons.txt / spells.txt / dialogue.txt (what was randomized) are in the same folder; with jokes, "
+    "copy its msg folder into the mod folder too.":
         "已写入 {}\n\n要覆盖 mod 目录里的 regulation.bin 才会生效。\n"
-        "mapping.txt / weapons.txt / spells.txt（随机结果清单）在同一目录。",
+        "mapping.txt / weapons.txt / spells.txt / dialogue.txt（随机结果清单）在同一目录；加了冷笑话的话，旁边的 msg 目录也要一起复制进 mod 目录。",
     "Written: {}\n\nContent unchanged, only re-compressed. Replace the regulation.bin in the mod folder with it to use it.":
         "已写入 {}\n\n内容没有改动，只是重新压缩。要覆盖 mod 目录里的 regulation.bin 才会生效。",
     "The run failed, see the log": "运行失败，详见日志",

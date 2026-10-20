@@ -13,9 +13,9 @@
    （没有它只能输出体积更大的 zstd 格式）。
 3. 双击 exe，几秒后出现窗口（默认英文，右上角 Language 可切换为中文，下次启动沿用）：选“输入 regulation.bin”
    （Input regulation.bin；原版，或雾门 / 道具随机器已经改过的文件），点“常用设定”（Preset，= 道具动作与效果分开
-   随机 + 商店价格随机 + 武器四项全开），再点“开始随机”（Randomize）。
+   随机 + 商店价格随机 + 武器四项全开 + 圣杯瓶获得位置随机 + 对话字幕随机 + 笑话大师），再点“开始随机”（Randomize）。
 4. 约两分钟后弹窗提示完成，把生成的文件覆盖 mod 目录里的 `regulation.bin` 即可生效；随机结果清单
-   `mapping.txt / weapons.txt / spells.txt` 在输出文件旁边。
+   `mapping.txt / weapons.txt / spells.txt / dialogue.txt` 在输出文件旁边。
 
 ![图形界面](docs/gui.png)
 
@@ -74,7 +74,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh        # 安装 uv，装完重�
 git clone https://github.com/WenchengDShao/elden_ring_further_random.git ~/elden_ring_further_random
 cd ~/elden_ring_further_random
 cp "/mnt/c/Program Files (x86)/Steam/steamapps/common/ELDEN RING/Game/oo2core_6_win64.dll" .   # 按实际游戏路径改
-./randomize.sh --input /path/to/regulation.bin --output ./regulation_new.bin --split-anim any --random-prices --weapons --random-flask-locations
+./randomize.sh --input /path/to/regulation.bin --output ./regulation_new.bin --split-anim any --random-prices --weapons --random-flask-locations --random-dialogue --dialogue-jokes
 ```
 
 `randomize.sh` 第一次运行时会在 `~/.venvs/er_mod` 建虚拟环境并安装依赖（Python 3.10–3.14，系统 Python 不在范围内时
@@ -99,11 +99,11 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 ### 常用设定
 
 ```bash
-./randomize.sh --input /path/to/targeted/regulation.bin --output ./regulation_new.bin --split-anim any --random-prices --weapons --random-flask-locations
+./randomize.sh --input /path/to/targeted/regulation.bin --output ./regulation_new.bin --split-anim any --random-prices --weapons --random-flask-locations --random-dialogue --dialogue-jokes
 ```
 
 `/path/to/targeted/regulation.bin` 是要随机的文件（原版，或雾门 / 道具随机器已经改过的文件），结果写到
-`regulation_new.bin`，映射表 `mapping.txt`、`weapons.txt`、`spells.txt` 写在同一目录；`regulation_new.bin`
+`regulation_new.bin`，映射表 `mapping.txt`、`weapons.txt`、`spells.txt`、`dialogue.txt` 写在同一目录；`regulation_new.bin`
 需要覆盖原文件以生效。这一条包含的随机：
 
 - 道具使用效果（总是做）：每个可使用道具拿到另一个道具的使用效果，shuffle 模式每个效果恰好用一次。
@@ -117,15 +117,23 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
   能力加成、异常积累、出招耐力全部随机，法术的专注值 / 耐力 / 必需能力值也随机（`--random-stats`，全部分组）。
 - `--random-flask-locations`：红 / 蓝露滴圣杯瓶改到随机一处必定给出的位置（拾取物、boss 奖励、NPC 赠礼或商店货架）
   获得，第一个赐福改给那里原来的东西。
+- `--random-dialogue`：NPC 对话字幕在所有 NPC 的台词之间打乱，语音不动，NPC 念的还是自己那句
+  （见下文“对话字幕随机”）。
+- `--dialogue-jokes`（笑话大师）：被砍的台词改成冷笑话并加入随机；不带路径时用输入文件旁边的文本档
+  （`msg/<语言>/menu_dlc02.msgbnd.dcx`，先找输入所在的 mod 目录，再找同级的其他 mod 目录），改好的副本写到
+  输出旁的 `msg/<语言>/`，要和 regulation.bin 一起放进 mod 目录。
 - 没给 `--seed`，种子随机生成并打印在开头；想复现就把它加回去（`--seed N`）。压缩用默认的 Kraken（需要 DLL）。
 
 ### 其他示例
 
 ```bash
 ./randomize.sh --seed 1                        # 读 regulation.bin，写 randomized/regulation.bin 和映射表
-./randomize.sh --input regulation_random.bin --output /path/to/mod/regulation.bin --seed 1848 --split-anim any --random-prices --weapons --random-flask-locations
+./randomize.sh --input regulation_random.bin --output /path/to/mod/regulation.bin --seed 1848 --split-anim any --random-prices --weapons --random-flask-locations --random-dialogue --dialogue-jokes
 ./randomize.sh --dry-run                       # 只打印映射，不写文件
 ./randomize.sh --random-flask-locations        # 圣杯瓶改到随机一处必定给出的位置（拾取物 / boss / NPC / 商店）获得
+./randomize.sh --random-dialogue         # NPC 对话字幕在所有 NPC 的台词之间打乱，语音不动；报告在 dialogue.txt
+./randomize.sh --random-dialogue --dialogue-jokes   # 笑话大师：被砍的台词改成冷笑话并加入随机，文本档在输入旁边自动找
+./randomize.sh --random-dialogue --dialogue-jokes /path/to/mod/randomizer/msg/zhocn/menu_dlc02.msgbnd.dcx   # 自己指定文本档
 ./randomize.sh --help                          # 全部选项
 ```
 
@@ -142,6 +150,8 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 | `--include-flasks`、`--include-remembrances` | 把圣杯瓶 / 追忆也加入道具池（默认都不加） |
 | `--split-anim [same\|any]` | 使用动作和效果分开随机；`same` 只在同类动作里挑，`any` 全池 |
 | `--random-flask-locations` | 红 / 蓝露滴圣杯瓶改到随机一处必定给出的位置（拾取物、boss 奖励、NPC 赠礼或商店货架）获得，第一个赐福改给那里原来的东西 |
+| `--random-dialogue` | NPC 对话字幕在所有 NPC 的台词之间打乱，语音不动（NPC 念的还是自己那句）；报告 `dialogue.txt` |
+| `--dialogue-jokes [MSGBND...]` | 笑话大师，与 `--random-dialogue` 合用：被砍的台词（有 id 没文本）改成冷笑话并加入随机；MSGBND 是每种游戏语言的 `msg/<语言>/menu_dlc02.msgbnd.dcx`，不给时用输入文件旁边的（先找它所在的 mod 目录，再找同级的其他 mod 目录）；改好的副本写到输出旁的 `msg/<语言>/`，要和 regulation.bin 一起放进 mod 目录 |
 | （总是） | 每个魔法/祷告拿到另一个法术的效果；`--no-spells` 关闭 |
 | `--random-prices` | 商店购买价和道具售价；`--price-mode shuffle\|range`、`--price-min N`、`--price-max N`、`--sell-min N`、`--sell-max N`、`--no-sell-prices`（售价不动）、`--sell-equipment`（武器、防具、战灰的售价也随机，默认不动） |
 | `--weapons` | = 下面四项 |
@@ -163,9 +173,10 @@ Release 里的 `ERFurtherRandom.exe`（见开头“快速开始”）、`randomi
   输出和 `mapping.txt` 等清单始终是英文。
 - 文件：输入 regulation.bin、输出文件、Oodle DLL（启动时自动填入 exe / 仓库目录里的 `oo2core_6_win64.dll`，
   没有就留空，开始时会询问是否改用 zstd 格式）、随机种子（留空则随机抽一个，日志里会显示）、压缩格式。
-- 选项分四块：文件、道具与法术、武器、道具获取位置（圣杯瓶获得位置随机，`--random-flask-locations`）。
-- “常用设定”按钮 = `--split-anim any --random-prices --weapons --random-flask-locations`；“预览（不写文件）” = `--dry-run`；右上角“语言”左边的“只重新压缩（不随机）” = `--repack`（修复 Fog Gate Randomizer 的输出等，见下文）；
-  “开始随机”生成文件，完成后提示输出位置，`mapping.txt / weapons.txt / spells.txt` 写在输出文件旁边。
+- 选项分五块：文件、道具与法术、武器、道具获取位置（圣杯瓶获得位置随机，`--random-flask-locations`）、娱乐（fun）：
+  对话字幕随机（`--random-dialogue`）和笑话大师（joke shifu，`--dialogue-jokes`；文本档留空就在输入文件旁边自动找）。
+- “常用设定”按钮 = `--split-anim any --random-prices --weapons --random-flask-locations --random-dialogue --dialogue-jokes`；“预览（不写文件）” = `--dry-run`；右上角“语言”左边的“只重新压缩（不随机）” = `--repack`（修复 Fog Gate Randomizer 的输出等，见下文）；
+  “开始随机”生成文件，完成后提示输出位置，`mapping.txt / weapons.txt / spells.txt / dialogue.txt` 写在输出文件旁边。
 - 日志区显示命令行的全部输出；Kraken 压缩约需 2 分钟，期间窗口保持响应。
 - 外观：夜空配色，左侧是梅琳娜的立像（`tools/assets/melina.jpg`，游戏截图），随窗口高度重新裁切。背景图由
   Pillow 渲染（在 `tools/requirements.txt` 里，启动 / 打包脚本会自动装）；没有 Pillow 时只是没有背景图。
@@ -245,6 +256,47 @@ Flask of Cerulean Tears x1   ->  shop 100633: [Merchant - Liurnia of the Lakes] 
 `lot` 后是行 id 和它在原版里的内容（"在原版 Cerulean Tear Scarab 的位置"），括号里是从 id 推出的地图块
 （野外 `m60_XX_YY` / `m61_XX_YY`，带 `[地点]` 前缀的行不再标）；`shop` 后是货架 id、原版的"[商人] 商品"、单价和
 库存；`|` 后是第一个赐福改给的东西。
+
+## 对话字幕随机（--random-dialogue）
+
+NPC 对话的每一句都是 `TalkParam` 的一行：`msgId` 是字幕（TalkMsg 文本 id），`voiceId` 是语音，另有玩家为女性时的
+`msgId_female / voiceId_female`（67 句不同，"my lord / my lady" 之类）；对话脚本只引用行号，所以任意一行可以显示任意一句。
+`--random-dialogue` 把字幕在所有 NPC 的台词之间打乱，语音不动：NPC 念自己原来那句，屏幕上显示别人的一句（字幕停留时间
+仍由语音决定）。1.17.1 原版上 9135 句参与；`--mode random` 时允许一句出现多次。
+
+不参与的：占位行和测试行，以及 `tools/names/TalkMsg.txt` 里没有文本的句子（被砍内容，这样不会把空字幕换给正常台词）——
+除非用冷笑话把它们填上（“笑话大师”）：`--dialogue-jokes` 接每种游戏语言的 `msg/<语言>/menu_dlc02.msgbnd.dcx`（道具随机器的
+mod 目录里就有，`mod\randomizer\msg\zhocn\...`，游戏自己用的语言放第一个；不给路径就在输入 regulation.bin 旁边自动找：先它
+所在的 mod 目录，再同级的其他 mod 目录，已经装着本工具笑话的旧输出会跳过），每个文本档里没有文本的对话 id 各填一条 `tools/names/jokes_<语言>.txt`
+里的冷笑话（中文、英文各 955 条，逐行对应，多于没文本的 id 数，所以每句拿到的都不同，可自行增删；哪些 id 没文本因语言而异，
+中文约 830 个、英文约 850 个），这些行也加入
+随机，正常对话里就会时不时蹦出一条冷笑话。改好的文本档写到输出文件旁的
+`msg/<语言>/menu_dlc02.msgbnd.dcx`，要和 regulation.bin 一起放进 mod 目录（图形界面里是“娱乐”区的“笑话大师”，文本档
+可以多选，留空自动找）。1.17.1 原版上参与的句子从 9135 增加到 10033。
+
+语音不随机：语音 id `xxxoooooo` 存在 `sd/enus/vcxxx.bnk` 里，而游戏只在用到它的 NPC 附近加载那个声音库（Nexus 的 Elden Ring
+音频修改帖里有人想在别处播放尤拉的台词，只有在尤拉营地旁才放得出来），换到别的 NPC 身上预计是没声的，一句没声还可能要等
+30 秒才翻页。
+
+报告写在输出文件旁的 `dialogue.txt`，左边是被改的行，右边是这句字幕来自哪一行和它的英文台词：
+
+```
+  1400000  <- 113030001  Favour me with thy grace.
+```
+
+`tools/names/TalkMsg.txt`（`文本id 台词`，每行一条）取自游戏 1.17.1 的 `msg/engus/menu_dlc02.msgbnd.dcx`（本体 + 幽影之地
+共 9816 句）。游戏目录里只有 `Data0.bdt` / `DLC.bdt` 这样的打包文件，这个 msgbnd 在里面，用 UXM Selective Unpacker 可以单独
+解出来；更省事的是道具随机器 / 雾门随机器已经把它写进了各自的 mod 目录（`mod\randomizer\msg\engus\menu_dlc02.msgbnd.dcx`）。
+游戏更新后用 `tools/talkmsg.py` 重新生成，换成 `zhocn` 目录的文件报告就是中文台词：
+
+```
+python tools/talkmsg.py "C:\...\mod\randomizer\msg\engus\menu_dlc02.msgbnd.dcx" --output tools/names/TalkMsg.txt
+```
+
+（`python` 用启动脚本建好的虚拟环境里的那个：Windows `%USERPROFILE%\.venvs\er_mod\Scripts\python`，Linux / WSL
+`~/.venvs/er_mod/bin/python`；解自游戏原档的 KRAK 格式文件需要 `oo2core_6_win64.dll` 在当前目录或用 `--oodle-dll` 指定。）
+
+2026-10-20 只做了离线验证（输出读回后被改的行与来源行一致，其余行字节不变），还没在游戏里试过。
 
 ## 武器
 
@@ -338,7 +390,8 @@ param 重新序列化（支持新增行），没动过的原字节写回，再�
 
 - 结构上做了校验（新增行可解析、ID 有序、引用指向存在的行、其余表字节一致），游戏内只验证了主要路径。
   未实测：`--split-anim any` 的跨类组合能否触发、新建的 `AttackElementCorrectParam` 行是否生效、弩换强化表后的加成、
-  `--weptype-follows` 的读档校验、`isEnhance` = 1 后原版不能上油的行是否真能涂油脂、`leviathan` 格式。
+  `--weptype-follows` 的读档校验、`isEnhance` = 1 后原版不能上油的行是否真能涂油脂、`leviathan` 格式、
+  `--random-dialogue`（字幕是否都正常显示）、`--dialogue-jokes`（改写过的文本档游戏是否接受）。
 - 做不到的：**任意地点召唤骨灰**（`BuddyStoneParam` 的范围字段只覆盖一个写死在程序里的默认半径，改了没效果，
   需要 DLL）；**强化等级上限随存档里已强化的最高等级变化**（regulation.bin 读不到存档；掉落表给固定 +N 可以，
   但动态上限要改事件脚本或写 DLL）。
@@ -351,6 +404,8 @@ param 重新序列化（支持新增行），没动过的原字节写回，再�
 - `tools/spells.py` — 魔法 / 祷告随机
 - `tools/flasks.py` — 圣杯瓶获得位置随机；`tools/locations.py` — 用原版 + 道具随机器输出生成候选位置表
   `tools/names/item_locations.txt`
+- `tools/dialogue.py` — 对话字幕随机和冷笑话填充；`tools/talkmsg.py` — 读写 FMG：生成台词文本表 `tools/names/TalkMsg.txt`、
+  把 `tools/names/jokes_zhocn.txt` / `jokes_engus.txt` 写进 `msg/<语言>/menu_dlc02.msgbnd.dcx`
 - `tools/oodle.py`、`tools/linoodle/` — 通过游戏自带的 `oo2core_6_win64.dll` 做 Kraken / Leviathan 压缩
   （Linux / WSL 经 linoodle 加载，Windows 直接 ctypes 加载）
 - `tools/paramdef/*.xml`、`tools/names/*.txt` — 来自 soulsmods/Paramdex 的表结构和行名（1.17 Tarnished Pack
@@ -366,6 +421,7 @@ param 重新序列化（支持新增行），没动过的原字节写回，再�
 ## 致谢
 
 - 本项目的代码由 [Claude Code](https://claude.com/claude-code) 编写，作者负责需求、游戏内测试和取舍。
-- [soulsmods/Paramdex](https://github.com/soulsmods/Paramdex)：paramdef 和行名；[SoulsFormats](https://github.com/JKAnderson/SoulsFormats)：DCX / BND4 格式参考。
+- [soulsmods/Paramdex](https://github.com/soulsmods/Paramdex)：paramdef 和行名；[SoulsFormats](https://github.com/JKAnderson/SoulsFormats)：DCX / BND4 / FMG 格式参考。
+- [Nordgaren/UXM-Selective-Unpack](https://github.com/Nordgaren/UXM-Selective-Unpack) 的文件清单和 Nexus 的 Elden Ring 音频修改帖：声音库的结构（对话字幕随机为什么不动语音）。
 - [McSimp/linoodle](https://github.com/McSimp/linoodle)：在 Linux 上加载 Oodle DLL 的 PE 加载器。
 - thefifthmatt 的雾门随机器和道具随机器：本工具的输入和 zstd 帧格式的参考。
