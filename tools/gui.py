@@ -33,7 +33,7 @@ import theme      # noqa: E402
 import weapons    # noqa: E402
 from lang import tr as _  # noqa: E402
 
-TITLE = "Elden Ring Further Random"
+TITLE = "Elden Ring Further Randomizer + Joke Shifu"
 WINDOWS = sys.platform == "win32"
 FROZEN = bool(getattr(sys, "frozen", False))
 # Like randomize.sh / randomize.bat the window works from the project folder (the executable's folder

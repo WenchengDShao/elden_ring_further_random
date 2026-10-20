@@ -24,7 +24,7 @@ PALETTE = dict(bg="#0d0b1c", panel="#181536", raised="#221e48", field="#100e24",
                select="#3a3270", log_bg="#09071a", log_fg="#cfc8e6")
 SIDE = 270                                # sidebar width at 96 dpi
 MINSIZE = (1110, 720)
-TITLE_LINES = ("ELDEN RING", "F U R T H E R   R A N D O M", "regulation.bin randomizer · goods / spells / weapons")
+TITLE_LINES = ("ELDEN RING", "F U R T H E R   R A N D O M", "regulation.bin randomizer + joke shifu · goods / spells / weapons / dialogue")
 TITLE_FAMILIES = ("Cinzel", "Trajan Pro", "Georgia", "Palatino Linotype", "Book Antiqua", "Times New Roman",
                   "DejaVu Serif", "Liberation Serif")
 _FONTS: list = []          # tkinter deletes a Font's Tk font when the object is garbage-collected: keep ours alive

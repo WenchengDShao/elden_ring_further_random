@@ -59,7 +59,7 @@ def save(path: Path, code: str) -> None:
 
 ZH = {
     # window
-    "regulation.bin randomizer · goods / spells / weapons": "regulation.bin 随机器 · 道具 / 法术 / 武器",
+    "regulation.bin randomizer + joke shifu · goods / spells / weapons / dialogue": "regulation.bin 随机器 + 笑话大师 · 道具 / 法术 / 武器 / 对话",
     "Language": "语言",
     "Ready": "就绪",
     "Browse…": "浏览…",
