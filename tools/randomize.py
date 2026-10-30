@@ -110,6 +110,11 @@ REF_BULLET, REF_SPEFFECT = 1, 2
 SHOP_EQUIP_TYPE_GOODS = 3
 SHOP_COST_RUNES = 0
 
+# Goods that keep their vanilla effect whatever the options (by row id).
+KEEP_GOODS = {
+    2070,   # Lantern: an on / off toggle (refId_default / refId_1 = lit / unlit SpEffects), stays as is
+}
+
 
 def build_pool(P: erreg.Param, names: dict[int, str], include_flasks: bool = False,
                include_remembrances: bool = False):
@@ -122,6 +127,8 @@ def build_pool(P: erreg.Param, names: dict[int, str], include_flasks: bool = Fal
         name = names.get(r.id)
         if not name or name == "?":
             continue                                   # unnamed / cut rows
+        if r.id in KEEP_GOODS:
+            continue                                   # fixed by design (Lantern)
         if P.get(r, "goodsType") not in types:
             continue                                   # materials, spells, spirit ashes, crystal tears...
         if P.get(r, "refCategory") not in (REF_BULLET, REF_SPEFFECT) or P.get(r, "refId_default") == -1:
