@@ -30,8 +30,9 @@ Weapons:
                         crossbows, staves and seals
   --stat-groups LIST    restrict --random-stats to some of attack,guard,requirements,scaling,effects,
                         stamina,spells
-  --stamina-rate LO,HI  range of the random staminaConsumptionRate (attack stamina cost multiplier)
-                        per row, group "stamina" (default 0.3,1.7)
+  --stamina-rate LO,HI  range of the stamina multiplier, group "stamina" (default 0,2.0): every row draws a
+                        vanilla light-attack base cost and a multiplier; staminaConsumptionRate is set so
+                        the first light attack costs base x multiplier whatever moveset the row carries
   --weapons             shortcut for the four weapon options
 Dialogue (TalkParam):
   --random-dialogue     the subtitles of NPC dialogue are shuffled over every NPC's lines: the NPC speaks
@@ -47,8 +48,8 @@ Spells (Magic.param):
   (always)              each sorcery / incantation gets the effect of another spell (one pool for both);
                         --split-anim also splits cast animation and effect; --random-stats (group
                         "spells") rerolls FP cost (tiers 0-10 / 11-20 / 21-40 at 50 / 30 / 20 %),
-                        stamina cost (0-20 / 21-40 / 41-60), requirements (<= 60) and sets the memory
-                        slots of every spell to 1
+                        stamina cost (0-20 / 21-40 / 41-60), requirements (the INT / FAI / ARC set of a
+                        random vanilla spell, sum <= 60) and sets the memory slots of every spell to 1
   --no-spells           leave Magic.param alone
 
 Usage:
@@ -59,7 +60,7 @@ Usage:
                         [--no-sell-prices] [--sell-min N] [--sell-max N] [--sell-equipment]
                         [--random-flask-locations] [--random-dialogue] [--dialogue-jokes [MSGBND ...]]
                         [--somber-infusable] [--random-movesets] [--random-default-ash]
-                        [--random-stats] [--stat-groups attack,guard,...] [--stamina-rate 0.3,1.7] [--weapons]
+                        [--random-stats] [--stat-groups attack,guard,...] [--stamina-rate 0,2.0] [--weapons]
 """
 from __future__ import annotations
 
@@ -407,9 +408,10 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--stat-groups", default=",".join(weapons.STAT_GROUPS),
                     help="comma list of stat groups for --random-stats: attack, guard, requirements, scaling, "
                          "effects, stamina, spells (default: all)")
-    ap.add_argument("--stamina-rate", default="0.3,1.7", metavar="LO,HI",
-                    help="--random-stats group stamina: every weapon row's staminaConsumptionRate (multiplier of "
-                         "the attack stamina cost) is drawn uniformly from this range (default 0.3,1.7)")
+    ap.add_argument("--stamina-rate", default="0,2.0", metavar="LO,HI",
+                    help="--random-stats group stamina: every weapon row draws a vanilla light-attack base cost and "
+                         "a multiplier uniform in this range (default 0,2.0); staminaConsumptionRate = multiplier x "
+                         "base / the base of the moveset the row carries")
     ap.add_argument("--weapons", action="store_true",
                     help="= --somber-infusable --random-movesets --random-default-ash --random-stats")
     ap.add_argument("--compression", choices=("auto",) + erreg.CODECS, default="auto",
@@ -458,10 +460,10 @@ def main(argv: list[str] | None = None) -> int:
     spell_stats = not args.no_spells and args.random_stats and "spells" in stat_groups
     try:
         stamina_rate = tuple(float(x) for x in args.stamina_rate.split(","))
-        if len(stamina_rate) != 2 or not 0 < stamina_rate[0] <= stamina_rate[1]:
+        if len(stamina_rate) != 2 or not 0 <= stamina_rate[0] <= stamina_rate[1]:
             raise ValueError
     except ValueError:
-        raise SystemExit(f"--stamina-rate {args.stamina_rate}: expected LO,HI with 0 < LO <= HI, e.g. 0.3,1.7")
+        raise SystemExit(f"--stamina-rate {args.stamina_rate}: expected LO,HI with 0 <= LO <= HI, e.g. 0,2.0")
 
     seed = args.seed if args.seed is not None else random.randrange(1, 2**31)
     rng = random.Random(seed)

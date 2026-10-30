@@ -88,7 +88,7 @@ def fatal(text: str) -> None:
             pass
 LAUNCHER = "randomize.bat" if WINDOWS else "./randomize.sh"
 WEAPON_FLAGS = ("--somber-infusable", "--random-movesets", "--random-default-ash", "--random-stats")
-STAMINA_DEFAULT = ("0.3", "1.7")
+STAMINA_DEFAULT = ("0", "2.0")
 PAD = dict(padx=6, pady=2)
 NO_TK_HINT = ("Windows: install Python from python.org (tick \"tcl/tk and IDLE\" in the installer), delete "
               "%USERPROFILE%\\.venvs\\er_mod and run randomize_gui.bat / build_exe.bat again."
@@ -565,8 +565,8 @@ class Gui:
                     flo, fhi = float(lo), float(hi)
                 except ValueError:
                     flo, fhi = 0.0, 0.0
-                if not 0 < flo <= fhi:
-                    raise ValueError(_("The stamina multiplier range must satisfy 0 < min <= max, e.g. 0.3 to 1.7"))
+                if not 0 <= flo <= fhi:
+                    raise ValueError(_("The stamina multiplier range must satisfy 0 <= min <= max, e.g. 0 to 2.0"))
                 a += ["--stamina-rate", f"{lo},{hi}"]
         if self.compression.get() != "auto":
             a += ["--compression", self.compression.get()]

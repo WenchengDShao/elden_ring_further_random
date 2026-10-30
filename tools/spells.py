@@ -15,8 +15,9 @@ the way the catalyst expects is untested in-game.
 
 --random-stats (stat group "spells"): FP cost drawn from weighted tiers (0-10: 50 %, 11-20: 30 %,
 21-40: 20 %), stamina cost likewise (0-20 / 21-40 / 41-60), the charged costs keep the row's ratio,
-1-3 required attributes among INT / FAI / ARC drawn from the weapon requirement tiers (sum <= 60,
-scaled down proportionally otherwise), and every spell takes exactly one memory slot.
+the INT / FAI / ARC requirements are the vanilla set of a random pool spell (read before the effects
+move, so the game's own 1-2 attribute combinations at their own frequency; sum <= 60, scaled down
+proportionally otherwise), and every spell takes exactly one memory slot.
 """
 from __future__ import annotations
 
@@ -24,7 +25,7 @@ import random
 from pathlib import Path
 
 import erreg
-from weapons import REQ_MAX, REQ_TIERS, REQ_TOTAL_MAX, cap_total, tiered
+from weapons import REQ_TOTAL_MAX, cap_total, tiered
 
 HERE = Path(__file__).resolve().parent
 
@@ -52,7 +53,6 @@ ANIM_FIELDS = ["refType", "castSfxId", "fireSfxId", "effectSfxId", "analogDexter
 # opmeMenuType, disableOffline, enable_* / vowType* online flags, replaceMagicId, mtrlItemId, maxQuantity.
 
 REQ_STATS = ["requirementIntellect", "requirementFaith", "requirementLuck"]   # INT / FAI / ARC
-REQ_COUNT_WEIGHTS = [70, 25, 5]        # one / two / three required attributes
 FP_TIERS = [((0, 10), 50), ((11, 20), 30), ((21, 40), 20)]        # (inclusive range, weight %) of the FP cost
 STAMINA_TIERS = [((0, 20), 50), ((21, 40), 30), ((41, 60), 20)]   # same for the stamina cost
 
@@ -79,6 +79,8 @@ class Spells:
         self.P = reg.param("Magic", erreg.load_paramdef(HERE / "paramdef" / "Magic.xml"))
         self.names = erreg.load_names(HERE / "names" / "Magic.txt")
         self.pool = self.build_pool()
+        # vanilla requirement sets, read before randomize_effects moves them around (random_stats draws from these)
+        self.vanilla_req = [tuple(self.P.get(r, f) for f in REQ_STATS) for r in self.pool]
 
     def build_pool(self) -> list[erreg.ParamRow]:
         """Every spell the player can learn: Paramdex names it [Sorcery] / [Incantation] (NPC rows are
@@ -138,13 +140,14 @@ class Spells:
 
     def random_stats(self, rng: random.Random) -> list[str]:
         """FP and stamina costs from the weighted tiers (charged costs keep the row's charge / normal
-           ratio), 1-3 required attributes like weapon requirements, slotLength 1.  Run after
-           randomize_effects so the ratios and the report's "before" values are those of the effect now
-           on the row."""
+           ratio), the INT / FAI / ARC set of a random vanilla pool spell (sum capped at REQ_TOTAL_MAX),
+           slotLength 1.  Run after randomize_effects so the ratios and the report's "before" values are
+           those of the effect now on the row."""
         P, names = self.P, self.names
         tiers = lambda ts: ", ".join(f"{lo}-{hi}: {w}%" for (lo, hi), w in ts)
         lines = [f"# random spell stats: FP {tiers(FP_TIERS)}; stamina {tiers(STAMINA_TIERS)}; "
-                 f"requirements {tiers(REQ_TIERS)} per attribute, sum <= {REQ_TOTAL_MAX}; memory slots 1",
+                 f"requirements: the INT / FAI / ARC set of a random vanilla spell "
+                 f"({len(set(self.vanilla_req))} distinct sets), sum <= {REQ_TOTAL_MAX}; memory slots 1",
                  "# spell                                                FP                   stamina              INT/FAI/ARC         slots"]
         for r in self.pool:
             old_mp, old_charge, old_slots = P.get(r, "mp"), P.get(r, "mp_charge"), P.get(r, "slotLength")
@@ -154,12 +157,7 @@ class Spells:
             charge = scaled_charge(old_mp, old_charge, mp)
             st = tiered(rng, STAMINA_TIERS)
             st_charge = scaled_charge(old_st, old_st_charge, st)
-            k = rng.choices([1, 2, 3], REQ_COUNT_WEIGHTS)[0]
-            stats = rng.sample(REQ_STATS, k)
-            req = {f: 0 for f in REQ_STATS}
-            for f in stats:
-                req[f] = tiered(rng, REQ_TIERS)
-            req = cap_total(req, REQ_TOTAL_MAX)
+            req = cap_total(dict(zip(REQ_STATS, rng.choice(self.vanilla_req))), REQ_TOTAL_MAX)
             P.set(r, "mp", mp)
             P.set(r, "mp_charge", charge)
             P.set(r, "stamina", st)

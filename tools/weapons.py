@@ -84,7 +84,9 @@ MSG_SLOTS = ("spEffectMsgId0", "spEffectMsgId1", "spEffectMsgId2")
 
 # --- 4. per-row stats (random_stats) -----------------------------------------------------
 STAT_GROUPS = ("attack", "guard", "requirements", "scaling", "effects", "stamina", "spells")   # spells: see spells.py
-STAMINA_RATE_RANGE = (0.3, 1.7)      # staminaConsumptionRate of every row, uniform in this range (group "stamina")
+STAMINA_RATE_RANGE = (0.0, 2.0)      # group "stamina": the multiplier of every row, uniform in this range
+PC_BEHAVIOR = 100_000_000            # BehaviorParam_PC row id = PC_BEHAVIOR + behaviorVariationId * 1000 + judge id
+LIGHT_ATTACK = 0                     # judge id of the first one-handed light attack: its stamina = the moveset's base cost
 STAT_TYPES = INFUSABLE_TYPES | BOW_TYPES | {57, 61}       # + staves and seals (torches untouched)
 ELEMENTS = ("Physics", "Magic", "Fire", "Thunder", "Dark")      # attackBase* / correctType_* suffixes
 STATS = ("Strength", "Agility", "Magic", "Faith", "Luck")        # correct* / proper* suffixes
@@ -97,14 +99,15 @@ GUARD_RESIST = ("poisonGuardResist", "diseaseGuardResist", "bloodGuardResist", "
 SP_ATTRIBUTE = {"Magic": 10, "Fire": 11, "Thunder": 12, "Dark": 13}
 CRIT_VALUES = (0, 10, 20, 30, 40, 50, 60)                   # throwAtkRate: critical = 100 + value
 REQ_MAX = 60                         # attribute requirements never exceed this, singly or summed
-# Each drawn requirement: (inclusive range, weight %).  Shared with spells (spells.py).
-REQ_TIERS = [((0, 10), 40), ((11, 20), 30), ((21, 30), 20), ((31, 40), 9), ((41, REQ_MAX), 1)]
+# Each drawn requirement is a vanilla value of the same attribute (the non-zero proper* values of the base
+# rows, one per weapon); spells draw a whole vanilla INT / FAI / ARC set (spells.py).  No weighted tiers
+# since 2026-10-30; both share the sum cap below.
 REQ_TOTAL_MAX = REQ_MAX              # sum over all attributes; scaled down proportionally when above
 REQ_EXTRA_CHANCE = 0.15              # chance that an attribute the weapon does not scale with still needs points
 
 
 def tiered(rng: random.Random, tiers) -> int:
-    """Pick a tier by weight, then a uniform integer inside it."""
+    """Pick a tier by weight, then a uniform integer inside it (spell FP / stamina costs, spells.py)."""
     (lo, hi), = rng.choices([t[0] for t in tiers], [t[1] for t in tiers])
     return rng.randint(lo, hi)
 
@@ -157,9 +160,11 @@ class Weapons:
         self.W = reg.param("EquipParamWeapon", erreg.load_paramdef(D / "EquipParamWeapon.xml"))
         self.names = erreg.load_names(N / "EquipParamWeapon.txt")
         self.orig_type = {}      # base id -> wepType
+        self.orig_variation = {}  # base id -> vanilla behaviorVariationId (random_movesets replaces it on the rows)
         for r in self.W.rows:
             if r.id >= 1000000 and r.id % 10000 == 0:
                 self.orig_type[r.id] = self.W.get(r, "wepType")
+                self.orig_variation[r.id] = self.W.get(r, "behaviorVariationId")
         self.moveset_type: dict[int, int] = {}   # row id -> wepType of the weapon whose moveset it got
         self.row_cat: dict[int, int] = {}        # row id -> wepmotionCategory after randomization
         self.G = reg.param("EquipParamGem", erreg.load_paramdef(D / "EquipParamGem.xml"))
@@ -765,20 +770,30 @@ class Weapons:
                          CalcCorrectGraph curves, and an AttackElementCorrectParam row (one per attribute
                          set, 31 at most) in which every scaling attribute raises every damage type, so
                          the displayed letters always matter and spell scaling of catalysts follows.
-                         Heavy rows never get Dexterity (the Heavy
-                         reinforce table multiplies it by 0); crossbows switch to the regular / somber
-                         reinforce type so their scaling rates are not 0.
-           requirements: every scaling attribute (and 15% of the others) draws from REQ_TIERS
-                         (0-10: 40%, 11-20: 30%, 21-30: 20%, 31-40: 9%, 41-60: 1%); when the sum
-                         exceeds 60 all values are scaled down proportionally.
+                         Every attribute is available on every row (since 2026-10-30 Heavy rows may
+                         draw Dexterity too, although the Heavy reinforce table multiplies its rate by
+                         0, so that share of the budget shows and does nothing); crossbows switch to
+                         the regular / somber reinforce type so their scaling rates are not 0.
+           requirements: every scaling attribute (and 15% of the others) draws a vanilla value of that
+                         attribute: the non-zero proper* values of the base rows (one per weapon, the
+                         affinity rows repeat them), so common values come up as often as in the game;
+                         when the sum exceeds 60 all values are scaled down proportionally.
            effects:      0-2 status build-ups (bleed, poison, scarlet rot, frost, sleep, madness) from
                          the SpEffect ids vanilla weapons use; rows whose reinforce type raises an effect
                          with the upgrade level (vanilla Blood / Poison / Cold) always carry a growing
                          bleed / poison / frost series in that slot.  Unique non-status on-hit effects
                          are kept.
-           stamina:      staminaConsumptionRate uniform in stamina_rate (default 0.3-1.7, 2 decimals);
-                         it multiplies the BehaviorParam_PC stamina cost of every attack of the row's
-                         moveset (the cost itself comes from the moveset donor after --random-movesets).
+           stamina:      every row draws a base cost (the vanilla stamina of the first one-handed light
+                         attack of a random weapon of the same class: BehaviorParam_PC row
+                         PC_BEHAVIOR + behaviorVariationId * 1000 + LIGHT_ATTACK, falling back to the
+                         x00 default variation like the game does; hand weapons and shields 5-20,
+                         catalysts 8 / 12) and a multiplier uniform in stamina_rate (default 0-2.0);
+                         staminaConsumptionRate = multiplier * base / own, where own is that light
+                         attack's cost in the moveset the row carries now, so the first light attack
+                         costs base * multiplier whatever moveset --random-movesets gave the row and
+                         the other attacks keep the moveset's proportions (since 2026-10-30; before,
+                         the base followed the moveset).  Bows and crossbows have no stamina in
+                         BehaviorParam_PC (0), they only get the multiplier.
            greases:      isEnhance is 1 on every row, so greases / weapon buffs can be applied whatever
                          the element or status build-up (vanilla sets 0 on elemental and status rows and
                          on most unique weapons; bows and shields use their own greases, gated elsewhere)."""
@@ -799,11 +814,26 @@ class Weapons:
                 "atk": [g(row, f"attackBase{e}") for e in ELEMENTS],
                 "stamina": g(row, "attackBaseStamina"), "poise": g(row, "saWeaponDamage"),
                 "corr": sum(g(row, f"correct{st}") for st in STATS)})
+        stam_pool: dict[str, list[int]] = {}         # stat group -> vanilla light-attack costs, one per weapon
+        if "stamina" in groups:
+            Bh = self.reg.param("BehaviorParam_PC", erreg.load_paramdef(D / "BehaviorParam.xml"))
+
+            def light_cost(v: int) -> int:
+                r = (Bh.by_id.get(PC_BEHAVIOR + v * 1000 + LIGHT_ATTACK)
+                     or Bh.by_id.get(PC_BEHAVIOR + v // 100 * 100 * 1000 + LIGHT_ATTACK))
+                return Bh.get(r, "stamina") if r is not None else 0
+            for b in sorted({b for b, _ in targets}):
+                c = light_cost(self.orig_variation[b])
+                if c > 0:
+                    stam_pool.setdefault(self.stat_group(self.orig_type[b]), []).append(c)
+        req_pool = {st: [v for v in (g(W.by_id[b], f"proper{st}") for b in sorted({b for b, _ in targets})) if v > 0]
+                    for st in STATS}                # vanilla requirement values per attribute, base rows only
         lines = [f"# stats: {len(targets)} weapon rows, groups: {', '.join(x for x in STAT_GROUPS if x in groups)}"
-                 + (f", stamina rate {stamina_rate[0]:g}-{stamina_rate[1]:g}" if "stamina" in groups else ""),
+                 + (f", stamina: vanilla light-attack base x multiplier {stamina_rate[0]:g}-{stamina_rate[1]:g}"
+                    if "stamina" in groups else ""),
                  "# row  name  |  atk phys/mag/fire/ltng/holy  crit  poise  stam  |  guard phys/mag/fire/ltng/holy"
                  "  boost  |  req str/dex/int/fai/arc  |  scaling str/dex/int/fai/arc  |  status build-ups"
-                 "  |  stamina rate"]
+                 "  |  stamina rate (base x multiplier, moveset base)"]
         n_aec = 0
         for b, row in targets:
             wt = self.orig_type[b]
@@ -852,8 +882,7 @@ class Weapons:
                     s(row, f, resist)
             # scaling --------------------------------------------------------------
             if "scaling" in groups:
-                avail = [st for st in STATS if not (rt == 100 and st == "Agility")]
-                chosen = rng.sample(avail, min(rng.choices((1, 2, 3, 4), (30, 45, 20, 5))[0], len(avail)))
+                chosen = rng.sample(STATS, rng.choices((1, 2, 3, 4), (30, 45, 20, 5))[0])
                 cpool = donors["bow"] if grp == "xbow" else pool
                 total = 0.0
                 for _ in range(8):
@@ -889,7 +918,7 @@ class Weapons:
                 req = {st: 0 for st in STATS}
                 for st in STATS:
                     if st in scaling_stats or rng.random() < REQ_EXTRA_CHANCE:
-                        req[st] = tiered(rng, REQ_TIERS)
+                        req[st] = rng.choice(req_pool[st])
                 req = cap_total(req, REQ_TOTAL_MAX)
                 for st in STATS:
                     s(row, f"proper{st}", req[st])
@@ -921,8 +950,16 @@ class Weapons:
                     s(row, f, v)
             s(row, "isEnhance", 1)                  # greases / buffs on every row, whatever it rolled
             # stamina consumption ----------------------------------------------------
+            stam_note = ""
             if "stamina" in groups:
-                s(row, "staminaConsumptionRate", round(rng.uniform(*stamina_rate), 2))
+                own = light_cost(g(row, "behaviorVariationId"))
+                base = rng.choice(stam_pool[grp]) if stam_pool.get(grp) else 0
+                mult = rng.uniform(*stamina_rate)
+                if own and base:
+                    s(row, "staminaConsumptionRate", round(mult * base / own, 3))
+                    stam_note = f" (base {base} x {mult:.2f}, moveset {own})"
+                else:                                   # bows / crossbows: the multiplier alone
+                    s(row, "staminaConsumptionRate", round(mult, 3))
             # report ---------------------------------------------------------------
             effs = [self.status_family(e) for e in (g(row, f) for f in EFFECT_SLOTS) if e != -1]
             effs = [STATUS_LABEL.get(x, "unique") for x in effs]
@@ -934,6 +971,6 @@ class Weapons:
                          + "/".join(str(g(row, f"proper{st}")) for st in STATS) + " | scl "
                          + "/".join(f"{g(row, f'correct{st}'):g}" for st in STATS)
                          + " | " + (", ".join(effs) if effs else "-")
-                         + f" | rate {g(row, 'staminaConsumptionRate'):.2f}")
+                         + f" | rate {g(row, 'staminaConsumptionRate'):.3f}{stam_note}")
         lines.insert(1, f"# {n_aec} AttackElementCorrectParam rows added (ids {AEC_NEW}+)")
         return lines

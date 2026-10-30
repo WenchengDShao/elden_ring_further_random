@@ -149,8 +149,8 @@ ZH = {
     "min sell price": "最低售价",
     "max sell price": "最高售价",
     "Random stats needs at least one group": "数值随机至少要选一个分组",
-    "The stamina multiplier range must satisfy 0 < min <= max, e.g. 0.3 to 1.7":
-        "出招耐力倍率范围应满足 0 < 最低 <= 最高，例如 0.3 到 1.7",
+    "The stamina multiplier range must satisfy 0 <= min <= max, e.g. 0 to 2.0":
+        "出招耐力倍率范围应满足 0 <= 最低 <= 最高，例如 0 到 2.0",
     "The folder does not exist yet: {}": "目录还不存在：{}",
     "Input file not found: {}": "找不到输入文件：{}",
     "The output file must not be in the same folder as the input ({}): the reports and the joke shifu's msg folder "
