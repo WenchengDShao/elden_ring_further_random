@@ -146,6 +146,7 @@ class Gui:
         self.include_flasks, self.include_remembrances = B(False), B(False)
         self.split_anim = S("none")
         self.flask_locations = B(False)
+        self.start_bell, self.start_lantern = B(False), B(False)   # --start-with-bell / --start-with-lantern
         self.dialogue = B(False)
         self.jokes = B(False)                        # "joke shifu", --dialogue-jokes
         self.joke_archives = S("")                   # its optional paths, ';' separated (empty = found next to the input)
@@ -343,6 +344,16 @@ class Gui:
                         variable=self.flask_locations).pack(side="left", **PAD)
         ttk.Label(r, text=_("(both flasks are found elsewhere: a pickup, boss, NPC or shop; the first grace gives "
                             "what was there)"), style="Hint.TLabel").pack(side="left", **PAD)
+        r = ttk.Frame(il)
+        r.grid(row=1, column=0, sticky="w")
+        ttk.Checkbutton(r, text=_("Start with the Spirit Calling Bell (--start-with-bell)"),
+                        variable=self.start_bell).pack(side="left", **PAD)
+        ttk.Checkbutton(r, text=_("Start with the Lantern (--start-with-lantern)"),
+                        variable=self.start_lantern).pack(side="left", **PAD)
+        ttk.Label(r, text=_("(handed out with the flasks at the start; for Fog Gate Randomizer runs: Limgrave, where "
+                            "Renna hands out the bell, and Liurnia, where the merchants sell the lantern, may be out of "
+                            "reach early)"),
+                  style="Hint.TLabel").pack(side="left", **PAD)
         sections.append((il, "ew", False, 2))
 
         dg = ttk.LabelFrame(parent, text=_("Fun"))
@@ -511,6 +522,10 @@ class Gui:
             a += ["--split-anim", self.split_anim.get()]
         if self.flask_locations.get():
             a.append("--random-flask-locations")
+        if self.start_bell.get():
+            a.append("--start-with-bell")
+        if self.start_lantern.get():
+            a.append("--start-with-lantern")
         if self.dialogue.get():
             a.append("--random-dialogue")
             if self.jokes.get():
@@ -613,9 +628,9 @@ class Gui:
         self.sell_equipment.set(False)
         self.sell_min.set("")
         self.sell_max.set("")
-        for v in (self.include_flasks, self.include_remembrances, self.flask_locations, self.dialogue, self.jokes,
-                  self.random_prices, self.somber, self.movesets, self.default_ash, self.stats, self.keep_standard,
-                  self.weptype):
+        for v in (self.include_flasks, self.include_remembrances, self.flask_locations, self.start_bell,
+                  self.start_lantern, self.dialogue, self.jokes, self.random_prices, self.somber, self.movesets,
+                  self.default_ash, self.stats, self.keep_standard, self.weptype):
             v.set(False)
         self.joke_archives.set("")
         self.moveset_mode.set("affinity")

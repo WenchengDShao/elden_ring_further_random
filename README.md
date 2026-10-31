@@ -133,6 +133,9 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
   能力加成、异常积累、出招耐力全部随机，法术的专注值 / 耐力 / 必需能力值也随机（`--random-stats`，全部分组）。
 - `--random-flask-locations`：红 / 蓝露滴圣杯瓶改到随机一处必定给出的位置（拾取物、boss 奖励、NPC 赠礼或商店货架）
   获得，第一个赐福改给那里原来的东西。
+- `--start-with-bell`、`--start-with-lantern`（不在常用设定里）：开局随圣杯瓶一起拿到招魂铃 / 携带照明灯（追加到圣杯瓶
+  掉落组，铃那行带召唤骨灰所需的标志 60110），给雾门随机用：前期可能到不了蕾娜给铃的宁姆格福、商人卖灯的湖之利耶尼亚
+  （见下文“开局道具”）。
 - `--random-dialogue`：NPC 对话字幕在所有 NPC 的台词之间打乱，语音不动，NPC 念的还是自己那句
   （见下文“对话字幕随机”）。
 - `--dialogue-jokes`（笑话大师）：被砍的台词改成冷笑话并加入随机；不带路径时用工具自带的英文、中文文本档
@@ -147,6 +150,7 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 ./randomize.sh --input regulation_random.bin --output /path/to/mod/regulation.bin --seed 1848 --split-anim any --random-prices --weapons --random-flask-locations --random-dialogue --dialogue-jokes
 ./randomize.sh --dry-run                       # 只打印映射，不写文件
 ./randomize.sh --random-flask-locations        # 圣杯瓶改到随机一处必定给出的位置（拾取物 / boss / NPC / 商店）获得
+./randomize.sh --start-with-bell --start-with-lantern   # 开局就有招魂铃和携带照明灯（配合雾门随机：前期可能到不了宁姆格福 / 湖之利耶尼亚）
 ./randomize.sh --random-dialogue         # NPC 对话字幕在所有 NPC 的台词之间打乱，语音不动；报告在 dialogue.txt
 ./randomize.sh --random-dialogue --dialogue-jokes   # 笑话大师：被砍的台词改成冷笑话并加入随机，用自带的英文、中文文本档
 ./randomize.sh --random-dialogue --dialogue-jokes /path/to/mod/randomizer/msg/zhocn/menu_dlc02.msgbnd.dcx   # 自己指定文本档
@@ -166,6 +170,7 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 | `--include-flasks`、`--include-remembrances` | 把圣杯瓶 / 追忆也加入道具池（默认都不加） |
 | `--split-anim [same\|any]` | 使用动作和效果分开随机；`same` 只在同类动作里挑，`any` 全池 |
 | `--random-flask-locations` | 红 / 蓝露滴圣杯瓶改到随机一处必定给出的位置（拾取物、boss 奖励、NPC 赠礼或商店货架）获得，第一个赐福改给那里原来的东西 |
+| `--start-with-bell`、`--start-with-lantern` | 开局随圣杯瓶一起拿到招魂铃 / 携带照明灯（追加到圣杯瓶掉落组，铃那行带召唤骨灰所需的标志 60110）；给雾门随机用，前期可能到不了给铃的宁姆格福、卖灯的湖之利耶尼亚 |
 | `--random-dialogue` | NPC 对话字幕在所有 NPC 的台词之间打乱，语音不动（NPC 念的还是自己那句）；报告 `dialogue.txt` |
 | `--dialogue-jokes [MSGBND...]` | 笑话大师，与 `--random-dialogue` 合用：被砍的台词（有 id 没文本）改成冷笑话并加入随机；MSGBND 是每种游戏语言的 `msg/<语言>/menu_dlc02.msgbnd.dcx`，不给时用自带的英文、中文两份（`tools/msg/`，exe 版在旁边的 `msg\`）；改好的副本写到输出旁的 `msg/<语言>/`，要和 regulation.bin 一起放进 mod 目录 |
 | （总是） | 每个魔法/祷告拿到另一个法术的效果；`--no-spells` 关闭 |
@@ -189,7 +194,8 @@ Release 里的 `ERFurtherRandom.exe`（见开头“快速开始”）、`randomi
   输出和 `mapping.txt` 等清单始终是英文。
 - 文件：输入 regulation.bin、输出文件、Oodle DLL（启动时自动填入 exe / 仓库目录里的 `oo2core_6_win64.dll`，
   没有就留空，开始时会询问是否改用 zstd 格式）、随机种子（留空则随机抽一个，日志里会显示）、压缩格式。
-- 选项分五块：文件、道具与法术、武器、道具获取位置（圣杯瓶获得位置随机，`--random-flask-locations`）、娱乐（fun）：
+- 选项分五块：文件、道具与法术、武器、道具获取位置（圣杯瓶获得位置随机 `--random-flask-locations`，开局招魂铃 / 携带照明灯
+  `--start-with-bell` / `--start-with-lantern`）、娱乐（fun）：
   对话字幕随机（`--random-dialogue`）和笑话大师（joke shifu，`--dialogue-jokes`；文本档留空就用自带的英文、中文两份）。
 - “常用设定”按钮 = `--split-anim any --random-prices --weapons --random-flask-locations --random-dialogue --dialogue-jokes`；“预览（不写文件）” = `--dry-run`；右上角“语言”左边的“只重新压缩（不随机）” = `--repack`（修复 Fog Gate Randomizer 的输出等，见下文）；
   “开始随机”生成文件，完成后提示输出位置，`mapping.txt / weapons.txt / spells.txt / dialogue.txt` 写在输出文件旁边。
@@ -275,6 +281,20 @@ Flask of Cerulean Tears x1   ->  shop 100633: [Merchant - Liurnia of the Lakes] 
 `lot` 后是行 id 和它在原版里的内容（"在原版 Cerulean Tear Scarab 的位置"），括号里是从 id 推出的地图块
 （野外 `m60_XX_YY` / `m61_XX_YY`，带 `[地点]` 前缀的行不再标）；`shop` 后是货架 id、原版的"[商人] 商品"、单价和
 库存；`|` 后是第一个赐福改给的东西。
+
+## 开局道具（--start-with-bell / --start-with-lantern）
+
+为雾门随机加的：Fog Gate Randomizer 把礼拜堂的雾门接到别处后，前期可能长时间到不了宁姆格福（蕾娜在艾蕾教堂给招魂铃，
+没拿的话之后由圆桌厅堂的双指侍女出售）或湖之利耶尼亚 / 啜泣半岛（流浪商人卖携带照明灯）。这两个选项把这两样东西追加到
+开局发放圣杯瓶的掉落组里，和圣杯瓶一起到手（雾门随机下就是开局那一刻；原版是漂流墓地的第一个赐福）。
+
+- 为什么不是直接放进初始背包：游戏判断能否召唤骨灰看的是事件标志 60110（蕾娜赠礼 / 双指侍女货架的获得标志），不看
+  背包——写进 `CharaInitParam` 的铃在背包里却召唤不了（游戏里试过）。掉落组的标志由游戏在发放时按行设置，所以铃做成
+  圣杯瓶组（ItemLotParam_map 2000 / 2001）后面的 2002 行、`getItemFlagId` 60110；灯是 2003 行，不设标志。
+- 后果：游戏认为铃已拿到——双指侍女的铃显示售罄，蕾娜的赠礼不再给铃（和原版拿到铃之后一样）；商人的照明灯照旧。道具
+  随机器默认不随机这几样，雾门随机器的通路逻辑不受影响。
+- 对任何 regulation.bin 都有效，不限于雾门随机器的输出；不在“常用设定”里，要用的时候勾上。报告在控制台和
+  `mapping.txt` 末尾（`# starting items` 一段）。
 
 ## 对话字幕随机（--random-dialogue）
 
@@ -409,6 +429,8 @@ param 重新序列化（支持新增行），没动过的原字节写回，再�
   （lot 1040290100）。礼拜堂第一个拾取点同时给出的红 / 蓝露滴圣杯瓶来自原版的两行 lot 2000 / 2001（整个文件里只有这两行
   装着 +0 圣杯瓶且带获取标志），只是 FogMod 的开局脚本把发放时机提前了。`--random-flask-locations` 改的正是这两行的内容，
   所以配合 FogMod 时它照常生效：那个时机给出的是换过去的两件道具，圣杯瓶在清单写的两个随机位置。不需要额外选项。
+- **开局道具**：雾门随机后前期可能长时间到不了宁姆格福（蕾娜给招魂铃）或湖之利耶尼亚（流浪商人卖携带照明灯），
+  `--start-with-bell` / `--start-with-lantern` 让这两样开局随圣杯瓶一起到手（见上文“开局道具”）。
 
 ## 已知限制
 
@@ -428,6 +450,7 @@ param 重新序列化（支持新增行），没动过的原字节写回，再�
 - `tools/spells.py` — 魔法 / 祷告随机
 - `tools/flasks.py` — 圣杯瓶获得位置随机；`tools/locations.py` — 用原版 + 道具随机器输出生成候选位置表
   `tools/names/item_locations.txt`
+- `tools/start_items.py` — 开局道具（招魂铃 / 携带照明灯追加到圣杯瓶掉落组）
 - `tools/msg/engus/`、`tools/msg/zhocn/` — 笑话大师默认改写的文本档 `menu_dlc02.msgbnd.dcx`（1.17.1 文本：中文原版，
   英文是雾门随机器写出的版本）；`build_exe` 把它们复制到 exe 旁边的 `msg\`，Release 里和 exe 一起
 - `tools/dialogue.py` — 对话字幕随机和冷笑话填充；`tools/talkmsg.py` — 读写 FMG：生成台词文本表 `tools/names/TalkMsg.txt`、

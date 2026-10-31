@@ -11,6 +11,10 @@ Goods:
                         else: a random one-time pickup, boss reward, NPC gift or shop slot (never a
                         chance drop, never a map fragment, no Land of Shadow NPC); the first Site of
                         Grace gives what was there.  Needs names/item_locations.txt (tools/locations.py)
+  --start-with-bell     the Spirit Calling Bell / the Lantern are handed out with the two flasks at the start
+  --start-with-lantern  (rows appended to item lot 2000; the bell's row sets flag 60110, which is what enables
+                        spirit summoning): for Fog Gate Randomizer runs in which Limgrave (Renna) or Liurnia
+                        (the merchants) may be out of reach early (tools/start_items.py)
 Weapons:
   --somber-infusable    somber / unique weapons get all 12 affinities and can mount Ashes of War
   --random-movesets     every melee weapon and shield gets the moveset of a random other weapon/shield
@@ -58,7 +62,8 @@ Usage:
                         [--no-spells] [--dry-run]
                         [--random-prices] [--price-mode shuffle|range] [--price-min N] [--price-max N]
                         [--no-sell-prices] [--sell-min N] [--sell-max N] [--sell-equipment]
-                        [--random-flask-locations] [--random-dialogue] [--dialogue-jokes [MSGBND ...]]
+                        [--random-flask-locations] [--start-with-bell] [--start-with-lantern]
+                        [--random-dialogue] [--dialogue-jokes [MSGBND ...]]
                         [--somber-infusable] [--random-movesets] [--random-default-ash]
                         [--random-stats] [--stat-groups attack,guard,...] [--stamina-rate 0,2.0] [--weapons]
 """
@@ -76,6 +81,7 @@ import erreg  # noqa: E402
 import flasks  # noqa: E402
 import oodle  # noqa: E402
 import spells  # noqa: E402
+import start_items  # noqa: E402
 import talkmsg  # noqa: E402
 import weapons  # noqa: E402
 
@@ -364,6 +370,14 @@ def main(argv: list[str] | None = None) -> int:
                          "swaps places with a random one-time pickup, boss reward, NPC gift or shop slot (never a "
                          "chance drop or a map fragment; Land of Shadow NPCs and shops excluded), and the first "
                          "Site of Grace gives that item instead")
+    ap.add_argument("--start-with-bell", action="store_true",
+                    help="the Spirit Calling Bell is handed out with the two flasks at the start of the game (a row "
+                         "appended to item lot 2000 with flag 60110, the flag the game checks for spirit summoning); "
+                         "for Fog Gate Randomizer runs where Limgrave, where Renna hands it out, may be out of reach "
+                         "early")
+    ap.add_argument("--start-with-lantern", action="store_true",
+                    help="the Lantern likewise, in the same lot (in vanilla sold by the nomadic merchants of Liurnia "
+                         "and the Weeping Peninsula, which a fog gate run may not reach early)")
     ap.add_argument("--random-dialogue", action="store_true",
                     help="shuffle the subtitles of NPC dialogue (TalkParam.msgId) over every NPC's lines: the NPC "
                          "speaks its own line while another line is shown; voices are never moved (the game loads a "
@@ -535,6 +549,12 @@ def main(argv: list[str] | None = None) -> int:
         flines = flasks.Flasks(reg).randomize(rng)
         print("\n".join(flines))
         report += "\n\n" + "\n".join(flines)
+
+    starting = [k for k, on in (("bell", args.start_with_bell), ("lantern", args.start_with_lantern)) if on]
+    if starting:
+        glines = start_items.give(reg, starting)
+        print("\n".join(glines))
+        report += "\n\n" + "\n".join(glines)
 
     dlines: list[str] = []
     jokes = None

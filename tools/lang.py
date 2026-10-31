@@ -103,6 +103,11 @@ ZH = {
     "Weapons (all four = --weapons)": "武器（四项全选 = --weapons）",
     # item locations
     "Item locations": "道具获取位置",
+    "Start with the Spirit Calling Bell (--start-with-bell)": "开局获得招魂铃 (--start-with-bell)",
+    "Start with the Lantern (--start-with-lantern)": "开局获得携带照明灯 (--start-with-lantern)",
+    "(handed out with the flasks at the start; for Fog Gate Randomizer runs: Limgrave, where Renna hands out the "
+    "bell, and Liurnia, where the merchants sell the lantern, may be out of reach early)":
+        "（开局随圣杯瓶一起发放；配合雾门随机用：前期可能到不了蕾娜给铃的宁姆格福、商人卖灯的湖之利耶尼亚）",
     "Fun": "娱乐（fun）",
     "Random dialogue subtitles (--random-dialogue)": "对话字幕随机 (--random-dialogue)",
     "(every NPC line shows the subtitle of another line; the voices stay, so the NPC still speaks its own line)":
