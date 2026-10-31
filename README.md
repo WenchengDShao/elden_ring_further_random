@@ -134,13 +134,16 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 - `--random-flask-locations`：红 / 蓝露滴圣杯瓶改到随机一处必定给出的位置（拾取物、boss 奖励、NPC 赠礼或商人：
   一个商人算一个位置，抽中后瓶子放到他的某一格限量货架上）获得，第一个赐福改给那里原来的东西。
 - `--start-with-bell`、`--start-with-lantern`（不在常用设定里）：开局随圣杯瓶一起拿到招魂铃 / 携带照明灯（追加到圣杯瓶
-  掉落组，铃那行带召唤骨灰所需的标志 60110），给雾门随机用：前期可能到不了蕾娜给铃的宁姆格福、商人卖灯的湖之利耶尼亚
-  （见下文“开局道具”）。
+  掉落组，铃那行带召唤骨灰所需的标志 60110，灯那行带拾取标志 500003，各只发一次），给雾门随机用：前期可能到不了蕾娜给铃的
+  宁姆格福、商人卖灯的湖之利耶尼亚（见下文“开局道具”）。
 - `--random-dialogue`：NPC 对话字幕在所有 NPC 的台词之间打乱，语音不动，NPC 念的还是自己那句
   （见下文“对话字幕随机”）。
 - `--dialogue-jokes`（笑话大师）：被砍的台词改成冷笑话并加入随机；不带路径时用工具自带的英文、中文文本档
   （`tools/msg/<语言>/menu_dlc02.msgbnd.dcx`，exe 版是旁边的 `msg\` 目录），改好的副本写到输出旁的
-  `msg/<语言>/`，要和 regulation.bin 一起放进 mod 目录。
+  `msg/<语言>/`，要和 regulation.bin 一起放进 mod 目录。**用了道具随机器 / 雾门随机器时要把它们 mod 目录里当前的文本档
+  当路径传进来**（`mod\randomizer\msg\<语言>\menu_dlc02.msgbnd.dcx`，英文配雾门随机器时是 `mod\fog\msg\engus\...`）：
+  改好的文本档整个覆盖 mod 目录里那份，而自带的两份里人物创建界面的遗物名是某次旧随机的结果，用它们会让遗物名和实际拿到
+  的东西对不上（见下文“对话字幕随机”）。
 - `--pool-first`（三国 + 冷笑话台词池先抽，抽完再抽原字幕，不在常用设定里；原名 `--zhocn-pool`，仍可用）：中文字幕先从
   `tools/names/sanguo_zhocn.txt`（2010 版《三国》有趣台词 305 条）+ `jokes_zhocn.txt`（955 条）的池子里抽，英文字幕先从
   `jokes_engus.txt`（955 条）里抽，每句只出现一次，抽完后剩下的才保留游戏原文。文本档用 `--dialogue-jokes` 指定的，否则用自带的
@@ -181,9 +184,9 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 | `--include-flasks`、`--include-remembrances` | 把圣杯瓶 / 追忆也加入道具池（默认都不加） |
 | `--split-anim [same\|any]` | 使用动作和效果分开随机；`same` 只在同类动作里挑，`any` 全池 |
 | `--random-flask-locations` | 红 / 蓝露滴圣杯瓶改到随机一处必定给出的位置（拾取物、boss 奖励、NPC 赠礼或商人——一个商人算一个位置，抽中后瓶子放到他的某一格限量货架上）获得，第一个赐福改给那里原来的东西 |
-| `--start-with-bell`、`--start-with-lantern` | 开局随圣杯瓶一起拿到招魂铃 / 携带照明灯（追加到圣杯瓶掉落组，铃那行带召唤骨灰所需的标志 60110）；给雾门随机用，前期可能到不了给铃的宁姆格福、卖灯的湖之利耶尼亚 |
+| `--start-with-bell`、`--start-with-lantern` | 开局随圣杯瓶一起拿到招魂铃 / 携带照明灯（追加到圣杯瓶掉落组，铃那行带召唤骨灰所需的标志 60110，灯那行带拾取标志 500003，各只发一次）；给雾门随机用，前期可能到不了给铃的宁姆格福、卖灯的湖之利耶尼亚 |
 | `--random-dialogue` | NPC 对话字幕在所有 NPC 的台词之间打乱，语音不动（NPC 念的还是自己那句）；报告 `dialogue.txt` |
-| `--dialogue-jokes [MSGBND...]` | 笑话大师，与 `--random-dialogue` 合用：被砍的台词（有 id 没文本）改成冷笑话并加入随机；MSGBND 是每种游戏语言的 `msg/<语言>/menu_dlc02.msgbnd.dcx`，不给时用自带的英文、中文两份（`tools/msg/`，exe 版在旁边的 `msg\`）；改好的副本写到输出旁的 `msg/<语言>/`，要和 regulation.bin 一起放进 mod 目录 |
+| `--dialogue-jokes [MSGBND...]` | 笑话大师，与 `--random-dialogue` 合用：被砍的台词（有 id 没文本）改成冷笑话并加入随机；MSGBND 是每种游戏语言的 `msg/<语言>/menu_dlc02.msgbnd.dcx`，不给时用自带的英文、中文两份（`tools/msg/`，exe 版在旁边的 `msg\`）——配合道具随机器 / 雾门随机器时请给它们 mod 目录里当前的那份，见下文；改好的副本写到输出旁的 `msg/<语言>/`，要和 regulation.bin 一起放进 mod 目录 |
 | `--pool-first [MSGBND...]` | 三国 + 冷笑话台词池先抽，与 `--random-dialogue` 合用：中文字幕先从 `tools/names/sanguo_zhocn.txt`（2010 版《三国》台词 305 条）+ `jokes_zhocn.txt` 的池子里抽，英文先从 `jokes_engus.txt` 里抽，每句一次，抽完剩下的才保留原文；MSGBND 同 `--dialogue-jokes`，不给时用它的或自带的两份；改好的写到输出旁的 `msg/<语言>/`；`--zhocn-pool` 是旧名 |
 | `--mixed-pool [MSGBND...]` | 混合台词池，与 `--random-dialogue` 合用、和 `--pool-first` 二选一：每句字幕都从池子里抽、不分先后，中文池 = `sanguo_zhocn.txt` + `jokes_zhocn.txt` + `translate20_zhocn.txt`，英文池 = `jokes_engus.txt` + `translate20_engus.txt`（`translate20_*` 是游戏原文被机器翻译 20 次的结果，`tools/translate20.py` 生成）；游戏原文不出现；MSGBND 同 `--dialogue-jokes`，不给时用它的或自带的两份；改好的写到输出旁的 `msg/<语言>/` |
 | `--translate20 [MSGBND...]` | 翻译 20 次原位替换：每句字幕换成这句话本身被机器翻译 20 次之后的样子（`tools/names/translate20_<语言>.txt`，id 对应），中英文都改，其他 id 不动；可单独用（NPC 念原句、字幕是歪掉的原句），也可和 `--random-dialogue`、`--dialogue-jokes` 合用；和两个台词池互斥；MSGBND 和输出同 `--dialogue-jokes` |
@@ -209,8 +212,9 @@ Release 里的 `ERFurtherRandom.exe`（见开头“快速开始”）、`randomi
 - 文件：输入 regulation.bin、输出文件、Oodle DLL（启动时自动填入 exe / 仓库目录里的 `oo2core_6_win64.dll`，
   没有就留空，开始时会询问是否改用 zstd 格式）、随机种子（留空则随机抽一个，日志里会显示）、压缩格式。
 - 选项分五块：文件、道具与法术、武器、道具获取位置（圣杯瓶获得位置随机 `--random-flask-locations`，开局招魂铃 / 携带照明灯
-  `--start-with-bell` / `--start-with-lantern`）、娱乐（fun）：
-  对话字幕随机（`--random-dialogue`）、笑话大师（joke shifu，`--dialogue-jokes`；文本档留空就用自带的英文、中文两份）和
+  `--start-with-bell` / `--start-with-lantern`）、娱乐（fun）：第一行是文本档（当前 mod 目录里的 `msg\<语言>\menu_dlc02.msgbnd.dcx`，
+  每种语言一个，可多选；下面所有改字幕的选项都用它，留空就用自带的副本，某些地方的文字可能和实物不符，比如人物创建界面的遗物名），
+  然后是对话字幕随机（`--random-dialogue`）、笑话大师（joke shifu，`--dialogue-jokes`）和
   三国 + 冷笑话台词池先抽（`--pool-first`，中文 = 三国 + 冷笑话、英文 = 冷笑话，抽完再回到原字幕）、混合台词池（`--mixed-pool`，三国 + 冷笑话 + 翻译 20 次，不含原字幕）和
   翻译 20 次原位替换（`--translate20`，不依赖字幕随机）；这三项互斥，都不在常用设定里。
 - “常用设定”按钮 = `--split-anim any --random-prices --weapons --random-flask-locations --random-dialogue --dialogue-jokes`；“预览（不写文件）” = `--dry-run`；右上角“语言”左边的“只重新压缩（不随机）” = `--repack`（修复 Fog Gate Randomizer 的输出等，见下文）；
@@ -309,7 +313,9 @@ Flask of Cerulean Tears x1   ->  shop 100633: [Merchant - Liurnia of the Lakes] 
 
 - 为什么不是直接放进初始背包：游戏判断能否召唤骨灰看的是事件标志 60110（蕾娜赠礼 / 双指侍女货架的获得标志），不看
   背包——写进 `CharaInitParam` 的铃在背包里却召唤不了（游戏里试过）。掉落组的标志由游戏在发放时按行设置，所以铃做成
-  圣杯瓶组（ItemLotParam_map 2000 / 2001）后面的 2002 行、`getItemFlagId` 60110；灯是 2003 行，不设标志。
+  圣杯瓶组（ItemLotParam_map 2000 / 2001）后面的 2002 行、`getItemFlagId` 60110；灯是 2003 行、标志 500003（游戏给这段
+  lot 的拾取标志编号，2010 行就是 500010）。每行都要有标志：游戏逐行查 / 设标志，FogMod 的开局事件每次读图都会再发一次
+  这一组，没有标志的行每个加载画面之后都会再给一次（2026-10-31 修正，之前灯那行是 0；已有存档会在下次加载补发一次灯）。
 - 后果：游戏认为铃已拿到——双指侍女的铃显示售罄，蕾娜的赠礼不再给铃（和原版拿到铃之后一样）；商人的照明灯照旧。道具
   随机器默认不随机这几样，雾门随机器的通路逻辑不受影响。
 - 对任何 regulation.bin 都有效，不限于雾门随机器的输出；不在“常用设定”里，要用的时候勾上。报告在控制台和
@@ -325,13 +331,15 @@ NPC 对话的每一句都是 `TalkParam` 的一行：`msgId` 是字幕（TalkMsg
 不参与的：占位行和测试行，以及 `tools/names/TalkMsg.txt` 里没有文本的句子（被砍内容，这样不会把空字幕换给正常台词）——
 除非用冷笑话把它们填上（“笑话大师”）：`--dialogue-jokes` 接每种游戏语言的 `msg/<语言>/menu_dlc02.msgbnd.dcx`（道具随机器的
 mod 目录里就有，`mod\randomizer\msg\zhocn\...`，游戏自己用的语言放第一个；不给路径就用工具自带的英文、中文两份——
-`tools/msg/<语言>/`，exe 版在 exe 旁边的 `msg\` 目录里：中文是 1.17.1 原版文本，英文是雾门随机器写出的版本，比原版多
-它自己的几条菜单文本，对话文本相同，不用雾门随机器也没影响），每个文本档里没有文本的对话 id 各填一条 `tools/names/jokes_<语言>.txt`
+`tools/msg/<语言>/`，exe 版在 exe 旁边的 `msg\` 目录里：对话文本是 1.17.1 原版，但人物创建界面的遗物名 / 说明和职业装备
+说明是 2026-10-18 某次道具随机器的结果。**配合道具随机器 / 雾门随机器时一定要给它们 mod 目录里当前的那份**（中文
+`mod\randomizer\msg\zhocn\menu_dlc02.msgbnd.dcx`，英文配雾门随机器时是 `mod\fog\msg\engus\...`）：改好的文本档会整个盖掉它们的，
+用自带的会让创建人物时的遗物名和实际拿到的道具对不上（2026-10-31 修正：不给路径时控制台和 `dialogue.txt` 里有 warning 提醒）），每个文本档里没有文本的对话 id 各填一条 `tools/names/jokes_<语言>.txt`
 里的冷笑话（中文、英文各 955 条，逐行对应，多于没文本的 id 数，所以每句拿到的都不同，可自行增删；哪些 id 没文本因语言而异，
 中文约 830 个、英文约 850 个），这些行也加入
 随机，正常对话里就会时不时蹦出一条冷笑话。改好的文本档写到输出文件旁的
-`msg/<语言>/menu_dlc02.msgbnd.dcx`，要和 regulation.bin 一起放进 mod 目录（图形界面里是“娱乐”区的“笑话大师”，文本档
-可以多选，留空用自带的）。输出文件不要和 exe 放在同一目录：那样改好的文本档会落在自带文本档的位置上，程序会拒绝，不会覆盖自带的或你指定的
+`msg/<语言>/menu_dlc02.msgbnd.dcx`，要和 regulation.bin 一起放进 mod 目录（图形界面里是“娱乐”区的“笑话大师”，文本档填在
+该区第一行，可以多选，留空用自带的）。输出文件不要和 exe 放在同一目录：那样改好的文本档会落在自带文本档的位置上，程序会拒绝，不会覆盖自带的或你指定的
 原文件。输出文件也不能和输入文件放在同一目录（清单和 msg 目录会落进那个 mod 目录，同名还会覆盖输入），命令行和图形界面都
 会拒绝；预览（`--dry-run`）只提醒。两种情况的提示都是：建议创建新目录以方便 mod 管理。1.17.1 原版上参与的句子从 9135 增加到 10033。
 
@@ -480,6 +488,10 @@ param 重新序列化（支持新增行），没动过的原字节写回，再�
   所以配合 FogMod 时它照常生效：那个时机给出的是换过去的两件道具，圣杯瓶在清单写的两个随机位置。不需要额外选项。
 - **开局道具**：雾门随机后前期可能长时间到不了宁姆格福（蕾娜给招魂铃）或湖之利耶尼亚（流浪商人卖携带照明灯），
   `--start-with-bell` / `--start-with-lantern` 让这两样开局随圣杯瓶一起到手（见上文“开局道具”）。
+- **文本档**：在这条链上用笑话大师 / 台词池 / `--translate20` 时，文本档路径要给当前生效的那两份：
+  `mod\fog\msg\engus\menu_dlc02.msgbnd.dcx`（雾门随机器只写英文）和 `mod\randomizer\msg\zhocn\menu_dlc02.msgbnd.dcx`，
+  fog_fix 的 msg 目录会整个盖掉它们；留空用自带的会把人物创建界面的遗物名换成旧随机的（见“对话字幕随机”）。FogMod 每次
+  重新生成后连文本档一起重做。
 
 ## 已知限制
 
@@ -500,8 +512,9 @@ param 重新序列化（支持新增行），没动过的原字节写回，再�
 - `tools/flasks.py` — 圣杯瓶获得位置随机；`tools/locations.py` — 用原版 + 道具随机器输出生成候选位置表
   `tools/names/item_locations.txt`
 - `tools/start_items.py` — 开局道具（招魂铃 / 携带照明灯追加到圣杯瓶掉落组）
-- `tools/msg/engus/`、`tools/msg/zhocn/` — 笑话大师默认改写的文本档 `menu_dlc02.msgbnd.dcx`（1.17.1 文本：中文原版，
-  英文是雾门随机器写出的版本）；`build_exe` 把它们复制到 exe 旁边的 `msg\`，Release 里和 exe 一起
+- `tools/msg/engus/`、`tools/msg/zhocn/` — 笑话大师默认改写的文本档 `menu_dlc02.msgbnd.dcx`（2026-10-18 道具随机器 /
+  雾门随机器写出的那两份：对话等是 1.17.1 原版文本，人物创建界面的遗物 / 职业说明是那次随机的结果）；`build_exe` 把它们
+  复制到 exe 旁边的 `msg\`，Release 里和 exe 一起
 - `tools/dialogue.py` — 对话字幕随机、冷笑话填充、三国台词池、混合台词池和翻译 20 次原位替换；`tools/talkmsg.py` — 读写 FMG：生成台词文本表
   `tools/names/TalkMsg.txt`、把 `tools/names/jokes_zhocn.txt` / `jokes_engus.txt`（笑话）、`sanguo_zhocn.txt`（2010 版《三国》台词
   305 条，用时去掉说话人）和 `translate20_zhocn.txt` / `translate20_engus.txt`（游戏原文翻译 20 次的结果）写进

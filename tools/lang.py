@@ -112,17 +112,22 @@ ZH = {
     "Random dialogue subtitles (--random-dialogue)": "对话字幕随机 (--random-dialogue)",
     "(every NPC line shows the subtitle of another line; the voices stay, so the NPC still speaks its own line)":
         "（每句 NPC 台词显示另一句的字幕；语音不动，NPC 念的还是自己原来那句）",
+    "Text archives": "文本档",
+    "(the game's msg\\<language>\\menu_dlc02.msgbnd.dcx, one per language, taken from the mod folder "
+    "in use: Item and Enemy Randomizer mod\\randomizer\\msg\\..., English with the Fog Gate Randomizer "
+    "mod\\fog\\msg\\engus\\...; every option below that rewrites subtitles uses them. Give the paths: "
+    "left empty, the copies shipped with the program are used, and some text may then disagree with "
+    "the actual items, e.g. the keepsake names and class descriptions in character creation)":
+        "（游戏的 msg\\<语言>\\menu_dlc02.msgbnd.dcx，每种语言一个，取当前 mod 目录里的：道具随机器 mod\\randomizer\\msg\\…，"
+        "英文配雾门随机器 mod\\fog\\msg\\engus\\…；下面所有改字幕的选项都用它。请填路径：留空就用程序自带的副本，"
+        "某些地方的文字可能和实物不符，例如人物创建界面的遗物名和职业说明）",
+    "Text archives (msg\\<language>\\menu_dlc02.msgbnd.dcx)": "文本档（msg\\<语言>\\menu_dlc02.msgbnd.dcx）",
     "Joke shifu (--dialogue-jokes)": "笑话大师（joke shifu）(--dialogue-jokes)",
-    "(the cut lines show a joke and join the shuffle; text archives: empty = the English and "
-    "Chinese msg\\<language>\\menu_dlc02.msgbnd.dcx shipped with the program; or pick the game's "
-    "own, one per language)":
-        "（被砍的台词改成冷笑话并加入随机；文本档留空 = 用程序自带的英文、中文 msg\\<语言>\\menu_dlc02.msgbnd.dcx；"
-        "也可以自己选游戏里的，每种语言一个）",
+    "(the cut lines show a joke and join the shuffle)": "（被砍的台词改成冷笑话并加入随机）",
     "Three Kingdoms + joke pool first, then the game's lines (--pool-first)": "三国 + 冷笑话台词池先抽，抽完再抽原字幕 (--pool-first)",
     "(Chinese: the lines of the 2010 TV series Three Kingdoms plus the jokes, English: the jokes; "
-    "each once over random lines, then the game's own lines; text archives as for the joke shifu)":
-        "（中文先从 2010 版《三国》台词 + 冷笑话里抽，英文先从冷笑话里抽，每句一次，抽完剩下的才是游戏原文；"
-        "文本档同笑话大师）",
+    "each once over random lines, then the game's own lines)":
+        "（中文先从 2010 版《三国》台词 + 冷笑话里抽，英文先从冷笑话里抽，每句一次，抽完剩下的才是游戏原文）",
     "Mixed pool: Three Kingdoms + jokes + 20x-translated lines, no game lines (--mixed-pool)":
         "混合台词池：三国 + 冷笑话 + 翻译 20 次，不含原字幕 (--mixed-pool)",
     "(every subtitle comes from the heap, in no order: Chinese = Three Kingdoms + jokes + the game's "
@@ -133,10 +138,9 @@ ZH = {
     "Subtitles replaced id for id by their 20x-translated line (--translate20)":
         "字幕逐句换成翻译 20 次的结果，id 对应 (--translate20)",
     "(every line shows the same line after 20 machine translations, Chinese and English; works alone "
-    "or with the random subtitles and the joke shifu; not together with the pools; text archives "
-    "as for the joke shifu)":
+    "or with the random subtitles and the joke shifu; not together with the pools)":
         "（每句字幕都换成这句话被机器翻译 20 次之后的样子，中英文都改；可以单独用，也可以和字幕随机、笑话大师合用；"
-        "和两个台词池互斥；文本档同笑话大师）",
+        "和两个台词池互斥）",
     "Somber weapons: affinities + Ashes of War (--somber-infusable)":
         "失色 / 独特武器可质变、可装战灰 (--somber-infusable)",
     "Random default skill and affinity on new weapons (--random-default-ash)":

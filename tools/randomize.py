@@ -49,6 +49,10 @@ Dialogue (TalkParam):
                         msg/<language>/menu_dlc02.msgbnd.dcx (one per language); without paths the archives
                         shipped with the tool are used (tools/msg/<language>/, or the msg folder next to the
                         executable); the patched copy is written next to the output as msg/<language>/...
+                        The patched copy replaces the mod folder's archive as a whole: with the Item and Enemy
+                        Randomizer pass its own archives (mod/randomizer/msg/<language>/..., English with the
+                        Fog Gate Randomizer: mod/fog/msg/engus/...), the shipped ones carry the character
+                        creation texts (keepsake names) of one of its runs
   --pool-first [MSGBND ...]
                         with --random-dialogue: per language a pool is shown first, every pool line once over
                         random text ids (the cut ids first), and only the ids left over keep the game's own
@@ -366,9 +370,10 @@ def archive_guard(flag: str, src: Path, output: Path, dry_run: bool) -> None:
         raise SystemExit(msg)
 
 
-def pool_archives(flag: str, given: list[str], jokes, langs: list[str]) -> list[Path]:
+def pool_archives(flag: str, given: list[str], jokes, langs: list[str], notes: list[str]) -> list[Path]:
     """The text archives a subtitle option rewrites: the paths given (one per language folder, the same file as
-       --dialogue-jokes uses for that language), else the joke shifu's archives, else the shipped ones for `langs`."""
+       --dialogue-jokes uses for that language), else the joke shifu's archives, else the shipped ones for `langs`
+       (then the shipped-archive warning goes to the console and into `notes`, the dialogue.txt lines)."""
     if given:
         archives = [Path(a) for a in given]
         for a in archives:
@@ -389,8 +394,26 @@ def pool_archives(flag: str, given: list[str], jokes, langs: list[str]) -> list[
                          + ("Put the msg folder from the Release zip next to the executable, "
                             if getattr(sys, "frozen", False) else "Restore tools/msg/ from the repository, ")
                          + "or pass the path(s) of the game's msg/<language>/menu_dlc02.msgbnd.dcx.")
-    print(f"# {flag.lstrip('-')}: using the shipped text archives: " + ", ".join(str(a) for a in archives))
+    for line in shipped_warning(flag, archives):
+        print(line)
+        notes.append(line)
     return archives
+
+
+def shipped_warning(flag: str, archives: list[Path]) -> list[str]:
+    """What a subtitle option prints (and puts into dialogue.txt) when it falls back to the shipped text archives:
+       the patched copy replaces the mod folder's archive as a whole, and the shipped copies are the randomizers'
+       output of 2026-10-18, whose character-creation texts belong to that run (reported 2026-10-31: the keepsake
+       menu named an old run's items while the game handed out the current run's)."""
+    return [f"# {flag.lstrip('-')}: using the shipped text archives: " + ", ".join(str(a) for a in archives),
+            "# warning: the patched msg/<language>/menu_dlc02.msgbnd.dcx written next to the output replaces the mod "
+            "folder's archive as a whole, so every text another mod wrote into it is lost. The shipped archives carry "
+            "the game's dialogue, but the character creation texts of an Item and Enemy Randomizer run of 2026-10-18 "
+            "(keepsake names / descriptions and class starting gear: GR_MenuText / GR_LineHelp 2971xx).",
+            "# warning: with the Item and Enemy Randomizer pass its own archives instead, one per language: "
+            "mod/randomizer/msg/<language>/menu_dlc02.msgbnd.dcx (English with the Fog Gate Randomizer: "
+            "mod/fog/msg/engus/menu_dlc02.msgbnd.dcx); otherwise the character creation menu names that old run's "
+            "keepsakes while the items handed out are your run's."]
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -449,7 +472,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--dialogue-jokes", nargs="*", default=None, metavar="MSGBND",
                     help="joke shifu, with --random-dialogue: the cut rows (a text id without a text) get a joke each "
                          "from tools/names/jokes_<language>.txt and join the shuffle; MSGBND = the game's "
-                         "msg/<language>/menu_dlc02.msgbnd.dcx, one per language; without paths the archives shipped "
+                         "msg/<language>/menu_dlc02.msgbnd.dcx, one per language (with the Item and Enemy Randomizer "
+                         "its own: mod/randomizer/msg/<language>/..., the patched copy replaces the mod folder's archive "
+                         "as a whole and the shipped ones carry one of its runs' character creation texts); without paths the archives shipped "
                          "with the tool are used (tools/msg/<language>/, or the msg folder next to the executable); the "
                          "patched copy goes next to the output as msg/<language>/...")
     ap.add_argument("--pool-first", "--zhocn-pool", dest="pool_first", nargs="*", default=None, metavar="MSGBND",
@@ -640,6 +665,7 @@ def main(argv: list[str] | None = None) -> int:
         report += "\n\n" + "\n".join(glines)
 
     dlines: list[str] = []
+    warns: list[str] = []          # shipped-archive warnings: printed at once, put at the top of dialogue.txt below
     jokes = None
     if args.dialogue_jokes is not None and not args.random_dialogue:
         raise SystemExit("--dialogue-jokes needs --random-dialogue")
@@ -652,7 +678,9 @@ def main(argv: list[str] | None = None) -> int:
                                 if getattr(sys, "frozen", False) else "Restore tools/msg/ from the repository, ")
                              + "or pass the path(s) of the game's msg/<language>/menu_dlc02.msgbnd.dcx.")
         if not args.dialogue_jokes:
-            print("# jokes: using the shipped text archives: " + ", ".join(archives))
+            for line in shipped_warning("--dialogue-jokes", [Path(a) for a in archives]):
+                print(line)
+                warns.append(line)
         jokes = dialogue.Jokes(archives)
         for src in jokes.archives:
             archive_guard("--dialogue-jokes", src, Path(args.output), args.dry_run)
@@ -664,7 +692,7 @@ def main(argv: list[str] | None = None) -> int:
     if args.pool_first is not None:
         if not args.random_dialogue:
             raise SystemExit("--pool-first needs --random-dialogue")
-        archives = pool_archives("--pool-first", args.pool_first, jokes, dialogue.joke_languages())
+        archives = pool_archives("--pool-first", args.pool_first, jokes, dialogue.joke_languages(), warns)
         pool = dialogue.FirstPool([str(a) for a in archives])
         for src in pool.archives:
             archive_guard("--pool-first", src, Path(args.output), args.dry_run)
@@ -674,7 +702,7 @@ def main(argv: list[str] | None = None) -> int:
         if not dialogue.mixed_languages():
             raise SystemExit(f"--mixed-pool: {dialogue.HERE / 'names'} has no translate20_<language>.txt next to a "
                              "jokes_<language>.txt (tools/translate20.py writes the translate20 files)")
-        archives = pool_archives("--mixed-pool", args.mixed_pool, jokes, dialogue.mixed_languages())
+        archives = pool_archives("--mixed-pool", args.mixed_pool, jokes, dialogue.mixed_languages(), warns)
         pool = dialogue.MixedPool([str(a) for a in archives])
         for src in pool.archives:
             archive_guard("--mixed-pool", src, Path(args.output), args.dry_run)
@@ -682,7 +710,7 @@ def main(argv: list[str] | None = None) -> int:
         if not dialogue.translated_languages():
             raise SystemExit(f"--translate20: {dialogue.HERE / 'names'} has no translate20_<language>.txt "
                              "(tools/translate20.py writes it)")
-        archives = pool_archives("--translate20", args.translate20, jokes, dialogue.translated_languages())
+        archives = pool_archives("--translate20", args.translate20, jokes, dialogue.translated_languages(), warns)
         pool = dialogue.Translated([str(a) for a in archives])
         for src in pool.archives:
             archive_guard("--translate20", src, Path(args.output), args.dry_run)
@@ -693,6 +721,7 @@ def main(argv: list[str] | None = None) -> int:
         dlines.append(f"# seed={seed}")
         dlines += dialogue.Dialogue(reg).randomize(rng, args.mode, jokes, pool)
         print("\n".join(l for l in dlines if l.startswith("#")))
+    dlines[0:0] = warns
 
     if args.dry_run:
         return 0

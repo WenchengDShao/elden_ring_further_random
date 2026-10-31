@@ -149,7 +149,7 @@ class Gui:
         self.start_bell, self.start_lantern = B(False), B(False)   # --start-with-bell / --start-with-lantern
         self.dialogue = B(False)
         self.jokes = B(False)                        # "joke shifu", --dialogue-jokes
-        self.joke_archives = S("")                   # its optional paths, ';' separated (empty = found next to the input)
+        self.archives = S("")                        # text archives of the subtitle options, ';' separated (empty = the shipped copies)
         self.pool_first = B(False)                   # --pool-first: Three Kingdoms + jokes (Chinese) / jokes (English) first, then the game's lines
         self.mixed_pool = B(False)                   # --mixed-pool: every subtitle from the Three Kingdoms + jokes + 20x-translated heap
         self.translate20 = B(False)                  # --translate20: every subtitle replaced id for id by its 20x-translated line
@@ -169,7 +169,6 @@ class Gui:
         self.dep_movesets: list = []
         self.dep_stats: list = []
         self.dep_dialogue: list = []
-        self.dep_jokes: list = []
         self._build()
         for v in self.vars:
             v.trace_add("write", lambda *a: self._refresh())
@@ -363,40 +362,45 @@ class Gui:
         sections.append((il, "ew", False, 2))
 
         dg = ttk.LabelFrame(parent, text=_("Fun"))
+        # Row 0: the text archives every subtitle option below rewrites.  First in the section on purpose (user request
+        # 2026-10-31): with the shipped copies the character creation menu can disagree with the items handed out.
         r = ttk.Frame(dg)
-        r.grid(row=0, column=0, sticky="w")
+        r.grid(row=0, column=0, sticky="ew")
+        r.columnconfigure(1, weight=1)
+        ttk.Label(r, text=_("Text archives")).grid(row=0, column=0, sticky="w", **PAD)
+        ttk.Entry(r, textvariable=self.archives).grid(row=0, column=1, sticky="ew", **PAD)
+        ttk.Button(r, text=_("Browse…"), command=self._pick_archives).grid(row=0, column=2, **PAD)
+        ttk.Label(r, text=_("(the game's msg\\<language>\\menu_dlc02.msgbnd.dcx, one per language, taken from the mod folder "
+                            "in use: Item and Enemy Randomizer mod\\randomizer\\msg\\..., English with the Fog Gate Randomizer "
+                            "mod\\fog\\msg\\engus\\...; every option below that rewrites subtitles uses them. Give the paths: "
+                            "left empty, the copies shipped with the program are used, and some text may then disagree with "
+                            "the actual items, e.g. the keepsake names and class descriptions in character creation)"),
+                  style="Hint.TLabel").grid(row=1, column=0, columnspan=3, sticky="w", **PAD)
+        r = ttk.Frame(dg)
+        r.grid(row=1, column=0, sticky="w")
         ttk.Checkbutton(r, text=_("Random dialogue subtitles (--random-dialogue)"), variable=self.dialogue).pack(side="left", **PAD)
         ttk.Label(r, text=_("(every NPC line shows the subtitle of another line; the voices stay, so the NPC still speaks "
                             "its own line)"), style="Hint.TLabel").pack(side="left", **PAD)
         r = ttk.Frame(dg)
-        r.grid(row=1, column=0, sticky="ew")
-        r.columnconfigure(1, weight=1)
-        w = ttk.Checkbutton(r, text=_("Joke shifu (--dialogue-jokes)"), variable=self.jokes)
-        w.grid(row=0, column=0, sticky="w", **PAD)
-        self.dep_dialogue.append(w)
-        w = ttk.Entry(r, textvariable=self.joke_archives)
-        w.grid(row=0, column=1, sticky="ew", **PAD)
-        self.dep_jokes.append(w)
-        w = ttk.Button(r, text=_("Browse…"), command=self._pick_jokes)
-        w.grid(row=0, column=2, **PAD)
-        self.dep_jokes.append(w)
-        w = ttk.Label(r, text=_("(the cut lines show a joke and join the shuffle; text archives: empty = the English and "
-                                "Chinese msg\\<language>\\menu_dlc02.msgbnd.dcx shipped with the program; or pick the game's "
-                                "own, one per language)"), style="Hint.TLabel")
-        w.grid(row=1, column=0, columnspan=3, sticky="w", **PAD)
-        self.dep_jokes.append(w)
-        r = ttk.Frame(dg)
         r.grid(row=2, column=0, sticky="w")
-        w = ttk.Checkbutton(r, text=_("Three Kingdoms + joke pool first, then the game's lines (--pool-first)"), variable=self.pool_first)
+        w = ttk.Checkbutton(r, text=_("Joke shifu (--dialogue-jokes)"), variable=self.jokes)
         w.pack(side="left", **PAD)
         self.dep_dialogue.append(w)
-        w = ttk.Label(r, text=_("(Chinese: the lines of the 2010 TV series Three Kingdoms plus the jokes, English: the jokes; "
-                                "each once over random lines, then the game's own lines; text archives as for the joke shifu)"),
-                      style="Hint.TLabel")
+        w = ttk.Label(r, text=_("(the cut lines show a joke and join the shuffle)"), style="Hint.TLabel")
         w.pack(side="left", **PAD)
         self.dep_dialogue.append(w)
         r = ttk.Frame(dg)
         r.grid(row=3, column=0, sticky="w")
+        w = ttk.Checkbutton(r, text=_("Three Kingdoms + joke pool first, then the game's lines (--pool-first)"), variable=self.pool_first)
+        w.pack(side="left", **PAD)
+        self.dep_dialogue.append(w)
+        w = ttk.Label(r, text=_("(Chinese: the lines of the 2010 TV series Three Kingdoms plus the jokes, English: the jokes; "
+                                "each once over random lines, then the game's own lines)"),
+                      style="Hint.TLabel")
+        w.pack(side="left", **PAD)
+        self.dep_dialogue.append(w)
+        r = ttk.Frame(dg)
+        r.grid(row=4, column=0, sticky="w")
         w = ttk.Checkbutton(r, text=_("Mixed pool: Three Kingdoms + jokes + 20x-translated lines, no game lines (--mixed-pool)"),
                             variable=self.mixed_pool)
         w.pack(side="left", **PAD)
@@ -407,12 +411,12 @@ class Gui:
         w.pack(side="left", **PAD)
         self.dep_dialogue.append(w)
         r = ttk.Frame(dg)
-        r.grid(row=4, column=0, sticky="w")
+        r.grid(row=5, column=0, sticky="w")
         ttk.Checkbutton(r, text=_("Subtitles replaced id for id by their 20x-translated line (--translate20)"),
                         variable=self.translate20).pack(side="left", **PAD)
         ttk.Label(r, text=_("(every line shows the same line after 20 machine translations, Chinese and English; works alone "
-                            "or with the random subtitles and the joke shifu; not together with the pools; text archives "
-                            "as for the joke shifu)"), style="Hint.TLabel").pack(side="left", **PAD)
+                            "or with the random subtitles and the joke shifu; not together with the pools)"),
+                  style="Hint.TLabel").pack(side="left", **PAD)
         dg.columnconfigure(0, weight=1)
         sections.append((dg, "ew", False, 2))
 
@@ -479,7 +483,7 @@ class Gui:
         text = self.log.get("1.0", "end-1c")
         for w in self.root.winfo_children():
             w.destroy()
-        for dep in (self.dep_prices, self.dep_sell, self.dep_movesets, self.dep_stats, self.dep_dialogue, self.dep_jokes):
+        for dep in (self.dep_prices, self.dep_sell, self.dep_movesets, self.dep_stats, self.dep_dialogue):
             dep.clear()
         self._build()
         if text:
@@ -503,12 +507,12 @@ class Gui:
         if p:
             self.output.set(p)
 
-    def _pick_jokes(self) -> None:
-        ps = filedialog.askopenfilenames(title=_("Joke shifu (--dialogue-jokes)"),
+    def _pick_archives(self) -> None:
+        ps = filedialog.askopenfilenames(title=_("Text archives (msg\\<language>\\menu_dlc02.msgbnd.dcx)"),
                                          filetypes=[("menu_dlc02.msgbnd.dcx", "*.msgbnd.dcx"), (_("All files"), "*.*")])
         if ps:
-            have = [x for x in self.joke_archives.get().split(";") if x.strip()]
-            self.joke_archives.set(";".join(have + [p for p in ps if p not in have]))
+            have = [x for x in self.archives.get().split(";") if x.strip()]
+            self.archives.set(";".join(have + [p for p in ps if p not in have]))
 
     def _pick_dll(self) -> None:
         p = filedialog.askopenfilename(title=oodle.DLL_NAME,
@@ -560,17 +564,17 @@ class Gui:
             a.append("--start-with-bell")
         if self.start_lantern.get():
             a.append("--start-with-lantern")
+        archives = [x.strip() for x in self.archives.get().split(";") if x.strip()]   # after every option that takes them
         if self.dialogue.get():
             a.append("--random-dialogue")
             if self.jokes.get():
-                a.append("--dialogue-jokes")
-                a += [x.strip() for x in self.joke_archives.get().split(";") if x.strip()]
+                a += ["--dialogue-jokes", *archives]
             if self.pool_first.get():
-                a.append("--pool-first")
+                a += ["--pool-first", *archives]
             if self.mixed_pool.get():
-                a.append("--mixed-pool")
+                a += ["--mixed-pool", *archives]
         if self.translate20.get():
-            a.append("--translate20")
+            a += ["--translate20", *archives]
         if not self.spells.get():
             a.append("--no-spells")
         if self.random_prices.get():
@@ -644,8 +648,7 @@ class Gui:
                              and (self.sell_prices.get() or self.sell_equipment.get())),
                             (self.dep_movesets, self.movesets.get()),
                             (self.dep_stats, self.stats.get()),
-                            (self.dep_dialogue, self.dialogue.get()),
-                            (self.dep_jokes, self.dialogue.get() and self.jokes.get())):
+                            (self.dep_dialogue, self.dialogue.get())):
             for w in widgets:
                 w.state(["!disabled"] if on else ["disabled"])
         try:
@@ -680,7 +683,7 @@ class Gui:
                   self.random_prices, self.somber, self.movesets,
                   self.default_ash, self.stats, self.keep_standard, self.weptype):
             v.set(False)
-        self.joke_archives.set("")
+        self.archives.set("")
         self.moveset_mode.set("affinity")
         self.shield.set("shields")
         self.bow.set("bows")

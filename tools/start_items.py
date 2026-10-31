@@ -13,9 +13,13 @@ Graveyard) awards every row of the group 2000, 2001, ... as long as the ids are 
 flag (vanilla groups mix flags freely, e.g. 103900 / 103901 = 60110 / 400390).  Rows 2000 / 2001 are the two
 flasks (flag 60000, swapped by --random-flask-locations); row 2010 (Roped Fire Pot) starts the next group, so
 the bell and the lantern become rows 2002 and 2003 (or the next free ids of the group).  The bell's row gets
-flag 60110, the lantern's row no flag (0, like the repeatable drops): the lantern is an ordinary tool.
-Nothing else changes: the game then treats the bell as obtained (the Husks' copy shows as sold out, Renna's
-lot is skipped if it is ever awarded) exactly as after picking it up in vanilla; the merchants' lanterns stay.
+flag 60110; the lantern's row gets the pickup flag the game's own numbering gives a row of this range,
+500000 + (row id - 2000) = 500003 (lot 2010 has 500010, 2020 has 500020, 2520 has 500520; 500000-500009 are
+unused by every param and event script).  Every row needs a flag: the game checks and sets them row by row, and FogMod's start
+event runs on every map load, so a row without a flag (the first version gave the lantern 0, like the
+repeatable drops) was handed out again after every loading screen (reported 2026-10-31).  Nothing else
+changes: the game then treats the bell as obtained (the Husks' copy shows as sold out, Renna's lot is skipped
+if it is ever awarded) exactly as after picking it up in vanilla; the merchants' lanterns stay.
 """
 from __future__ import annotations
 
@@ -24,10 +28,11 @@ from pathlib import Path
 import erreg
 
 HERE = Path(__file__).resolve().parent
-# option -> EquipParamGoods id, name, getItemFlagId of the new lot row
-ITEMS = {"bell": (8158, "Spirit Calling Bell", 60110), "lantern": (2070, "Lantern", 0)}
+# option -> EquipParamGoods id, name, getItemFlagId of the new lot row (None: the row's own pickup flag, see below)
+ITEMS = {"bell": (8158, "Spirit Calling Bell", 60110), "lantern": (2070, "Lantern", None)}
 GROUP = 2000                  # the flask lot: AwardItemLot(2000) awards rows 2000, 2001, ... while the ids run on
 GROUP_MAX = 2009              # row 2010 (Roped Fire Pot) belongs to the next lot
+PICKUP_FLAG_BASE = 500000     # the game's own pickup flags of this lot range: 500000 + (lot - 2000): 2010 -> 500010, 2520 -> 500520
 GOODS = 1                     # lotItemCategory of goods
 SLOTS = 8                     # lotItemId01 .. lotItemId08
 
@@ -45,7 +50,8 @@ def give(reg: erreg.Regulation, keys: list[str]) -> list[str]:
     goods = [ITEMS[k] for k in keys]
     lines = ["# starting items: " + ", ".join(f"{n} ({g})" for g, n, _ in goods) + " x1 appended to the flask lot "
              f"(ItemLotParam_map rows {GROUP}+, awarded together with the flasks at the start: FogMod's start "
-             "event / the first Site of Grace); the bell's row sets flag 60110, which enables spirit summoning"]
+             "event / the first Site of Grace); every row gets a flag, so it is handed out once (the bell's row "
+             "sets flag 60110, which enables spirit summoning; the lantern's row its own pickup flag, 500000 + (row id - 2000))"]
     for gid, name, flag in goods:
         held = [r for r in group if any(L.get(L.by_id[r], f"lotItemCategory0{i}") == GOODS
                                         and L.get(L.by_id[r], f"lotItemId0{i}") == gid for i in range(1, SLOTS + 1))]
@@ -66,6 +72,8 @@ def give(reg: erreg.Regulation, keys: list[str]) -> list[str]:
         L.set(row, "lotItemCategory01", GOODS)
         L.set(row, "lotItemNum01", 1)
         L.set(row, "lotItemBasePoint01", 1000)
+        if flag is None:
+            flag = PICKUP_FLAG_BASE + (new_id - GROUP)
         L.set(row, "getItemFlagId", flag)
         L.set(row, "cumulateNumFlagId", 0)
         L.set(row, "cumulateNumMax", 0)
