@@ -118,12 +118,11 @@ ZH = {
     "own, one per language)":
         "（被砍的台词改成冷笑话并加入随机；文本档留空 = 用程序自带的英文、中文 msg\\<语言>\\menu_dlc02.msgbnd.dcx；"
         "也可以自己选游戏里的，每种语言一个）",
-    "Three Kingdoms + joke pool, Chinese subtitles only (--zhocn-pool)": "三国 + 冷笑话台词池，只改中文字幕 (--zhocn-pool)",
-    "(the Chinese subtitles are drawn first from the lines of the 2010 TV series Three Kingdoms "
-    "plus the jokes, each once, then from the game's own lines; English is not touched; "
-    "the Chinese text archive comes from the joke shifu's paths or the shipped one)":
-        "（中文字幕先从 2010 版《三国》台词 + 冷笑话的池子里抽，每句一次，抽完再抽游戏原文；英文不动；"
-        "中文文本档用笑话大师指定的或自带的那份）",
+    "Three Kingdoms + joke pool first, then the game's lines (--pool-first)": "三国 + 冷笑话台词池先抽，抽完再抽原字幕 (--pool-first)",
+    "(Chinese: the lines of the 2010 TV series Three Kingdoms plus the jokes, English: the jokes; "
+    "each once over random lines, then the game's own lines; text archives as for the joke shifu)":
+        "（中文先从 2010 版《三国》台词 + 冷笑话里抽，英文先从冷笑话里抽，每句一次，抽完剩下的才是游戏原文；"
+        "文本档同笑话大师）",
     "Mixed pool: Three Kingdoms + jokes + 20x-translated lines, no game lines (--mixed-pool)":
         "混合台词池：三国 + 冷笑话 + 翻译 20 次，不含原字幕 (--mixed-pool)",
     "(every subtitle comes from the heap, in no order: Chinese = Three Kingdoms + jokes + the game's "
@@ -131,6 +130,13 @@ ZH = {
     "lines; the game's own lines are left out; excludes the pool above)":
         "（每句字幕都从池子里抽、不分先后：中文 = 三国台词 + 冷笑话 + 游戏中文原文翻译 20 次的结果，"
         "英文 = 冷笑话 + 英文原文翻译 20 次的结果；不含游戏原字幕；和上一项二选一）",
+    "Subtitles replaced id for id by their 20x-translated line (--translate20)":
+        "字幕逐句换成翻译 20 次的结果，id 对应 (--translate20)",
+    "(every line shows the same line after 20 machine translations, Chinese and English; works alone "
+    "or with the random subtitles and the joke shifu; not together with the pools; text archives "
+    "as for the joke shifu)":
+        "（每句字幕都换成这句话被机器翻译 20 次之后的样子，中英文都改；可以单独用，也可以和字幕随机、笑话大师合用；"
+        "和两个台词池互斥；文本档同笑话大师）",
     "Somber weapons: affinities + Ashes of War (--somber-infusable)":
         "失色 / 独特武器可质变、可装战灰 (--somber-infusable)",
     "Random default skill and affinity on new weapons (--random-default-ash)":
@@ -184,10 +190,10 @@ ZH = {
         "它在游戏目录 Game\\ 里，用“浏览…”选中它就能输出原版的 KRAK 格式。\n\n"
         "改用 zstd 格式继续吗？文件会大 35% 左右，可能超过游戏的大小上限。",
     "Written: {}\n\nReplace the regulation.bin in the mod folder with it to use it.\n"
-    "mapping.txt / weapons.txt / spells.txt / dialogue.txt (what was randomized) are in the same folder; with jokes or "
-    "a pool, copy its msg folder into the mod folder too.":
+    "mapping.txt / weapons.txt / spells.txt / dialogue.txt (what was randomized) are in the same folder; with jokes, "
+    "a pool or the 20x subtitles, copy its msg folder into the mod folder too.":
         "已写入 {}\n\n要覆盖 mod 目录里的 regulation.bin 才会生效。\n"
-        "mapping.txt / weapons.txt / spells.txt / dialogue.txt（随机结果清单）在同一目录；加了冷笑话或台词池的话，旁边的 msg 目录也要一起复制进 mod 目录。",
+        "mapping.txt / weapons.txt / spells.txt / dialogue.txt（随机结果清单）在同一目录；加了冷笑话、台词池或翻译 20 次字幕的话，旁边的 msg 目录也要一起复制进 mod 目录。",
     "Written: {}\n\nContent unchanged, only re-compressed. Replace the regulation.bin in the mod folder with it to use it.":
         "已写入 {}\n\n内容没有改动，只是重新压缩。要覆盖 mod 目录里的 regulation.bin 才会生效。",
     "The run failed, see the log": "运行失败，详见日志",

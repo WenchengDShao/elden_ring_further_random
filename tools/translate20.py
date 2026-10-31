@@ -15,10 +15,12 @@ The chain is fixed (CHAIN): 19 foreign languages, then back to the source langua
 source language's own entry in the chain is replaced (Chinese for the English archive, English for every other).
 
 Input: the language's msg/<language>/menu_dlc02.msgbnd.dcx (the TalkMsg*.fmg inside; see talkmsg.py), the
-language from the folder name (LANG).  Every distinct line is translated once; <stage directions> of the English
-text lose their brackets.  Output: "<text id> <line>" per distinct line (ids sharing a text: the lowest id),
-sorted by id, # header; a line that comes back unchanged or empty is dropped, and so are duplicates of an
-earlier result.  --trace writes every intermediate step as TSV (for looking at how a line went astray).
+language from the folder name (LANG).  Every distinct line is translated once (ids with the same text share the
+result); <stage directions> of the English text lose their brackets.  Output: "<text id> <line>" for every text
+id that has a line, sorted by id, # header: the file maps id for id, so --translate20 can put every subtitle's
+own 20x-translated line in its place.  Nothing is dropped: a result that came back unchanged or equal to another
+id's result stays, and no result is empty (a step that answers nothing keeps the previous text).  --trace writes
+every intermediate step as TSV (for looking at how a line went astray).
 
 Needs (not part of the randomizer, this is a one-off generator like talkmsg.py):
     pip install ctranslate2 sentencepiece      (+ nvidia-cublas-cu12 nvidia-cudnn-cu12 for the GPU)
@@ -183,7 +185,7 @@ def main(argv: list[str] | None = None) -> int:
         steps.append(cur)
         print(f"# {n:>2}/{len(chain)} {src} -> {tgt}: {len(cur)} lines in {time.time() - t1:.0f} s  e.g. {cur[0][:60]!r}", file=sys.stderr)
         src = tgt
-    final = [polish(t, source) for t in cur]
+    final = [polish(t, source) or t or o for t, o in zip(cur, originals)]   # never empty
     print(f"# done in {time.time() - t0:.0f} s", file=sys.stderr)
 
     if args.trace:
@@ -193,29 +195,20 @@ def main(argv: list[str] | None = None) -> int:
                 f.write(f"{first_id[o]}\t" + "\t".join(s[i] for s in steps) + f"\t{final[i]}\n")
         print(f"# trace: {args.trace}", file=sys.stderr)
 
-    kept: dict[int, str] = {}
-    seen: set[str] = set()
-    unchanged = empty = dup = 0
-    for o, t in zip(originals, final):
-        if not t:
-            empty += 1
-        elif t == o:
-            unchanged += 1
-        elif t in seen:
-            dup += 1
-        else:
-            seen.add(t)
-            kept[first_id[o]] = t
+    result = dict(zip(originals, final))             # original line -> its result
+    lines = {tid: result[t] for tid, t in texts.items() if t in result}
+    unchanged = sum(1 for tid, t in texts.items() if lines.get(tid) == t)
+    distinct = len(set(lines.values()))
     out.parent.mkdir(parents=True, exist_ok=True)
     with open(out, "w", encoding="utf-8") as f:
-        f.write(f"# {folder}: the game's dialogue lines ({archive.name}, {len(texts)} entries with text, {len(originals)} distinct) "
+        f.write(f"# {folder}: every dialogue line of {archive.name} ({len(texts)} text ids with a line, {len(originals)} distinct lines) "
                 f"after 20 machine translations, {datetime.date.today()}\n")
         f.write(f"# chain: {source} -> " + " -> ".join(chain) + f"  (NLLB-200 distilled 600M via CTranslate2, beam {engine.beam}; tools/translate20.py)\n")
-        f.write(f"# \"<text id> <line>\": the id is the lowest one that had the original line; {len(kept)} lines kept, "
-                f"{unchanged} came back unchanged, {empty} empty, {dup} duplicates of an earlier result (all dropped)\n")
-        for tid in sorted(kept):
-            f.write(f"{tid} {kept[tid]}\n")
-    print(f"# wrote {out}: {len(kept)} lines ({unchanged} unchanged, {empty} empty, {dup} duplicates dropped)", file=sys.stderr)
+        f.write(f"# \"<text id> <line>\": the id's own line after the chain, one per id (ids with the same original share the result); "
+                f"{len(lines)} ids, {distinct} distinct results, {unchanged} ids came back unchanged; nothing dropped, no result is empty\n")
+        for tid in sorted(lines):
+            f.write(f"{tid} {lines[tid]}\n")
+    print(f"# wrote {out}: {len(lines)} ids, {distinct} distinct results, {unchanged} unchanged", file=sys.stderr)
     return 0
 
 

@@ -84,9 +84,11 @@ def fmg_name(f) -> str:
 
 def patch_archive(src: Path, texts: dict[int, str]) -> tuple[bytes, dict[str, int]]:
     """The archive `src` (DCX around a BND4 of FMGs) with `texts` written into its TalkMsg FMGs: an id that
-       already exists somewhere (e.g. as %null%) is replaced in place, a new id goes to TalkMsg.fmg
-       (9 digits and below) or TalkMsg_dlc01.fmg (10 digits, the Shadow of the Erdtree range).  Returns
-       the DCX DFLT bytes and {fmg name: entries written}.  Every other file is copied byte for byte."""
+       already exists somewhere (e.g. as %null%) is replaced in place, in every FMG that has it (the Chinese
+       archive repeats a few ids in TalkMsg_FemalePC_Alt.fmg, the wording for a female player character, and
+       the game reads that copy then); a new id goes to TalkMsg.fmg (9 digits and below) or TalkMsg_dlc01.fmg
+       (10 digits, the Shadow of the Erdtree range).  Returns the DCX DFLT bytes and {fmg name: entries
+       written}.  Every other file is copied byte for byte."""
     raw = src.read_bytes()
     bnd = erreg.read_bnd4(erreg.read_dcx(raw).data if raw[:4] == b"DCX\0" else raw)
     fmgs = {f.index: read_fmg(bnd.datas[f.index]) for f in bnd.files
@@ -99,10 +101,11 @@ def patch_archive(src: Path, texts: dict[int, str]) -> tuple[bytes, dict[str, in
     written: dict[str, int] = {}
     changed: set[int] = set()
     for tid, text in texts.items():
-        where = next((i for i, e in fmgs.items() if tid in e), dlc if tid >= 1_000_000_000 else base)
-        fmgs[where][tid] = text
-        changed.add(where)
-        written[fmg_name(bnd.files[where])] = written.get(fmg_name(bnd.files[where]), 0) + 1
+        wheres = [i for i, e in fmgs.items() if tid in e] or [dlc if tid >= 1_000_000_000 else base]
+        for where in wheres:
+            fmgs[where][tid] = text
+            changed.add(where)
+            written[fmg_name(bnd.files[where])] = written.get(fmg_name(bnd.files[where]), 0) + 1
     datas = list(bnd.datas)
     for i in changed:
         datas[i] = write_fmg(fmgs[i])

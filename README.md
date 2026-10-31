@@ -141,14 +141,17 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 - `--dialogue-jokes`（笑话大师）：被砍的台词改成冷笑话并加入随机；不带路径时用工具自带的英文、中文文本档
   （`tools/msg/<语言>/menu_dlc02.msgbnd.dcx`，exe 版是旁边的 `msg\` 目录），改好的副本写到输出旁的
   `msg/<语言>/`，要和 regulation.bin 一起放进 mod 目录。
-- `--zhocn-pool`（三国 + 冷笑话台词池，只改中文字幕，不在常用设定里）：中文字幕先从 `tools/names/sanguo_zhocn.txt`
-  （2010 版《三国》有趣台词 305 条）+ `jokes_zhocn.txt`（955 条）的池子里抽，每句只出现一次，抽完后剩下的才保留游戏原文；
-  英文不动。中文文本档用 `--dialogue-jokes` 指定的那份，否则用自带的；改好的副本同样写到输出旁的 `msg/zhocn/`
-  （见下文“对话字幕随机”）。
+- `--pool-first`（三国 + 冷笑话台词池先抽，抽完再抽原字幕，不在常用设定里；原名 `--zhocn-pool`，仍可用）：中文字幕先从
+  `tools/names/sanguo_zhocn.txt`（2010 版《三国》有趣台词 305 条）+ `jokes_zhocn.txt`（955 条）的池子里抽，英文字幕先从
+  `jokes_engus.txt`（955 条）里抽，每句只出现一次，抽完后剩下的才保留游戏原文。文本档用 `--dialogue-jokes` 指定的，否则用自带的
+  两份；改好的副本同样写到输出旁的 `msg/<语言>/`（见下文“对话字幕随机”）。
 - `--mixed-pool`（混合台词池：三国 + 冷笑话 + 翻译 20 次，不含原字幕，不在常用设定里）：中文字幕全部从
-  `sanguo_zhocn.txt` + `jokes_zhocn.txt` + `translate20_zhocn.txt`（游戏中文原文被机器翻译 20 次的结果，5938 句）的池子里抽，
-  英文全部从 `jokes_engus.txt` + `translate20_engus.txt`（6288 句）里抽，不分先后，游戏原文一句不留；和 `--zhocn-pool`
+  `sanguo_zhocn.txt` + `jokes_zhocn.txt` + `translate20_zhocn.txt`（游戏中文原文被机器翻译 20 次的结果，5939 句不同）的池子里抽，
+  英文全部从 `jokes_engus.txt` + `translate20_engus.txt`（6292 句）里抽，不分先后，游戏原文一句不留；和 `--pool-first`
   二选一（见下文“对话字幕随机”）。
+- `--translate20`（翻译 20 次原位替换，不在常用设定里）：每句字幕换成这句话本身被机器翻译 20 次之后的样子，id 对应，中英文都改；
+  可以单独用（NPC 念原句、字幕是歪掉的原句），也可以和 `--random-dialogue`、`--dialogue-jokes` 合用；和两个台词池互斥
+  （见下文“对话字幕随机”）。
 - 没给 `--seed`，种子随机生成并打印在开头；想复现就把它加回去（`--seed N`）。压缩用默认的 Kraken（需要 DLL）。
 
 ### 其他示例
@@ -181,8 +184,9 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 | `--start-with-bell`、`--start-with-lantern` | 开局随圣杯瓶一起拿到招魂铃 / 携带照明灯（追加到圣杯瓶掉落组，铃那行带召唤骨灰所需的标志 60110）；给雾门随机用，前期可能到不了给铃的宁姆格福、卖灯的湖之利耶尼亚 |
 | `--random-dialogue` | NPC 对话字幕在所有 NPC 的台词之间打乱，语音不动（NPC 念的还是自己那句）；报告 `dialogue.txt` |
 | `--dialogue-jokes [MSGBND...]` | 笑话大师，与 `--random-dialogue` 合用：被砍的台词（有 id 没文本）改成冷笑话并加入随机；MSGBND 是每种游戏语言的 `msg/<语言>/menu_dlc02.msgbnd.dcx`，不给时用自带的英文、中文两份（`tools/msg/`，exe 版在旁边的 `msg\`）；改好的副本写到输出旁的 `msg/<语言>/`，要和 regulation.bin 一起放进 mod 目录 |
-| `--zhocn-pool [MSGBND]` | 三国 + 冷笑话台词池，只改中文字幕，与 `--random-dialogue` 合用：中文字幕先从 `tools/names/sanguo_zhocn.txt`（2010 版《三国》台词 305 条）+ `jokes_zhocn.txt` 的池子里抽，每句一次，抽完剩下的才保留原文；英文不动；MSGBND 是 `msg/zhocn/menu_dlc02.msgbnd.dcx`，不给时用 `--dialogue-jokes` 的中文那份或自带的；改好的写到输出旁的 `msg/zhocn/` |
-| `--mixed-pool [MSGBND...]` | 混合台词池，与 `--random-dialogue` 合用、和 `--zhocn-pool` 二选一：每句字幕都从池子里抽、不分先后，中文池 = `sanguo_zhocn.txt` + `jokes_zhocn.txt` + `translate20_zhocn.txt`，英文池 = `jokes_engus.txt` + `translate20_engus.txt`（`translate20_*` 是游戏原文被机器翻译 20 次的结果，`tools/translate20.py` 生成）；游戏原文不出现；MSGBND 同 `--dialogue-jokes`，不给时用它的或自带的两份；改好的写到输出旁的 `msg/<语言>/` |
+| `--pool-first [MSGBND...]` | 三国 + 冷笑话台词池先抽，与 `--random-dialogue` 合用：中文字幕先从 `tools/names/sanguo_zhocn.txt`（2010 版《三国》台词 305 条）+ `jokes_zhocn.txt` 的池子里抽，英文先从 `jokes_engus.txt` 里抽，每句一次，抽完剩下的才保留原文；MSGBND 同 `--dialogue-jokes`，不给时用它的或自带的两份；改好的写到输出旁的 `msg/<语言>/`；`--zhocn-pool` 是旧名 |
+| `--mixed-pool [MSGBND...]` | 混合台词池，与 `--random-dialogue` 合用、和 `--pool-first` 二选一：每句字幕都从池子里抽、不分先后，中文池 = `sanguo_zhocn.txt` + `jokes_zhocn.txt` + `translate20_zhocn.txt`，英文池 = `jokes_engus.txt` + `translate20_engus.txt`（`translate20_*` 是游戏原文被机器翻译 20 次的结果，`tools/translate20.py` 生成）；游戏原文不出现；MSGBND 同 `--dialogue-jokes`，不给时用它的或自带的两份；改好的写到输出旁的 `msg/<语言>/` |
+| `--translate20 [MSGBND...]` | 翻译 20 次原位替换：每句字幕换成这句话本身被机器翻译 20 次之后的样子（`tools/names/translate20_<语言>.txt`，id 对应），中英文都改，其他 id 不动；可单独用（NPC 念原句、字幕是歪掉的原句），也可和 `--random-dialogue`、`--dialogue-jokes` 合用；和两个台词池互斥；MSGBND 和输出同 `--dialogue-jokes` |
 | （总是） | 每个魔法/祷告拿到另一个法术的效果；`--no-spells` 关闭 |
 | `--random-prices` | 商店购买价和道具售价；`--price-mode shuffle\|range`、`--price-min N`、`--price-max N`、`--sell-min N`、`--sell-max N`、`--no-sell-prices`（售价不动）、`--sell-equipment`（武器、防具、战灰的售价也随机，默认不动） |
 | `--weapons` | = 下面四项 |
@@ -207,8 +211,8 @@ Release 里的 `ERFurtherRandom.exe`（见开头“快速开始”）、`randomi
 - 选项分五块：文件、道具与法术、武器、道具获取位置（圣杯瓶获得位置随机 `--random-flask-locations`，开局招魂铃 / 携带照明灯
   `--start-with-bell` / `--start-with-lantern`）、娱乐（fun）：
   对话字幕随机（`--random-dialogue`）、笑话大师（joke shifu，`--dialogue-jokes`；文本档留空就用自带的英文、中文两份）和
-  三国 + 冷笑话台词池（`--zhocn-pool`，只改中文字幕）和混合台词池（`--mixed-pool`，三国 + 冷笑话 + 翻译 20 次，不含原字幕，
-  两者二选一）；这两项都不在常用设定里。
+  三国 + 冷笑话台词池先抽（`--pool-first`，中文 = 三国 + 冷笑话、英文 = 冷笑话，抽完再回到原字幕）、混合台词池（`--mixed-pool`，三国 + 冷笑话 + 翻译 20 次，不含原字幕）和
+  翻译 20 次原位替换（`--translate20`，不依赖字幕随机）；这三项互斥，都不在常用设定里。
 - “常用设定”按钮 = `--split-anim any --random-prices --weapons --random-flask-locations --random-dialogue --dialogue-jokes`；“预览（不写文件）” = `--dry-run`；右上角“语言”左边的“只重新压缩（不随机）” = `--repack`（修复 Fog Gate Randomizer 的输出等，见下文）；
   “开始随机”生成文件，完成后提示输出位置，`mapping.txt / weapons.txt / spells.txt / dialogue.txt` 写在输出文件旁边。
 - 日志区显示命令行的全部输出；Kraken 压缩约需 2 分钟，期间窗口保持响应。
@@ -331,28 +335,35 @@ mod 目录里就有，`mod\randomizer\msg\zhocn\...`，游戏自己用的语言�
 原文件。输出文件也不能和输入文件放在同一目录（清单和 msg 目录会落进那个 mod 目录，同名还会覆盖输入），命令行和图形界面都
 会拒绝；预览（`--dry-run`）只提醒。两种情况的提示都是：建议创建新目录以方便 mod 管理。1.17.1 原版上参与的句子从 9135 增加到 10033。
 
-**三国 + 冷笑话台词池（`--zhocn-pool`，只改中文字幕，2026-10-31）**：和 `--random-dialogue` 合用，中文文本档里的对话字幕先从
-`tools/names/sanguo_zhocn.txt`（2010 版《三国》的有趣台词 305 条，文件里写成“说话人：台词”方便查对，用的时候去掉说话人，
-字幕只显示台词，如“不可能！绝对不可能！……八万个馒头”）+ `jokes_zhocn.txt`（955 条）的池子里抽：字幕置换照常，然后把置换后各行显示的文本 id 随机排序（没中文文本的 id 排最前，
-所以开着笑话大师时被砍的台词一定有字幕），前 1260 个 id 各写一条池子里的句子，每句只出现一次，剩下的 id 保留游戏原文；
-英文文本档不动。中文文本档用 `--dialogue-jokes` 指定的那份，没有就用自带的（也可以直接接一个路径）；改好的同样写到输出旁的
-`msg/zhocn/menu_dlc02.msgbnd.dcx`，要一起进 mod 目录。同一种子开不开它，字幕置换和 regulation.bin 都一样，只是中文看到的句子不同。
-图形界面里是“娱乐”区的“三国 + 冷笑话台词池，只改中文字幕”，不在常用设定里。`dialogue.txt` 里拿到池子句子的行末尾标
-`|| zhocn: ...`。离线验证过文本档的写入，游戏内未测。
+**三国 + 冷笑话台词池先抽（`--pool-first`，原名 `--zhocn-pool`，2026-10-31）**：和 `--random-dialogue` 合用，每种语言的对话字幕先从
+池子里抽：中文池 = `tools/names/sanguo_zhocn.txt`（2010 版《三国》的有趣台词 305 条，文件里写成“说话人：台词”方便查对，用的时候
+去掉说话人，字幕只显示台词，如“不可能！绝对不可能！……八万个馒头”）+ `jokes_zhocn.txt`（955 条），英文池 = `jokes_engus.txt`
+（955 条）。字幕置换照常，然后每种语言把置换后各行显示的文本 id 随机排序（该语言没文本的 id 排最前，所以开着笑话大师时被砍的
+台词一定有字幕），前“池子大小”个 id 各写一条池子里的句子（中文 1260、英文 955），每句只出现一次，剩下的 id 保留游戏原文。
+文本档用 `--dialogue-jokes` 指定的，没有就用自带的两份（也可以直接接路径）；改好的同样写到输出旁的 `msg/<语言>/menu_dlc02.msgbnd.dcx`，
+要一起进 mod 目录。同一种子开不开它，字幕置换和 regulation.bin 都一样，只是看到的句子不同。图形界面里是“娱乐”区的“三国 + 冷笑话
+台词池先抽，抽完再抽原字幕”，不在常用设定里。`dialogue.txt` 里拿到池子句子的行末尾标 `|| zhocn: … || engus: …`。离线验证过文本档
+的写入，游戏内未测。
 
 **混合台词池 + 翻译 20 次（`--mixed-pool`，2026-10-31）**：“谷歌翻译 20 次”是 B 站上的一个梗：一段话放进谷歌翻译，译成一种外语再译成
 下一种，连翻 20 次最后翻回原文，每次歪一点，出来的句子通顺但意思面目全非（“被谷歌翻译 20 次的《桃花源记》”之类）。
 `tools/translate20.py` 对游戏的中文、英文对话文本各做了一遍：谷歌翻译没有免费 API、网页接口也不是给 30 多万次批量用的，所以同样的
 20 步链用 Meta 开源的 NLLB-200 模型（distilled 600M，CTranslate2）离线跑，语言链固定（中 → 英 → 日 → 韩 → 泰 → 越 → 阿拉伯 → 希伯来
 → 俄 → 芬兰 → 匈牙利 → 土耳其 → 印地 → 斯瓦希里 → 祖鲁 → 冰岛 → 德 → 法 → 西 → 蒙古 → 中，英文档把链里的英语换成中文），结果存在
-`tools/names/translate20_zhocn.txt`（7850 句不同的中文原文，翻回来重复的去掉后 5938 句）和 `translate20_engus.txt`（7951 句英文原文，
-剩 6288 句），例如“褪色者将要归来──”→“食物回来了。”、“艾尔登法环啊，艾尔登法环──”→“这就是阿尔登的法国菜。”。`--mixed-pool`
-和 `--random-dialogue` 合用（和 `--zhocn-pool` 二选一）：字幕置换照常，然后每种语言各一个池子——中文 = 三国台词（去说话人）+ 冷笑话 +
-中文翻译 20 次（305 + 955 + 5938 = 7198 句），英文 = 冷笑话 + 英文翻译 20 次（955 + 6288 = 7243 句）——把显示出来的文本 id
+`tools/names/translate20_zhocn.txt`（9539 个有文本的 id 各一行，7850 句不同原文翻出 5939 句不同的结果，11 个翻回来和原句一样）和
+`translate20_engus.txt`（9816 个 id，7951 句原文翻出 6292 句，13 个原样；翻回来一样的、重复的都保留，没有空的），例如“褪色者将要归来──”→“食物回来了。”、“艾尔登法环啊，艾尔登法环──”→“这就是阿尔登的法国菜。”。`--mixed-pool`
+和 `--random-dialogue` 合用（和 `--pool-first` 二选一）：字幕置换照常，然后每种语言各一个池子——中文 = 三国台词（去说话人）+ 冷笑话 +
+中文翻译 20 次（去重后 5939 句，305 + 955 + 5939 = 7199 句），英文 = 冷笑话 + 英文翻译 20 次（955 + 6292 = 7247 句）——把显示出来的文本 id
 和池子都随机排序，一个 id 一句、不分先后，id 比池子多时池子重洗一遍接着发，女版 id 跟男版同句；游戏原文一句都不显示（没开笑话大师时
 被砍的 id 不参与随机）。文本档同笑话大师：给了路径按路径，不给用笑话大师的或自带的两份；改好的写到输出旁的 `msg/<语言>/`，要一起进
 mod 目录。图形界面里是“娱乐”区第四个勾选框“混合台词池：三国 + 冷笑话 + 翻译 20 次，不含原字幕”，和第三个互斥，不在常用设定里。
 `dialogue.txt` 每行末尾标 `|| zhocn: … || engus: …`。离线验证过文本档的写入，游戏内未测。
+
+**翻译 20 次原位替换（`--translate20`，2026-10-31）**：每种语言的文本档里，凡是 `translate20_<语言>.txt` 有的 id（档里本来有文本的）
+都换成文件里那句——这句话自己被翻译 20 次之后的样子，id 对应，其他 id 不动。不依赖 `--random-dialogue`：单独用就是 NPC 念原句、
+字幕是歪掉的原句；合用时字幕置换照常、id 背后的文本换成翻译；`--dialogue-jokes` 照常填被砍的 id。和 `--pool-first`、`--mixed-pool`
+互斥。文本档和输出位置同笑话大师（不给路径用笑话大师的或自带的两份，改好的写到输出旁的 `msg/<语言>/`，要一起进 mod 目录）。
+图形界面里是“娱乐”区第五个勾选框“字幕逐句换成翻译 20 次的结果，id 对应”，不在常用设定里。离线验证过文本档的写入，游戏内未测。
 
 语音不随机：语音 id `xxxoooooo` 存在 `sd/enus/vcxxx.bnk` 里，而游戏只在用到它的 NPC 附近加载那个声音库（Nexus 的 Elden Ring
 音频修改帖里有人想在别处播放尤拉的台词，只有在尤拉营地旁才放得出来），换到别的 NPC 身上预计是没声的，一句没声还可能要等
@@ -491,7 +502,7 @@ param 重新序列化（支持新增行），没动过的原字节写回，再�
 - `tools/start_items.py` — 开局道具（招魂铃 / 携带照明灯追加到圣杯瓶掉落组）
 - `tools/msg/engus/`、`tools/msg/zhocn/` — 笑话大师默认改写的文本档 `menu_dlc02.msgbnd.dcx`（1.17.1 文本：中文原版，
   英文是雾门随机器写出的版本）；`build_exe` 把它们复制到 exe 旁边的 `msg\`，Release 里和 exe 一起
-- `tools/dialogue.py` — 对话字幕随机、冷笑话填充、三国台词池和混合台词池；`tools/talkmsg.py` — 读写 FMG：生成台词文本表
+- `tools/dialogue.py` — 对话字幕随机、冷笑话填充、三国台词池、混合台词池和翻译 20 次原位替换；`tools/talkmsg.py` — 读写 FMG：生成台词文本表
   `tools/names/TalkMsg.txt`、把 `tools/names/jokes_zhocn.txt` / `jokes_engus.txt`（笑话）、`sanguo_zhocn.txt`（2010 版《三国》台词
   305 条，用时去掉说话人）和 `translate20_zhocn.txt` / `translate20_engus.txt`（游戏原文翻译 20 次的结果）写进
   `msg/<语言>/menu_dlc02.msgbnd.dcx`

@@ -49,20 +49,25 @@ Dialogue (TalkParam):
                         msg/<language>/menu_dlc02.msgbnd.dcx (one per language); without paths the archives
                         shipped with the tool are used (tools/msg/<language>/, or the msg folder next to the
                         executable); the patched copy is written next to the output as msg/<language>/...
-  --zhocn-pool [MSGBND] Chinese subtitles only, with --random-dialogue: the Chinese archive shows the pool
-                        of names/sanguo_zhocn.txt (lines of the 2010 TV series "Three Kingdoms") +
-                        names/jokes_zhocn.txt first, every pool line once over random text ids (cut ids
-                        first), and only the ids left over keep the game's own Chinese lines; MSGBND is the
-                        game's msg/zhocn/menu_dlc02.msgbnd.dcx (default: the one --dialogue-jokes uses, else
-                        the shipped archive); the patched copy goes next to the output as msg/zhocn/...
-                        Other languages are not touched
+  --pool-first [MSGBND ...]
+                        with --random-dialogue: per language a pool is shown first, every pool line once over
+                        random text ids (the cut ids first), and only the ids left over keep the game's own
+                        lines; Chinese = names/sanguo_zhocn.txt (lines of the 2010 TV series "Three Kingdoms")
+                        + jokes_zhocn.txt, English = jokes_engus.txt; MSGBND as for --dialogue-jokes (default:
+                        its archives, else the shipped ones); the patched copies go next to the output as
+                        msg/<language>/...  --zhocn-pool is the old name of this option
   --mixed-pool [MSGBND ...]
                         with --random-dialogue: every subtitle comes from one heap per language, in no order:
                         Chinese = names/sanguo_zhocn.txt + jokes_zhocn.txt + translate20_zhocn.txt, English =
                         jokes_engus.txt + translate20_engus.txt (translate20_*: the game's own lines after 20
                         machine translations, tools/translate20.py); the game's own lines are left out.  MSGBND
                         as for --dialogue-jokes (default: its archives, else the shipped ones); the patched
-                        copies go next to the output as msg/<language>/...  Not together with --zhocn-pool
+                        copies go next to the output as msg/<language>/...  Not together with --pool-first
+  --translate20 [MSGBND ...]
+                        every subtitle is replaced, id for id, by the same line after 20 machine translations
+                        (names/translate20_<language>.txt, Chinese and English); works alone (every NPC speaks
+                        its own line under its garbled subtitle) or with --random-dialogue / --dialogue-jokes;
+                        not together with the pools.  MSGBND and the output as for --dialogue-jokes
 Spells (Magic.param):
   (always)              each sorcery / incantation gets the effect of another spell (one pool for both);
                         --split-anim also splits cast animation and effect; --random-stats (group
@@ -78,8 +83,8 @@ Usage:
                         [--random-prices] [--price-mode shuffle|range] [--price-min N] [--price-max N]
                         [--no-sell-prices] [--sell-min N] [--sell-max N] [--sell-equipment]
                         [--random-flask-locations] [--start-with-bell] [--start-with-lantern]
-                        [--random-dialogue] [--dialogue-jokes [MSGBND ...]] [--zhocn-pool [MSGBND]]
-                        [--mixed-pool [MSGBND ...]]
+                        [--random-dialogue] [--dialogue-jokes [MSGBND ...]] [--pool-first [MSGBND ...]]
+                        [--mixed-pool [MSGBND ...]] [--translate20 [MSGBND ...]]
                         [--somber-infusable] [--random-movesets] [--random-default-ash]
                         [--random-stats] [--stat-groups attack,guard,...] [--stamina-rate 0,2.0] [--weapons]
 """
@@ -361,6 +366,33 @@ def archive_guard(flag: str, src: Path, output: Path, dry_run: bool) -> None:
         raise SystemExit(msg)
 
 
+def pool_archives(flag: str, given: list[str], jokes, langs: list[str]) -> list[Path]:
+    """The text archives a subtitle option rewrites: the paths given (one per language folder, the same file as
+       --dialogue-jokes uses for that language), else the joke shifu's archives, else the shipped ones for `langs`."""
+    if given:
+        archives = [Path(a) for a in given]
+        for a in archives:
+            lang = a.parent.name.lower()
+            if jokes is not None and lang in jokes.langs:
+                other = jokes.archives[jokes.langs.index(lang)]
+                if other.resolve() != a.resolve():
+                    raise SystemExit(f"{flag} {a} and --dialogue-jokes {other}: the {lang} archive must be the same file "
+                                     "for both (give the path to one of them only)")
+        return archives
+    if jokes is not None:
+        return list(jokes.archives)
+    archives = [dialogue.MSG_DIR / lang / dialogue.ARCHIVE for lang in langs]
+    archives = [a for a in archives if a.is_file()]
+    if not archives:
+        raise SystemExit(f"{flag}: the shipped text archives are missing: {dialogue.MSG_DIR}/<language>/{dialogue.ARCHIVE} "
+                         f"for {', '.join(langs)}. "
+                         + ("Put the msg folder from the Release zip next to the executable, "
+                            if getattr(sys, "frozen", False) else "Restore tools/msg/ from the repository, ")
+                         + "or pass the path(s) of the game's msg/<language>/menu_dlc02.msgbnd.dcx.")
+    print(f"# {flag.lstrip('-')}: using the shipped text archives: " + ", ".join(str(a) for a in archives))
+    return archives
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--input", default="regulation.bin")
@@ -420,20 +452,25 @@ def main(argv: list[str] | None = None) -> int:
                          "msg/<language>/menu_dlc02.msgbnd.dcx, one per language; without paths the archives shipped "
                          "with the tool are used (tools/msg/<language>/, or the msg folder next to the executable); the "
                          "patched copy goes next to the output as msg/<language>/...")
-    ap.add_argument("--zhocn-pool", nargs="?", const="", default=None, metavar="MSGBND",
-                    help="Chinese subtitles only, with --random-dialogue: the Chinese text archive shows the pool of "
-                         "tools/names/sanguo_zhocn.txt (lines of the 2010 TV series Three Kingdoms) + jokes_zhocn.txt "
-                         "first, every pool line once over random text ids (the cut ids first), and only the ids left "
-                         "over keep the game's own Chinese lines; MSGBND = the game's msg/zhocn/menu_dlc02.msgbnd.dcx "
-                         "(default: the Chinese archive --dialogue-jokes uses, else the shipped one); the patched copy "
-                         "goes next to the output as msg/zhocn/...; other languages are not touched")
+    ap.add_argument("--pool-first", "--zhocn-pool", dest="pool_first", nargs="*", default=None, metavar="MSGBND",
+                    help="with --random-dialogue: per language a pool is shown first, every pool line once over random "
+                         "text ids (the cut ids first), and only the ids left over keep the game's own lines; Chinese = "
+                         "tools/names/sanguo_zhocn.txt (lines of the 2010 TV series Three Kingdoms) + jokes_zhocn.txt, "
+                         "English = jokes_engus.txt; MSGBND as for --dialogue-jokes (default: its archives, else the "
+                         "shipped ones); the patched copies go next to the output as msg/<language>/...; --zhocn-pool is "
+                         "the old name of this option; not together with --mixed-pool / --translate20")
     ap.add_argument("--mixed-pool", nargs="*", default=None, metavar="MSGBND",
                     help="with --random-dialogue: every subtitle comes from one heap per language, in no order: Chinese = "
                          "tools/names/sanguo_zhocn.txt + jokes_zhocn.txt + translate20_zhocn.txt, English = jokes_engus.txt + "
                          "translate20_engus.txt (the game's own lines after 20 machine translations, tools/translate20.py); "
                          "the game's own lines are left out; MSGBND as for --dialogue-jokes (default: its archives, else the "
                          "shipped ones); the patched copies go next to the output as msg/<language>/...; not together with "
-                         "--zhocn-pool")
+                         "--pool-first")
+    ap.add_argument("--translate20", nargs="*", default=None, metavar="MSGBND",
+                    help="every subtitle is replaced, id for id, by the same line after 20 machine translations "
+                         "(tools/names/translate20_<language>.txt, Chinese and English); works alone (every NPC speaks its "
+                         "own line under its garbled subtitle) or with --random-dialogue / --dialogue-jokes; not together "
+                         "with --pool-first / --mixed-pool; MSGBND and the patched copies as for --dialogue-jokes")
     ap.add_argument("--somber-infusable", action="store_true", help="somber/unique weapons get all affinities and Ashes of War")
     ap.add_argument("--random-movesets", action="store_true",
                     help="random light/heavy attack moveset on every melee weapon and shield")
@@ -620,60 +657,38 @@ def main(argv: list[str] | None = None) -> int:
         for src in jokes.archives:
             archive_guard("--dialogue-jokes", src, Path(args.output), args.dry_run)
     pool = None
-    if args.zhocn_pool is not None and args.mixed_pool is not None:
-        raise SystemExit("--mixed-pool and --zhocn-pool: one or the other (both rewrite the Chinese archive)")
-    if args.zhocn_pool is not None and not args.random_dialogue:
-        raise SystemExit("--zhocn-pool needs --random-dialogue")
-    if args.random_dialogue and args.zhocn_pool is not None:
-        from_jokes = (jokes.archives[jokes.langs.index(dialogue.POOL_LANG)]
-                      if jokes is not None and dialogue.POOL_LANG in jokes.langs else None)
-        if args.zhocn_pool:
-            archive = Path(args.zhocn_pool)
-            if from_jokes is not None and from_jokes.resolve() != archive.resolve():
-                raise SystemExit(f"--zhocn-pool {archive} and --dialogue-jokes {from_jokes}: the Chinese archive must "
-                                 "be the same file for both (give the path to one of them only)")
-        elif from_jokes is not None:
-            archive = from_jokes
-        else:
-            archive = dialogue.MSG_DIR / dialogue.POOL_LANG / dialogue.ARCHIVE
-            if not archive.is_file():
-                raise SystemExit(f"--zhocn-pool: the shipped Chinese text archive is missing: {archive}. "
-                                 + ("Put the msg folder from the Release zip next to the executable, "
-                                    if getattr(sys, "frozen", False) else "Restore tools/msg/ from the repository, ")
-                                 + f"or pass the path of the game's msg/{dialogue.POOL_LANG}/{dialogue.ARCHIVE}.")
-            print(f"# zhocn pool: using the shipped text archive: {archive}")
-        pool = dialogue.ZhPool(archive)
-        archive_guard("--zhocn-pool", pool.archive, Path(args.output), args.dry_run)
+    if args.pool_first is not None and args.mixed_pool is not None:
+        raise SystemExit("--mixed-pool and --pool-first: one or the other (both rewrite the same archives)")
+    if args.translate20 is not None and (args.pool_first is not None or args.mixed_pool is not None):
+        raise SystemExit("--translate20 replaces every subtitle id for id: not together with --pool-first or --mixed-pool")
+    if args.pool_first is not None:
+        if not args.random_dialogue:
+            raise SystemExit("--pool-first needs --random-dialogue")
+        archives = pool_archives("--pool-first", args.pool_first, jokes, dialogue.joke_languages())
+        pool = dialogue.FirstPool([str(a) for a in archives])
+        for src in pool.archives:
+            archive_guard("--pool-first", src, Path(args.output), args.dry_run)
     if args.mixed_pool is not None:
         if not args.random_dialogue:
             raise SystemExit("--mixed-pool needs --random-dialogue")
         if not dialogue.mixed_languages():
             raise SystemExit(f"--mixed-pool: {dialogue.HERE / 'names'} has no translate20_<language>.txt next to a "
                              "jokes_<language>.txt (tools/translate20.py writes the translate20 files)")
-        if args.mixed_pool:
-            archives = [Path(a) for a in args.mixed_pool]
-            for a in archives:
-                lang = a.parent.name.lower()
-                if jokes is not None and lang in jokes.langs:
-                    other = jokes.archives[jokes.langs.index(lang)]
-                    if other.resolve() != a.resolve():
-                        raise SystemExit(f"--mixed-pool {a} and --dialogue-jokes {other}: the {lang} archive must be the "
-                                         "same file for both (give the path to one of them only)")
-        elif jokes is not None:
-            archives = list(jokes.archives)
-        else:
-            archives = [dialogue.MSG_DIR / lang / dialogue.ARCHIVE for lang in dialogue.mixed_languages()]
-            archives = [a for a in archives if a.is_file()]
-            if not archives:
-                raise SystemExit(f"--mixed-pool: the shipped text archives are missing: {dialogue.MSG_DIR}/<language>/"
-                                 f"{dialogue.ARCHIVE} for {', '.join(dialogue.mixed_languages())}. "
-                                 + ("Put the msg folder from the Release zip next to the executable, "
-                                    if getattr(sys, "frozen", False) else "Restore tools/msg/ from the repository, ")
-                                 + "or pass the path(s) of the game's msg/<language>/menu_dlc02.msgbnd.dcx.")
-            print("# mixed pool: using the shipped text archives: " + ", ".join(str(a) for a in archives))
+        archives = pool_archives("--mixed-pool", args.mixed_pool, jokes, dialogue.mixed_languages())
         pool = dialogue.MixedPool([str(a) for a in archives])
         for src in pool.archives:
             archive_guard("--mixed-pool", src, Path(args.output), args.dry_run)
+    if args.translate20 is not None:
+        if not dialogue.translated_languages():
+            raise SystemExit(f"--translate20: {dialogue.HERE / 'names'} has no translate20_<language>.txt "
+                             "(tools/translate20.py writes it)")
+        archives = pool_archives("--translate20", args.translate20, jokes, dialogue.translated_languages())
+        pool = dialogue.Translated([str(a) for a in archives])
+        for src in pool.archives:
+            archive_guard("--translate20", src, Path(args.output), args.dry_run)
+        if not args.random_dialogue:
+            dlines += pool.summary().split("\n")
+            print(pool.summary())
     if args.random_dialogue:
         dlines.append(f"# seed={seed}")
         dlines += dialogue.Dialogue(reg).randomize(rng, args.mode, jokes, pool)

@@ -20,22 +20,27 @@ language, e.g. a laugh that is "……哈哈。" in Chinese and blank in English
 talkmsg.py), and all dialogue rows join the shuffle, so jokes turn up in real conversations and some real
 lines vanish into rows nobody ever plays.
 
---zhocn-pool (Chinese subtitles only): the Chinese text archive is rewritten so that the subtitles are drawn
-first from a pool of lines, names/sanguo_zhocn.txt (lines from the 2010 TV series "Three Kingdoms") plus
-names/jokes_zhocn.txt, every pool line shown exactly once (the "speaker：" prefix of the Three Kingdoms file is
-dropped, the subtitle shows the line alone), and only when the pool is used up do the remaining rows keep the
-game's own Chinese lines.  The permutation of the text ids is the same as without the option
-(the pool draws its random numbers afterwards); what changes is the text behind the ids that the Chinese
-archive carries: the text ids in play are put in a random order, the cut ids first (with --dialogue-jokes
-they are in play and would otherwise be blank), and the first len(pool) of them get a pool line each, a
-female-variant id getting the same line as its male partner (unless it is shown itself).  Other languages are untouched.
+--pool-first (both archives; --zhocn-pool is the old name): per language the text archive is rewritten so that
+the subtitles are drawn first from a pool, every pool line shown exactly once, and only when the pool is used
+up do the remaining rows keep the game's own lines.  Chinese: names/sanguo_zhocn.txt (lines from the 2010 TV
+series "Three Kingdoms", the "speaker：" prefix dropped, the subtitle shows the line alone) + names/jokes_zhocn.txt;
+English: names/jokes_engus.txt.  The permutation of the text ids is the same as without the option (the pool
+draws its random numbers afterwards); what changes is the text behind the ids that an archive carries: the text
+ids in play are put in a random order, the cut ids first (with --dialogue-jokes they are in play and would
+otherwise be blank), and the first len(pool) of them get a pool line each, a female-variant id getting the same
+line as its male partner (unless it is shown itself).
 
 --mixed-pool (both archives): every subtitle the dialogue rows show comes from one heap per language, in no
 order: Chinese = names/sanguo_zhocn.txt + jokes_zhocn.txt + translate20_zhocn.txt, English = jokes_engus.txt +
 translate20_engus.txt, where translate20_<language>.txt holds the game's own lines after 20 machine translations
 (the "谷歌翻译20次" meme; tools/translate20.py makes the file).  The game's own lines are not in the heap: every
 shown text id gets a heap line (the heap reshuffled and gone through again when the ids outnumber it), a
-female-variant id its partner's line.  Planned after the permutation like --zhocn-pool, which it excludes.
+female-variant id its partner's line.  Planned after the permutation like --pool-first, which it excludes.
+
+--translate20 (both archives, with or without --random-dialogue): every text id that has a line in
+names/translate20_<language>.txt shows that line, its own line after the 20 translations, id for id; the other
+ids are left alone (--dialogue-jokes may fill the cut ones).  Not together with the pools, which rewrite the same
+ids.  Without --random-dialogue nothing moves: every NPC speaks its own line under its garbled subtitle.
 """
 from __future__ import annotations
 
@@ -59,8 +64,6 @@ TEXT_FIELDS = ("msgId", "msgId_female")
 DUMMY_ROWS = {100, 200}
 SYSTEM_ROWS = 990_000_000                          # 99xxxxxxx: test / debug / system rows
 JOKE_LANG_REPORT = "engus"                         # the report quotes this list when it exists
-POOL_LANG = "zhocn"                                # --zhocn-pool rewrites this language's archive only
-POOL_FILES = ("sanguo_zhocn.txt", "jokes_zhocn.txt")  # names/: the Three Kingdoms lines, then the cold jokes
 TRANSLATED = "translate20_{}.txt"                  # names/: the game's lines after 20 machine translations (translate20.py)
 SPEAKER = re.compile(r"^[^，。！？：；…“”（）\s]{1,4}：")   # "曹操：台词" in sanguo_zhocn.txt: the speaker is dropped in game
 
@@ -85,18 +88,33 @@ def joke_languages() -> list[str]:
     return sorted(p.stem[len("jokes_"):] for p in (HERE / "names").glob("jokes_*.txt"))
 
 
-def load_translated(path: Path) -> list[str]:
-    """names/translate20_<language>.txt: "<text id> <line>" per line, # comments and blank lines skipped; the lines
-       alone (the id only says which game line it came from)."""
-    lines = []
+def load_translated_map(path: Path) -> dict[int, str]:
+    """names/translate20_<language>.txt: "<text id> <line>" per text id (tools/translate20.py), # comments and blank
+       lines skipped; text id -> line (an entry without a line is left out)."""
+    lines: dict[int, str] = {}
     for l in path.read_text(encoding="utf-8").splitlines():
         if not l.strip() or l.startswith("#"):
             continue
         head, _, rest = l.partition(" ")
-        lines.append(" ".join((rest if head.isdigit() else l).split()))
+        if head.isdigit() and rest.strip():
+            lines[int(head)] = " ".join(rest.split())
     if not lines:
-        raise SystemExit(f"{path}: no lines in it")
+        raise SystemExit(f"{path}: no \"<text id> <line>\" lines in it")
     return lines
+
+
+def load_translated(path: Path) -> list[str]:
+    """The distinct lines of names/translate20_<language>.txt in file order, for a heap (the file has one line per
+       text id, so many lines repeat: 20 translations make different lines end up the same)."""
+    return list(dict.fromkeys(load_translated_map(path).values()))
+
+
+def first_pool_files(lang: str) -> list[str]:
+    """--pool-first, per language (names/): the Three Kingdoms lines when that language has them, then the jokes."""
+    files = [f"jokes_{lang}.txt"]
+    if (HERE / "names" / f"sanguo_{lang}.txt").is_file():
+        files.insert(0, f"sanguo_{lang}.txt")
+    return files
 
 
 def mixed_files(lang: str) -> list[str]:
@@ -108,10 +126,14 @@ def mixed_files(lang: str) -> list[str]:
     return files
 
 
+def translated_languages() -> list[str]:
+    """Languages a names/translate20_<language>.txt exists for (--translate20)."""
+    return sorted(p.stem[len("translate20_"):] for p in (HERE / "names").glob("translate20_*.txt"))
+
+
 def mixed_languages() -> list[str]:
     """Languages --mixed-pool has lines for: names/translate20_<language>.txt plus a joke list."""
-    return sorted(p.stem[len("translate20_"):] for p in (HERE / "names").glob("translate20_*.txt")
-                  if (HERE / "names" / f"jokes_{p.stem[len('translate20_'):]}.txt").is_file())
+    return [lang for lang in translated_languages() if (HERE / "names" / f"jokes_{lang}.txt").is_file()]
 
 
 def default_archives() -> list[Path]:
@@ -177,86 +199,98 @@ class Jokes:
         return f"[{first}] {self.given[first].get(tid, '')}"
 
 
-class ZhPool:
-    """--zhocn-pool: the Chinese archive (msg/zhocn/menu_dlc02.msgbnd.dcx) gets the pool lines, names/sanguo_zhocn.txt
-       + names/jokes_zhocn.txt, written over the text ids the dialogue rows show: every pool line once, cut ids
-       first, then random ids; the ids left over keep the game's Chinese text.  The "说话人：" prefix of the
-       Three Kingdoms lines is dropped, the subtitle shows the line alone."""
-    langs = (POOL_LANG,)
-    what = "zhocn pool"
+class FirstPool:
+    """--pool-first: per language archive (msg/<language>/menu_dlc02.msgbnd.dcx) a pool, names/sanguo_<language>.txt
+       when there is one (the Three Kingdoms lines, speaker dropped) + jokes_<language>.txt, is written over the
+       text ids the dialogue rows show: every pool line once, cut ids first, then random ids; the ids left over
+       keep the game's own lines.  Chinese: Three Kingdoms + jokes; English: the jokes."""
+    what = "pool first"
 
-    def __init__(self, archive: Path):
-        self.archive = Path(archive)
-        if self.archive.parent.name.lower() != POOL_LANG:
-            raise SystemExit(f"--zhocn-pool: {self.archive} is not in a folder named {POOL_LANG}; the option rewrites "
-                             f"the Chinese archive only (msg/{POOL_LANG}/{ARCHIVE})")
-        if not self.archive.is_file():
-            raise SystemExit(f"--zhocn-pool: {self.archive} does not exist")
-        self.lists: dict[str, list[str]] = {}
-        for name in POOL_FILES:
-            path = HERE / "names" / name
-            if not path.is_file():
-                raise SystemExit(f"--zhocn-pool: {path} is missing (a line per row, # comments allowed)")
-            lines = load_jokes(path)
-            if name == POOL_FILES[0]:
-                lines = [strip_speaker(l) for l in lines]      # the speaker names stay in the file only
-            self.lists[name] = lines
-        self.lines: list[str] = [l for name in POOL_FILES for l in self.lists[name]]
-        self.given = talkmsg.read_archive(self.archive)
-        self.texts: dict[int, str] = {}                # id -> pool line to write (female partners included)
-        self.shown: dict[int, str] = {}                # primary id -> pool line, for the report
-        self.cut = 0                                   # how many of the ids given a line had no Chinese text
-        self.unused = 0                                # pool lines left over (more lines than ids)
+    def __init__(self, archives: list[str]):
+        self.archives = [Path(a) for a in archives]
+        self.langs = [p.parent.name.lower() for p in self.archives]
+        if len(set(self.langs)) != len(self.langs):
+            raise SystemExit("--pool-first: one archive per language folder, please")
+        self.lists: dict[str, dict[str, list[str]]] = {}      # language -> names/ file -> its lines
+        self.lines: dict[str, list[str]] = {}                 # language -> the pool
+        self.given: dict[str, dict[int, str]] = {}
+        for p, lang in zip(self.archives, self.langs):
+            if not p.is_file():
+                raise SystemExit(f"--pool-first: {p} does not exist")
+            files = first_pool_files(lang)
+            missing = [n for n in files if not (HERE / "names" / n).is_file()]
+            if missing:
+                raise SystemExit(f"--pool-first: {p} is in folder '{p.parent.name}', but tools/names/ has no "
+                                 f"{', '.join(missing)} (a line per row, # comments allowed)")
+            self.lists[lang] = {}
+            for n in files:
+                lines = load_jokes(HERE / "names" / n)
+                if n.startswith("sanguo_"):
+                    lines = [strip_speaker(l) for l in lines]      # the speaker names stay in the file only
+                self.lists[lang][n] = lines
+            self.lines[lang] = [l for n in files for l in self.lists[lang][n]]
+            self.given[lang] = talkmsg.read_archive(p)
+        self.texts: dict[str, dict[int, str]] = {lang: {} for lang in self.langs}   # id -> pool line to write
+        self.shown: dict[str, dict[int, str]] = {lang: {} for lang in self.langs}   # primary id -> line (report)
+        self.cut: dict[str, int] = {lang: 0 for lang in self.langs}      # ids given a line that had no text
+        self.unused: dict[str, int] = {lang: 0 for lang in self.langs}   # pool lines left over
 
     def plan(self, ids: list[int], pairs: dict[int, set[int]], rng: random.Random) -> None:
         """ids: the text ids the dialogue rows show (msgId, distinct); pairs: msgId -> the msgId_female ids that
-           differ from it.  The cut ids (no text in the Chinese archive) come first so none stays blank, the rest
-           in random order; each gets the next pool line (the pool in random order).  Should the cut ids outnumber
-           the pool, the lines cycle over the remaining cut ids.  A female-variant id gets its partner's line
-           unless it is a shown id with a line of its own."""
-        cut = [t for t in ids if not has_text(self.given.get(t))]
-        rest = [t for t in ids if has_text(self.given.get(t))]
-        rng.shuffle(cut)
-        rng.shuffle(rest)
-        order = cut + rest
-        lines = list(self.lines)
-        rng.shuffle(lines)
-        self.cut = len(cut)
-        self.shown = {}
-        for i, tid in enumerate(order):
-            if i >= len(lines) and i >= len(cut):
-                break
-            self.shown[tid] = lines[i % len(lines)]
-        self.unused = max(0, len(lines) - len(order))
-        self.texts = {}
-        for tid, line in self.shown.items():
-            self.texts[tid] = line
-            for f in pairs.get(tid, ()):
-                if f not in self.shown:
-                    self.texts[f] = line
+           differ from it.  Per language (in the order the archives were given): the cut ids (no text in that
+           archive) come first so none stays blank, the rest in random order; each gets the next pool line (the
+           pool in random order).  Should the cut ids outnumber the pool, the lines cycle over the remaining cut
+           ids.  A female-variant id gets its partner's line unless it is a shown id with a line of its own."""
+        for lang in self.langs:
+            given = self.given[lang]
+            cut = [t for t in ids if not has_text(given.get(t))]
+            rest = [t for t in ids if has_text(given.get(t))]
+            rng.shuffle(cut)
+            rng.shuffle(rest)
+            order = cut + rest
+            lines = list(self.lines[lang])
+            rng.shuffle(lines)
+            shown: dict[int, str] = {}
+            for i, tid in enumerate(order):
+                if i >= len(lines) and i >= len(cut):
+                    break
+                shown[tid] = lines[i % len(lines)]
+            self.shown[lang] = shown
+            self.cut[lang] = len(cut)
+            self.unused[lang] = max(0, len(lines) - len(order))
+            texts = {}
+            for tid, line in shown.items():
+                texts[tid] = line
+                for f in pairs.get(tid, ()):
+                    if f not in shown:
+                        texts[f] = line
+            self.texts[lang] = texts
 
     def summary(self) -> str:
-        parts = " + ".join(f"names/{n} {len(self.lists[n])}" for n in POOL_FILES)
-        return (f"# zhocn pool: {len(self.lines)} lines ({parts}) given to {len(self.shown)} text ids "
-                f"({self.cut} of them cut ids, {len(self.texts) - len(self.shown)} female-variant ids get their "
-                f"partner's line), the other ids keep the game's Chinese text"
-                + (f"; {self.unused} lines unused" if self.unused else "")
-                + f"; archive {self.archive}")
+        out = []
+        for lang, archive in zip(self.langs, self.archives):
+            parts = " + ".join(f"names/{n} {len(l)}" for n, l in self.lists[lang].items())
+            out.append(f"# pool first {lang}: {len(self.lines[lang])} lines ({parts}) given to {len(self.shown[lang])} text ids "
+                       f"({self.cut[lang]} of them cut ids, {len(self.texts[lang]) - len(self.shown[lang])} female-variant ids "
+                       f"get their partner's line), the other ids keep the game's {lang} text"
+                       + (f"; {self.unused[lang]} lines unused" if self.unused[lang] else "")
+                       + f"; archive {archive}")
+        return "\n".join(out)
 
     def archive_of(self, lang: str) -> Path:
-        return self.archive
+        return self.archives[self.langs.index(lang)]
 
     def texts_for(self, lang: str) -> dict[int, str]:
-        return self.texts
+        return self.texts[lang]
 
     def detail(self, lang: str) -> str:
-        return f"{len(self.lines)} pool lines over {len(self.shown)} text ids, the rest unchanged"
+        return f"{len(self.lines[lang])} pool lines over {len(self.shown[lang])} text ids, the rest unchanged"
 
     def report_header(self) -> str:
-        return "  || zhocn: the pool line the Chinese archive shows for that id, when it got one"
+        return "".join(f"  || {lang}: the pool line the {lang} archive shows for that id, when it got one" for lang in self.langs)
 
     def report(self, tid: int) -> str:
-        return f"  || zhocn: {self.shown[tid]}" if tid in self.shown else ""
+        return "".join(f"  || {lang}: {self.shown[lang][tid]}" for lang in self.langs if tid in self.shown[lang])
 
 
 class MixedPool:
@@ -266,7 +300,7 @@ class MixedPool:
        machine translations, tools/translate20.py), all in one heap and in no order.  The game's own lines are
        not in it: every shown id gets a heap line (the heap reshuffled and gone through again when the ids
        outnumber it), a female-variant id its partner's line unless it is shown itself.  Same interface as
-       ZhPool."""
+       FirstPool."""
     what = "mixed pool"
 
     def __init__(self, archives: list[str]):
@@ -353,6 +387,59 @@ class MixedPool:
         return "".join(f"  || {lang}: {self.shown[lang][tid]}" for lang in self.langs if tid in self.shown[lang])
 
 
+class Translated:
+    """--translate20: every text id of an archive (msg/<language>/menu_dlc02.msgbnd.dcx) that has a line in
+       names/translate20_<language>.txt (its own line after 20 machine translations, tools/translate20.py) shows
+       that line, id for id; the other ids are left alone (--dialogue-jokes may fill the cut ones).  With
+       --random-dialogue the rows are shuffled as usual and the texts behind the ids are the translated ones;
+       without it nothing moves.  Same interface as the pools, but nothing is random (plan does nothing)."""
+    what = "translate20"
+
+    def __init__(self, archives: list[str]):
+        self.archives = [Path(a) for a in archives]
+        self.langs = [p.parent.name.lower() for p in self.archives]
+        if len(set(self.langs)) != len(self.langs):
+            raise SystemExit("--translate20: one archive per language folder, please")
+        self.texts: dict[str, dict[int, str]] = {}            # language -> id -> its translated line
+        self.skipped: dict[str, int] = {}                     # file entries whose id has no line in the archive
+        for p, lang in zip(self.archives, self.langs):
+            if not p.is_file():
+                raise SystemExit(f"--translate20: {p} does not exist")
+            path = HERE / "names" / TRANSLATED.format(lang)
+            if not path.is_file():
+                raise SystemExit(f"--translate20: {p} is in folder '{p.parent.name}', but there is no {path.name} in "
+                                 "tools/names/ (tools/translate20.py writes it)")
+            given = talkmsg.read_archive(p)
+            lines = load_translated_map(path)
+            self.texts[lang] = {tid: line for tid, line in lines.items() if has_text(given.get(tid))}
+            self.skipped[lang] = len(lines) - len(self.texts[lang])
+
+    def plan(self, ids: list[int], pairs: dict[int, set[int]], rng: random.Random) -> None:
+        pass                                                   # id for id, nothing to draw
+
+    def summary(self) -> str:
+        return "\n".join(f"# translate20 {lang}: {len(self.texts[lang])} text ids show their own line after 20 machine "
+                         f"translations (names/{TRANSLATED.format(lang)}"
+                         + (f"; {self.skipped[lang]} entries have no line in this archive and are skipped" if self.skipped[lang] else "")
+                         + f"); the other ids are unchanged; archive {archive}"
+                         for lang, archive in zip(self.langs, self.archives))
+
+    def archive_of(self, lang: str) -> Path:
+        return self.archives[self.langs.index(lang)]
+
+    def texts_for(self, lang: str) -> dict[int, str]:
+        return self.texts[lang]
+
+    def detail(self, lang: str) -> str:
+        return f"{len(self.texts[lang])} text ids replaced id for id by names/{TRANSLATED.format(lang)}"
+
+    def report_header(self) -> str:
+        return "".join(f"  || {lang}: that id's own line after 20 translations" for lang in self.langs)
+
+    def report(self, tid: int) -> str:
+        return "".join(f"  || {lang}: {self.texts[lang][tid]}" for lang in self.langs if tid in self.texts[lang])
+
+
 class Dialogue:
     def __init__(self, reg: erreg.Regulation):
         self.P = reg.param("TalkParam", erreg.load_paramdef(HERE / "paramdef" / "TalkParam.xml"))
@@ -385,11 +472,11 @@ class Dialogue:
         return rows, skipped
 
     def randomize(self, rng: random.Random, draw: str = "shuffle", jokes: Jokes | None = None,
-                  pool: ZhPool | MixedPool | None = None) -> list[str]:
+                  pool: FirstPool | MixedPool | Translated | None = None) -> list[str]:
         """draw: shuffle = a permutation (every line shown once), random = free draws (a line may show up
            several times).  jokes: the cut rows' text ids get a joke each and the rows join the pool.
-           pool: --zhocn-pool / --mixed-pool, the texts behind the ids the rows show in the pooled archives
-           (planned after the permutation, so the permutation does not depend on it)."""
+           pool: --pool-first / --mixed-pool / --translate20, the texts behind the ids the rows show in the
+           rewritten archives (planned after the permutation, so the permutation does not depend on it)."""
         filled = ""
         if jokes is not None:
             ids = self.dialogue_ids()
