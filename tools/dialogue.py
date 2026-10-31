@@ -19,10 +19,21 @@ gets a joke in that language (names/jokes_<language>.txt, cycled; which ids are 
 language, e.g. a laugh that is "……哈哈。" in Chinese and blank in English), the archive is rewritten (see
 talkmsg.py), and all dialogue rows join the shuffle, so jokes turn up in real conversations and some real
 lines vanish into rows nobody ever plays.
+
+--zhocn-pool (Chinese subtitles only): the Chinese text archive is rewritten so that the subtitles are drawn
+first from a pool of lines, names/sanguo_zhocn.txt (lines from the 2010 TV series "Three Kingdoms") plus
+names/jokes_zhocn.txt, every pool line shown exactly once (the "speaker：" prefix of the Three Kingdoms file is
+dropped, the subtitle shows the line alone), and only when the pool is used up do the remaining rows keep the
+game's own Chinese lines.  The permutation of the text ids is the same as without the option
+(the pool draws its random numbers afterwards); what changes is the text behind the ids that the Chinese
+archive carries: the text ids in play are put in a random order, the cut ids first (with --dialogue-jokes
+they are in play and would otherwise be blank), and the first len(pool) of them get a pool line each, a
+female-variant id getting the same line as its male partner.  Other languages are untouched.
 """
 from __future__ import annotations
 
 import random
+import re
 import sys
 from collections import Counter
 from pathlib import Path
@@ -41,6 +52,15 @@ TEXT_FIELDS = ("msgId", "msgId_female")
 DUMMY_ROWS = {100, 200}
 SYSTEM_ROWS = 990_000_000                          # 99xxxxxxx: test / debug / system rows
 JOKE_LANG_REPORT = "engus"                         # the report quotes this list when it exists
+POOL_LANG = "zhocn"                                # --zhocn-pool rewrites this language's archive only
+POOL_FILES = ("sanguo_zhocn.txt", "jokes_zhocn.txt")  # names/: the Three Kingdoms lines, then the cold jokes
+SPEAKER = re.compile(r"^[^，。！？：；…“”（）\s]{1,4}：")   # "曹操：台词" in sanguo_zhocn.txt: the speaker is dropped in game
+
+
+def strip_speaker(line: str) -> str:
+    """The Three Kingdoms file keeps the speaker for reference ("司马懿：我都病危十几年了！"); the subtitle shows the
+       line alone.  A speaker is 1-4 characters before the first full-width colon; a line without one is kept."""
+    return SPEAKER.sub("", line, count=1).strip()
 
 
 def load_jokes(path: Path) -> list[str]:
@@ -120,6 +140,69 @@ class Jokes:
         return f"[{first}] {self.given[first].get(tid, '')}"
 
 
+class ZhPool:
+    """--zhocn-pool: the Chinese archive (msg/zhocn/menu_dlc02.msgbnd.dcx) gets the pool lines, names/sanguo_zhocn.txt
+       + names/jokes_zhocn.txt, written over the text ids the dialogue rows show: every pool line once, cut ids
+       first, then random ids; the ids left over keep the game's Chinese text.  The "说话人：" prefix of the
+       Three Kingdoms lines is dropped, the subtitle shows the line alone."""
+
+    def __init__(self, archive: Path):
+        self.archive = Path(archive)
+        if self.archive.parent.name.lower() != POOL_LANG:
+            raise SystemExit(f"--zhocn-pool: {self.archive} is not in a folder named {POOL_LANG}; the option rewrites "
+                             f"the Chinese archive only (msg/{POOL_LANG}/{ARCHIVE})")
+        if not self.archive.is_file():
+            raise SystemExit(f"--zhocn-pool: {self.archive} does not exist")
+        self.lists: dict[str, list[str]] = {}
+        for name in POOL_FILES:
+            path = HERE / "names" / name
+            if not path.is_file():
+                raise SystemExit(f"--zhocn-pool: {path} is missing (a line per row, # comments allowed)")
+            lines = load_jokes(path)
+            if name == POOL_FILES[0]:
+                lines = [strip_speaker(l) for l in lines]      # the speaker names stay in the file only
+            self.lists[name] = lines
+        self.lines: list[str] = [l for name in POOL_FILES for l in self.lists[name]]
+        self.given = talkmsg.read_archive(self.archive)
+        self.texts: dict[int, str] = {}                # id -> pool line to write (female partners included)
+        self.shown: dict[int, str] = {}                # primary id -> pool line, for the report
+        self.cut = 0                                   # how many of the ids given a line had no Chinese text
+        self.unused = 0                                # pool lines left over (more lines than ids)
+
+    def plan(self, ids: list[int], pairs: dict[int, int], rng: random.Random) -> None:
+        """ids: the text ids the dialogue rows show (msgId, distinct); pairs: msgId -> msgId_female where they
+           differ.  The cut ids (no text in the Chinese archive) come first so none stays blank, the rest in
+           random order; each gets the next pool line (the pool in random order).  Should the cut ids outnumber
+           the pool, the lines cycle over the remaining cut ids."""
+        cut = [t for t in ids if not has_text(self.given.get(t))]
+        rest = [t for t in ids if has_text(self.given.get(t))]
+        rng.shuffle(cut)
+        rng.shuffle(rest)
+        order = cut + rest
+        lines = list(self.lines)
+        rng.shuffle(lines)
+        self.cut = len(cut)
+        self.shown = {}
+        for i, tid in enumerate(order):
+            if i >= len(lines) and i >= len(cut):
+                break
+            self.shown[tid] = lines[i % len(lines)]
+        self.unused = max(0, len(lines) - len(order))
+        self.texts = {}
+        for tid, line in self.shown.items():
+            self.texts[tid] = line
+            if tid in pairs:
+                self.texts[pairs[tid]] = line
+
+    def summary(self) -> str:
+        parts = " + ".join(f"names/{n} {len(self.lists[n])}" for n in POOL_FILES)
+        return (f"# zhocn pool: {len(self.lines)} lines ({parts}) given to {len(self.shown)} text ids "
+                f"({self.cut} of them cut ids, {len(self.texts) - len(self.shown)} female-variant ids get their "
+                f"partner's line), the other ids keep the game's Chinese text"
+                + (f"; {self.unused} lines unused" if self.unused else "")
+                + f"; archive {self.archive}")
+
+
 class Dialogue:
     def __init__(self, reg: erreg.Regulation):
         self.P = reg.param("TalkParam", erreg.load_paramdef(HERE / "paramdef" / "TalkParam.xml"))
@@ -151,9 +234,12 @@ class Dialogue:
                 rows.append(r)
         return rows, skipped
 
-    def randomize(self, rng: random.Random, draw: str = "shuffle", jokes: Jokes | None = None) -> list[str]:
+    def randomize(self, rng: random.Random, draw: str = "shuffle", jokes: Jokes | None = None,
+                  pool: ZhPool | None = None) -> list[str]:
         """draw: shuffle = a permutation (every line shown once), random = free draws (a line may show up
-           several times).  jokes: the cut rows' text ids get a joke each and the rows join the pool."""
+           several times).  jokes: the cut rows' text ids get a joke each and the rows join the pool.
+           pool: the Chinese archive shows the pool lines first (planned after the permutation, so the
+           permutation does not depend on it)."""
         filled = ""
         if jokes is not None:
             ids = self.dialogue_ids()
@@ -174,9 +260,18 @@ class Dialogue:
                  + filled,
                  "# skipped: " + ", ".join(f"{n} {k}" for k, n in skipped.items()),
                  "# row  <-  row the subtitle came from  subtitle shown (English, names/TalkMsg.txt)"]
+        if pool is not None:
+            shown = sorted({bundle[rows[j].id]["msgId"] for j in idx})
+            pairs = {b["msgId"]: b["msgId_female"] for b in bundle.values()
+                     if b["msgId_female"] > 0 and b["msgId_female"] != b["msgId"]}
+            pool.plan(shown, pairs, rng)
+            lines.insert(1, pool.summary())
+            lines[-1] += "  || zhocn: the pool line the Chinese archive shows for that id, when it got one"
         for r, j in zip(rows, idx):
             s = rows[j]
             for f in TEXT_FIELDS:
                 self.P.set(r, f, bundle[s.id][f])
-            lines.append(f"{r.id:>9}  <- {s.id:>9}  {self.line(bundle[s.id]['msgId'])}")
+            shown_id = bundle[s.id]["msgId"]
+            extra = f"  || zhocn: {pool.shown[shown_id]}" if pool is not None and shown_id in pool.shown else ""
+            lines.append(f"{r.id:>9}  <- {s.id:>9}  {self.line(shown_id)}{extra}")
         return lines

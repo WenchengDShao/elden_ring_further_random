@@ -118,6 +118,12 @@ ZH = {
     "own, one per language)":
         "（被砍的台词改成冷笑话并加入随机；文本档留空 = 用程序自带的英文、中文 msg\\<语言>\\menu_dlc02.msgbnd.dcx；"
         "也可以自己选游戏里的，每种语言一个）",
+    "Three Kingdoms + joke pool, Chinese subtitles only (--zhocn-pool)": "三国 + 冷笑话台词池，只改中文字幕 (--zhocn-pool)",
+    "(the Chinese subtitles are drawn first from the lines of the 2010 TV series Three Kingdoms "
+    "plus the jokes, each once, then from the game's own lines; English is not touched; "
+    "the Chinese text archive comes from the joke shifu's paths or the shipped one)":
+        "（中文字幕先从 2010 版《三国》台词 + 冷笑话的池子里抽，每句一次，抽完再抽游戏原文；英文不动；"
+        "中文文本档用笑话大师指定的或自带的那份）",
     "Somber weapons: affinities + Ashes of War (--somber-infusable)":
         "失色 / 独特武器可质变、可装战灰 (--somber-infusable)",
     "Random default skill and affinity on new weapons (--random-default-ash)":
@@ -171,10 +177,10 @@ ZH = {
         "它在游戏目录 Game\\ 里，用“浏览…”选中它就能输出原版的 KRAK 格式。\n\n"
         "改用 zstd 格式继续吗？文件会大 35% 左右，可能超过游戏的大小上限。",
     "Written: {}\n\nReplace the regulation.bin in the mod folder with it to use it.\n"
-    "mapping.txt / weapons.txt / spells.txt / dialogue.txt (what was randomized) are in the same folder; with jokes, "
-    "copy its msg folder into the mod folder too.":
+    "mapping.txt / weapons.txt / spells.txt / dialogue.txt (what was randomized) are in the same folder; with jokes or "
+    "the Chinese pool, copy its msg folder into the mod folder too.":
         "已写入 {}\n\n要覆盖 mod 目录里的 regulation.bin 才会生效。\n"
-        "mapping.txt / weapons.txt / spells.txt / dialogue.txt（随机结果清单）在同一目录；加了冷笑话的话，旁边的 msg 目录也要一起复制进 mod 目录。",
+        "mapping.txt / weapons.txt / spells.txt / dialogue.txt（随机结果清单）在同一目录；加了冷笑话或三国台词池的话，旁边的 msg 目录也要一起复制进 mod 目录。",
     "Written: {}\n\nContent unchanged, only re-compressed. Replace the regulation.bin in the mod folder with it to use it.":
         "已写入 {}\n\n内容没有改动，只是重新压缩。要覆盖 mod 目录里的 regulation.bin 才会生效。",
     "The run failed, see the log": "运行失败，详见日志",

@@ -150,6 +150,7 @@ class Gui:
         self.dialogue = B(False)
         self.jokes = B(False)                        # "joke shifu", --dialogue-jokes
         self.joke_archives = S("")                   # its optional paths, ';' separated (empty = found next to the input)
+        self.zh_pool = B(False)                      # --zhocn-pool: Chinese subtitles from the Three Kingdoms + joke pool first
         self.spells = B(True)
         self.random_prices, self.price_mode = B(False), S("shuffle")
         self.price_min, self.price_max = S(""), S("")
@@ -379,6 +380,17 @@ class Gui:
                                 "own, one per language)"), style="Hint.TLabel")
         w.grid(row=1, column=0, columnspan=3, sticky="w", **PAD)
         self.dep_jokes.append(w)
+        r = ttk.Frame(dg)
+        r.grid(row=2, column=0, sticky="w")
+        w = ttk.Checkbutton(r, text=_("Three Kingdoms + joke pool, Chinese subtitles only (--zhocn-pool)"), variable=self.zh_pool)
+        w.pack(side="left", **PAD)
+        self.dep_dialogue.append(w)
+        w = ttk.Label(r, text=_("(the Chinese subtitles are drawn first from the lines of the 2010 TV series Three Kingdoms "
+                                "plus the jokes, each once, then from the game's own lines; English is not touched; "
+                                "the Chinese text archive comes from the joke shifu's paths or the shipped one)"),
+                      style="Hint.TLabel")
+        w.pack(side="left", **PAD)
+        self.dep_dialogue.append(w)
         dg.columnconfigure(0, weight=1)
         sections.append((dg, "ew", False, 2))
 
@@ -531,6 +543,8 @@ class Gui:
             if self.jokes.get():
                 a.append("--dialogue-jokes")
                 a += [x.strip() for x in self.joke_archives.get().split(";") if x.strip()]
+            if self.zh_pool.get():
+                a.append("--zhocn-pool")
         if not self.spells.get():
             a.append("--no-spells")
         if self.random_prices.get():
@@ -629,7 +643,7 @@ class Gui:
         self.sell_min.set("")
         self.sell_max.set("")
         for v in (self.include_flasks, self.include_remembrances, self.flask_locations, self.start_bell,
-                  self.start_lantern, self.dialogue, self.jokes, self.random_prices, self.somber, self.movesets,
+                  self.start_lantern, self.dialogue, self.jokes, self.zh_pool, self.random_prices, self.somber, self.movesets,
                   self.default_ash, self.stats, self.keep_standard, self.weptype):
             v.set(False)
         self.joke_archives.set("")
@@ -743,8 +757,8 @@ class Gui:
             self._set_status("Done: {}", self.out)
             messagebox.showinfo(TITLE, _("Written: {}\n\nReplace the regulation.bin in the mod folder with it to use it.\n"
                                          "mapping.txt / weapons.txt / spells.txt / dialogue.txt (what was randomized) "
-                                         "are in the same folder; with jokes, copy its msg folder into the mod folder "
-                                         "too.").format(self.out))
+                                         "are in the same folder; with jokes or the Chinese pool, copy its msg folder "
+                                         "into the mod folder too.").format(self.out))
         else:
             if msg:
                 self._append("\n" + msg.rstrip() + "\n")

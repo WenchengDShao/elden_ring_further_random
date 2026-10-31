@@ -141,6 +141,10 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 - `--dialogue-jokes`（笑话大师）：被砍的台词改成冷笑话并加入随机；不带路径时用工具自带的英文、中文文本档
   （`tools/msg/<语言>/menu_dlc02.msgbnd.dcx`，exe 版是旁边的 `msg\` 目录），改好的副本写到输出旁的
   `msg/<语言>/`，要和 regulation.bin 一起放进 mod 目录。
+- `--zhocn-pool`（三国 + 冷笑话台词池，只改中文字幕，不在常用设定里）：中文字幕先从 `tools/names/sanguo_zhocn.txt`
+  （2010 版《三国》有趣台词 305 条）+ `jokes_zhocn.txt`（955 条）的池子里抽，每句只出现一次，抽完后剩下的才保留游戏原文；
+  英文不动。中文文本档用 `--dialogue-jokes` 指定的那份，否则用自带的；改好的副本同样写到输出旁的 `msg/zhocn/`
+  （见下文“对话字幕随机”）。
 - 没给 `--seed`，种子随机生成并打印在开头；想复现就把它加回去（`--seed N`）。压缩用默认的 Kraken（需要 DLL）。
 
 ### 其他示例
@@ -173,6 +177,7 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 | `--start-with-bell`、`--start-with-lantern` | 开局随圣杯瓶一起拿到招魂铃 / 携带照明灯（追加到圣杯瓶掉落组，铃那行带召唤骨灰所需的标志 60110）；给雾门随机用，前期可能到不了给铃的宁姆格福、卖灯的湖之利耶尼亚 |
 | `--random-dialogue` | NPC 对话字幕在所有 NPC 的台词之间打乱，语音不动（NPC 念的还是自己那句）；报告 `dialogue.txt` |
 | `--dialogue-jokes [MSGBND...]` | 笑话大师，与 `--random-dialogue` 合用：被砍的台词（有 id 没文本）改成冷笑话并加入随机；MSGBND 是每种游戏语言的 `msg/<语言>/menu_dlc02.msgbnd.dcx`，不给时用自带的英文、中文两份（`tools/msg/`，exe 版在旁边的 `msg\`）；改好的副本写到输出旁的 `msg/<语言>/`，要和 regulation.bin 一起放进 mod 目录 |
+| `--zhocn-pool [MSGBND]` | 三国 + 冷笑话台词池，只改中文字幕，与 `--random-dialogue` 合用：中文字幕先从 `tools/names/sanguo_zhocn.txt`（2010 版《三国》台词 305 条）+ `jokes_zhocn.txt` 的池子里抽，每句一次，抽完剩下的才保留原文；英文不动；MSGBND 是 `msg/zhocn/menu_dlc02.msgbnd.dcx`，不给时用 `--dialogue-jokes` 的中文那份或自带的；改好的写到输出旁的 `msg/zhocn/` |
 | （总是） | 每个魔法/祷告拿到另一个法术的效果；`--no-spells` 关闭 |
 | `--random-prices` | 商店购买价和道具售价；`--price-mode shuffle\|range`、`--price-min N`、`--price-max N`、`--sell-min N`、`--sell-max N`、`--no-sell-prices`（售价不动）、`--sell-equipment`（武器、防具、战灰的售价也随机，默认不动） |
 | `--weapons` | = 下面四项 |
@@ -196,7 +201,8 @@ Release 里的 `ERFurtherRandom.exe`（见开头“快速开始”）、`randomi
   没有就留空，开始时会询问是否改用 zstd 格式）、随机种子（留空则随机抽一个，日志里会显示）、压缩格式。
 - 选项分五块：文件、道具与法术、武器、道具获取位置（圣杯瓶获得位置随机 `--random-flask-locations`，开局招魂铃 / 携带照明灯
   `--start-with-bell` / `--start-with-lantern`）、娱乐（fun）：
-  对话字幕随机（`--random-dialogue`）和笑话大师（joke shifu，`--dialogue-jokes`；文本档留空就用自带的英文、中文两份）。
+  对话字幕随机（`--random-dialogue`）、笑话大师（joke shifu，`--dialogue-jokes`；文本档留空就用自带的英文、中文两份）和
+  三国 + 冷笑话台词池（`--zhocn-pool`，只改中文字幕，不在常用设定里）。
 - “常用设定”按钮 = `--split-anim any --random-prices --weapons --random-flask-locations --random-dialogue --dialogue-jokes`；“预览（不写文件）” = `--dry-run`；右上角“语言”左边的“只重新压缩（不随机）” = `--repack`（修复 Fog Gate Randomizer 的输出等，见下文）；
   “开始随机”生成文件，完成后提示输出位置，`mapping.txt / weapons.txt / spells.txt / dialogue.txt` 写在输出文件旁边。
 - 日志区显示命令行的全部输出；Kraken 压缩约需 2 分钟，期间窗口保持响应。
@@ -318,6 +324,15 @@ mod 目录里就有，`mod\randomizer\msg\zhocn\...`，游戏自己用的语言�
 可以多选，留空用自带的）。输出文件不要和 exe 放在同一目录：那样改好的文本档会落在自带文本档的位置上，程序会拒绝，不会覆盖自带的或你指定的
 原文件。输出文件也不能和输入文件放在同一目录（清单和 msg 目录会落进那个 mod 目录，同名还会覆盖输入），命令行和图形界面都
 会拒绝；预览（`--dry-run`）只提醒。两种情况的提示都是：建议创建新目录以方便 mod 管理。1.17.1 原版上参与的句子从 9135 增加到 10033。
+
+**三国 + 冷笑话台词池（`--zhocn-pool`，只改中文字幕，2026-10-31）**：和 `--random-dialogue` 合用，中文文本档里的对话字幕先从
+`tools/names/sanguo_zhocn.txt`（2010 版《三国》的有趣台词 305 条，文件里写成“说话人：台词”方便查对，用的时候去掉说话人，
+字幕只显示台词，如“不可能！绝对不可能！……八万个馒头”）+ `jokes_zhocn.txt`（955 条）的池子里抽：字幕置换照常，然后把置换后各行显示的文本 id 随机排序（没中文文本的 id 排最前，
+所以开着笑话大师时被砍的台词一定有字幕），前 1260 个 id 各写一条池子里的句子，每句只出现一次，剩下的 id 保留游戏原文；
+英文文本档不动。中文文本档用 `--dialogue-jokes` 指定的那份，没有就用自带的（也可以直接接一个路径）；改好的同样写到输出旁的
+`msg/zhocn/menu_dlc02.msgbnd.dcx`，要一起进 mod 目录。同一种子开不开它，字幕置换和 regulation.bin 都一样，只是中文看到的句子不同。
+图形界面里是“娱乐”区的“三国 + 冷笑话台词池，只改中文字幕”，不在常用设定里。`dialogue.txt` 里拿到池子句子的行末尾标
+`|| zhocn: ...`。离线验证过文本档的写入，游戏内未测。
 
 语音不随机：语音 id `xxxoooooo` 存在 `sd/enus/vcxxx.bnk` 里，而游戏只在用到它的 NPC 附近加载那个声音库（Nexus 的 Elden Ring
 音频修改帖里有人想在别处播放尤拉的台词，只有在尤拉营地旁才放得出来），换到别的 NPC 身上预计是没声的，一句没声还可能要等
@@ -456,8 +471,9 @@ param 重新序列化（支持新增行），没动过的原字节写回，再�
 - `tools/start_items.py` — 开局道具（招魂铃 / 携带照明灯追加到圣杯瓶掉落组）
 - `tools/msg/engus/`、`tools/msg/zhocn/` — 笑话大师默认改写的文本档 `menu_dlc02.msgbnd.dcx`（1.17.1 文本：中文原版，
   英文是雾门随机器写出的版本）；`build_exe` 把它们复制到 exe 旁边的 `msg\`，Release 里和 exe 一起
-- `tools/dialogue.py` — 对话字幕随机和冷笑话填充；`tools/talkmsg.py` — 读写 FMG：生成台词文本表 `tools/names/TalkMsg.txt`、
-  把 `tools/names/jokes_zhocn.txt` / `jokes_engus.txt` 写进 `msg/<语言>/menu_dlc02.msgbnd.dcx`
+- `tools/dialogue.py` — 对话字幕随机、冷笑话填充和三国台词池；`tools/talkmsg.py` — 读写 FMG：生成台词文本表 `tools/names/TalkMsg.txt`、
+  把 `tools/names/jokes_zhocn.txt` / `jokes_engus.txt`（笑话）和 `sanguo_zhocn.txt`（2010 版《三国》台词 305 条，用时去掉说话人）写进
+  `msg/<语言>/menu_dlc02.msgbnd.dcx`
 - `tools/oodle.py`、`tools/linoodle/` — 通过游戏自带的 `oo2core_6_win64.dll` 做 Kraken / Leviathan 压缩
   （Linux / WSL 经 linoodle 加载，Windows 直接 ctypes 加载）
 - `tools/paramdef/*.xml`、`tools/names/*.txt` — 来自 soulsmods/Paramdex 的表结构和行名（1.17 Tarnished Pack

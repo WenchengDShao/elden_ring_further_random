@@ -49,6 +49,13 @@ Dialogue (TalkParam):
                         msg/<language>/menu_dlc02.msgbnd.dcx (one per language); without paths the archives
                         shipped with the tool are used (tools/msg/<language>/, or the msg folder next to the
                         executable); the patched copy is written next to the output as msg/<language>/...
+  --zhocn-pool [MSGBND] Chinese subtitles only, with --random-dialogue: the Chinese archive shows the pool
+                        of names/sanguo_zhocn.txt (lines of the 2010 TV series "Three Kingdoms") +
+                        names/jokes_zhocn.txt first, every pool line once over random text ids (cut ids
+                        first), and only the ids left over keep the game's own Chinese lines; MSGBND is the
+                        game's msg/zhocn/menu_dlc02.msgbnd.dcx (default: the one --dialogue-jokes uses, else
+                        the shipped archive); the patched copy goes next to the output as msg/zhocn/...
+                        Other languages are not touched
 Spells (Magic.param):
   (always)              each sorcery / incantation gets the effect of another spell (one pool for both);
                         --split-anim also splits cast animation and effect; --random-stats (group
@@ -64,7 +71,7 @@ Usage:
                         [--random-prices] [--price-mode shuffle|range] [--price-min N] [--price-max N]
                         [--no-sell-prices] [--sell-min N] [--sell-max N] [--sell-equipment]
                         [--random-flask-locations] [--start-with-bell] [--start-with-lantern]
-                        [--random-dialogue] [--dialogue-jokes [MSGBND ...]]
+                        [--random-dialogue] [--dialogue-jokes [MSGBND ...]] [--zhocn-pool [MSGBND]]
                         [--somber-infusable] [--random-movesets] [--random-default-ash]
                         [--random-stats] [--stat-groups attack,guard,...] [--stamina-rate 0,2.0] [--weapons]
 """
@@ -331,6 +338,21 @@ def choose_codec(wanted: str) -> str:
     return erreg.CODEC_KRAKEN if wanted == "auto" else wanted
 
 
+def archive_guard(flag: str, src: Path, output: Path, dry_run: bool) -> None:
+    """The patched text archives go to <output folder>/msg/<language>/; never on top of their own source or the
+       archives shipped next to the program (an output written into the program's folder would do that)."""
+    dst = output.resolve().parent / "msg" / src.parent.name / src.name
+    if dst.resolve() == src.resolve() or dialogue.MSG_DIR.resolve() in dst.resolve().parents:
+        what = ("its own source" if dst.resolve() == src.resolve()
+                else f"the text archives shipped with the program ({dialogue.MSG_DIR})")
+        msg = (f"{flag}: the patched {dst} would overwrite {what}. Create a new folder for the output; that also "
+               "keeps the mods easy to manage.")
+        if dry_run:
+            print("# warning: " + msg)
+            return
+        raise SystemExit(msg)
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--input", default="regulation.bin")
@@ -390,6 +412,13 @@ def main(argv: list[str] | None = None) -> int:
                          "msg/<language>/menu_dlc02.msgbnd.dcx, one per language; without paths the archives shipped "
                          "with the tool are used (tools/msg/<language>/, or the msg folder next to the executable); the "
                          "patched copy goes next to the output as msg/<language>/...")
+    ap.add_argument("--zhocn-pool", nargs="?", const="", default=None, metavar="MSGBND",
+                    help="Chinese subtitles only, with --random-dialogue: the Chinese text archive shows the pool of "
+                         "tools/names/sanguo_zhocn.txt (lines of the 2010 TV series Three Kingdoms) + jokes_zhocn.txt "
+                         "first, every pool line once over random text ids (the cut ids first), and only the ids left "
+                         "over keep the game's own Chinese lines; MSGBND = the game's msg/zhocn/menu_dlc02.msgbnd.dcx "
+                         "(default: the Chinese archive --dialogue-jokes uses, else the shipped one); the patched copy "
+                         "goes next to the output as msg/zhocn/...; other languages are not touched")
     ap.add_argument("--somber-infusable", action="store_true", help="somber/unique weapons get all affinities and Ashes of War")
     ap.add_argument("--random-movesets", action="store_true",
                     help="random light/heavy attack moveset on every melee weapon and shield")
@@ -573,23 +602,34 @@ def main(argv: list[str] | None = None) -> int:
         if not args.dialogue_jokes:
             print("# jokes: using the shipped text archives: " + ", ".join(archives))
         jokes = dialogue.Jokes(archives)
-        # Guard: the patched archives go to <output folder>/msg/<language>/; never on top of their own source or
-        # the archives shipped next to the program (an output written into the program's folder would do that).
-        out_dir = Path(args.output).resolve().parent
         for src in jokes.archives:
-            dst = out_dir / "msg" / src.parent.name / src.name
-            if dst.resolve() == src.resolve() or dialogue.MSG_DIR.resolve() in dst.resolve().parents:
-                what = ("its own source" if dst.resolve() == src.resolve()
-                        else f"the text archives shipped with the program ({dialogue.MSG_DIR})")
-                msg = (f"--dialogue-jokes: the patched {dst} would overwrite {what}. Create a new folder for the "
-                       "output; that also keeps the mods easy to manage.")
-                if args.dry_run:
-                    print("# warning: " + msg)
-                    break
-                raise SystemExit(msg)
+            archive_guard("--dialogue-jokes", src, Path(args.output), args.dry_run)
+    pool = None
+    if args.zhocn_pool is not None and not args.random_dialogue:
+        raise SystemExit("--zhocn-pool needs --random-dialogue")
+    if args.random_dialogue and args.zhocn_pool is not None:
+        from_jokes = (jokes.archives[jokes.langs.index(dialogue.POOL_LANG)]
+                      if jokes is not None and dialogue.POOL_LANG in jokes.langs else None)
+        if args.zhocn_pool:
+            archive = Path(args.zhocn_pool)
+            if from_jokes is not None and from_jokes.resolve() != archive.resolve():
+                raise SystemExit(f"--zhocn-pool {archive} and --dialogue-jokes {from_jokes}: the Chinese archive must "
+                                 "be the same file for both (give the path to one of them only)")
+        elif from_jokes is not None:
+            archive = from_jokes
+        else:
+            archive = dialogue.MSG_DIR / dialogue.POOL_LANG / dialogue.ARCHIVE
+            if not archive.is_file():
+                raise SystemExit(f"--zhocn-pool: the shipped Chinese text archive is missing: {archive}. "
+                                 + ("Put the msg folder from the Release zip next to the executable, "
+                                    if getattr(sys, "frozen", False) else "Restore tools/msg/ from the repository, ")
+                                 + f"or pass the path of the game's msg/{dialogue.POOL_LANG}/{dialogue.ARCHIVE}.")
+            print(f"# zhocn pool: using the shipped text archive: {archive}")
+        pool = dialogue.ZhPool(archive)
+        archive_guard("--zhocn-pool", pool.archive, Path(args.output), args.dry_run)
     if args.random_dialogue:
         dlines.append(f"# seed={seed}")
-        dlines += dialogue.Dialogue(reg).randomize(rng, args.mode, jokes)
+        dlines += dialogue.Dialogue(reg).randomize(rng, args.mode, jokes, pool)
         print("\n".join(l for l in dlines if l.startswith("#")))
 
     if args.dry_run:
@@ -603,17 +643,28 @@ def main(argv: list[str] | None = None) -> int:
         out.with_name("weapons.txt").write_text("\n".join(wlines) + "\n", encoding="utf-8")
     if slines:
         out.with_name("spells.txt").write_text("\n".join(slines) + "\n", encoding="utf-8")
+    patches: list[tuple[str, Path, dict[int, str], str]] = []    # (what, source archive, texts to write, detail)
     if jokes is not None:
         for src, lang in zip(jokes.archives, jokes.langs):
-            dst = out.parent / "msg" / src.parent.name / src.name
-            dst.parent.mkdir(parents=True, exist_ok=True)
-            data, written = talkmsg.patch_archive(src, jokes.texts(lang))
-            dst.write_bytes(data)
-            note = (f"# jokes: {dst} <- {src}: " + ", ".join(f"{n} entries in {name}" for name, n in written.items())
-                    + f" (names/jokes_{lang}.txt, {len(jokes.lists[lang])} jokes); put the msg folder next to "
-                    "regulation.bin in the mod folder")
-            print(note)
-            dlines.append(note)
+            if pool is not None and lang == dialogue.POOL_LANG:
+                continue                                           # the pool rewrites the Chinese archive, below
+            patches.append(("jokes", src, jokes.texts(lang), f"names/jokes_{lang}.txt, {len(jokes.lists[lang])} jokes"))
+    if pool is not None:
+        # With jokes too, the jokes come first and the pool lines go on top: every cut id of the Chinese archive
+        # has a text either way (the pool covers them unless the female-variant ids run past its lines).
+        texts = jokes.texts(dialogue.POOL_LANG) if jokes is not None and dialogue.POOL_LANG in jokes.langs else {}
+        texts.update(pool.texts)
+        patches.append(("zhocn pool", pool.archive, texts,
+                        f"{len(pool.lines)} pool lines over {len(pool.shown)} text ids, the rest unchanged"))
+    for what, src, texts, detail in patches:
+        dst = out.parent / "msg" / src.parent.name / src.name
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        data, written = talkmsg.patch_archive(src, texts)
+        dst.write_bytes(data)
+        note = (f"# {what}: {dst} <- {src}: " + ", ".join(f"{n} entries in {name}" for name, n in written.items())
+                + f" ({detail}); put the msg folder next to regulation.bin in the mod folder")
+        print(note)
+        dlines.append(note)
     if dlines:
         out.with_name("dialogue.txt").write_text("\n".join(dlines) + "\n", encoding="utf-8")
     print(f"\nwritten: {out}  (mapping: {out.with_name('mapping.txt')}"
