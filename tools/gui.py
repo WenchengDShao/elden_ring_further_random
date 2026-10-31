@@ -151,6 +151,7 @@ class Gui:
         self.jokes = B(False)                        # "joke shifu", --dialogue-jokes
         self.joke_archives = S("")                   # its optional paths, ';' separated (empty = found next to the input)
         self.zh_pool = B(False)                      # --zhocn-pool: Chinese subtitles from the Three Kingdoms + joke pool first
+        self.mixed_pool = B(False)                   # --mixed-pool: every subtitle from the Three Kingdoms + jokes + 20x-translated heap
         self.spells = B(True)
         self.random_prices, self.price_mode = B(False), S("shuffle")
         self.price_min, self.price_max = S(""), S("")
@@ -172,6 +173,8 @@ class Gui:
         for v in self.vars:
             v.trace_add("write", lambda *a: self._refresh())
         self.lang_name.trace_add("write", lambda *a: self._language_changed())
+        self.zh_pool.trace_add("write", lambda *a: self._one_pool(self.zh_pool, self.mixed_pool))
+        self.mixed_pool.trace_add("write", lambda *a: self._one_pool(self.mixed_pool, self.zh_pool))
         self._refresh()
         root.after(100, self._poll)
 
@@ -391,6 +394,17 @@ class Gui:
                       style="Hint.TLabel")
         w.pack(side="left", **PAD)
         self.dep_dialogue.append(w)
+        r = ttk.Frame(dg)
+        r.grid(row=3, column=0, sticky="w")
+        w = ttk.Checkbutton(r, text=_("Mixed pool: Three Kingdoms + jokes + 20x-translated lines, no game lines (--mixed-pool)"),
+                            variable=self.mixed_pool)
+        w.pack(side="left", **PAD)
+        self.dep_dialogue.append(w)
+        w = ttk.Label(r, text=_("(every subtitle comes from the heap, in no order: Chinese = Three Kingdoms + jokes + the game's "
+                                "Chinese lines after 20 machine translations, English = jokes + the 20x-translated English "
+                                "lines; the game's own lines are left out; excludes the pool above)"), style="Hint.TLabel")
+        w.pack(side="left", **PAD)
+        self.dep_dialogue.append(w)
         dg.columnconfigure(0, weight=1)
         sections.append((dg, "ew", False, 2))
 
@@ -545,6 +559,8 @@ class Gui:
                 a += [x.strip() for x in self.joke_archives.get().split(";") if x.strip()]
             if self.zh_pool.get():
                 a.append("--zhocn-pool")
+            if self.mixed_pool.get():
+                a.append("--mixed-pool")
         if not self.spells.get():
             a.append("--no-spells")
         if self.random_prices.get():
@@ -605,6 +621,11 @@ class Gui:
             a.append("--dry-run")
         return a
 
+    def _one_pool(self, chosen: tk.BooleanVar, other: tk.BooleanVar) -> None:
+        """--zhocn-pool and --mixed-pool exclude each other: ticking one clears the other."""
+        if chosen.get() and other.get():
+            other.set(False)
+
     def _refresh(self) -> None:
         for widgets, on in ((self.dep_prices, self.random_prices.get()),
                             (self.dep_sell, self.random_prices.get()
@@ -643,7 +664,8 @@ class Gui:
         self.sell_min.set("")
         self.sell_max.set("")
         for v in (self.include_flasks, self.include_remembrances, self.flask_locations, self.start_bell,
-                  self.start_lantern, self.dialogue, self.jokes, self.zh_pool, self.random_prices, self.somber, self.movesets,
+                  self.start_lantern, self.dialogue, self.jokes, self.zh_pool, self.mixed_pool, self.random_prices, self.somber,
+                  self.movesets,
                   self.default_ash, self.stats, self.keep_standard, self.weptype):
             v.set(False)
         self.joke_archives.set("")
@@ -757,7 +779,7 @@ class Gui:
             self._set_status("Done: {}", self.out)
             messagebox.showinfo(TITLE, _("Written: {}\n\nReplace the regulation.bin in the mod folder with it to use it.\n"
                                          "mapping.txt / weapons.txt / spells.txt / dialogue.txt (what was randomized) "
-                                         "are in the same folder; with jokes or the Chinese pool, copy its msg folder "
+                                         "are in the same folder; with jokes or a pool, copy its msg folder "
                                          "into the mod folder too.").format(self.out))
         else:
             if msg:
