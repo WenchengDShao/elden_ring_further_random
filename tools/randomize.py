@@ -8,9 +8,10 @@ Goods:
   --sell-equipment      with --random-prices: sell prices of weapons, armor and Ashes of War too
   --random-flask-locations
                         the Flask of Crimson Tears and the Flask of Cerulean Tears are found somewhere
-                        else: a random one-time pickup, boss reward, NPC gift or shop slot (never a
-                        chance drop, never a map fragment, no Land of Shadow NPC); the first Site of
-                        Grace gives what was there.  Needs names/item_locations.txt (tools/locations.py)
+                        else: a random one-time pickup, boss reward, NPC gift or merchant (one candidate
+                        per merchant, the flask then takes one of its limited-stock slots; never a chance
+                        drop, never a map fragment, no Land of Shadow NPC); the first Site of Grace gives
+                        what was there.  Needs names/item_locations.txt (tools/locations.py)
   --start-with-bell     the Spirit Calling Bell / the Lantern are handed out with the two flasks at the start
   --start-with-lantern  (rows appended to item lot 2000; the bell's row sets flag 60110, which is what enables
                         spirit summoning): for Fog Gate Randomizer runs in which Limgrave (Renna) or Liurnia
@@ -367,9 +368,10 @@ def main(argv: list[str] | None = None) -> int:
                     help="--random-prices: also randomize the sell prices of weapons, armor and Ashes of War")
     ap.add_argument("--random-flask-locations", action="store_true",
                     help="the Flask of Crimson Tears and the Flask of Cerulean Tears are found somewhere else: each "
-                         "swaps places with a random one-time pickup, boss reward, NPC gift or shop slot (never a "
-                         "chance drop or a map fragment; Land of Shadow NPCs and shops excluded), and the first "
-                         "Site of Grace gives that item instead")
+                         "swaps places with a random one-time pickup, boss reward, NPC gift or merchant (one candidate "
+                         "per merchant, the flask then takes one of its limited-stock slots; never a chance drop or a "
+                         "map fragment; Land of Shadow NPCs and shops excluded), and the first Site of Grace gives "
+                         "that item instead")
     ap.add_argument("--start-with-bell", action="store_true",
                     help="the Spirit Calling Bell is handed out with the two flasks at the start of the game (a row "
                          "appended to item lot 2000 with flag 60110, the flag the game checks for spirit summoning); "

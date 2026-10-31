@@ -131,8 +131,8 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
   武器的动作模组，盾只在盾的动画集之间换、弓弩只在弓弩类之间换（`--random-movesets`，affinity 模式）；
   默认战技随机，掉落表 / 商店 / 初始职业给出的武器改成随机质变（`--random-default-ash`）；攻击、防御、必需能力值、
   能力加成、异常积累、出招耐力全部随机，法术的专注值 / 耐力 / 必需能力值也随机（`--random-stats`，全部分组）。
-- `--random-flask-locations`：红 / 蓝露滴圣杯瓶改到随机一处必定给出的位置（拾取物、boss 奖励、NPC 赠礼或商店货架）
-  获得，第一个赐福改给那里原来的东西。
+- `--random-flask-locations`：红 / 蓝露滴圣杯瓶改到随机一处必定给出的位置（拾取物、boss 奖励、NPC 赠礼或商人：
+  一个商人算一个位置，抽中后瓶子放到他的某一格限量货架上）获得，第一个赐福改给那里原来的东西。
 - `--start-with-bell`、`--start-with-lantern`（不在常用设定里）：开局随圣杯瓶一起拿到招魂铃 / 携带照明灯（追加到圣杯瓶
   掉落组，铃那行带召唤骨灰所需的标志 60110），给雾门随机用：前期可能到不了蕾娜给铃的宁姆格福、商人卖灯的湖之利耶尼亚
   （见下文“开局道具”）。
@@ -169,7 +169,7 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 | `--mode shuffle\|random` | `shuffle`（默认）每个效果恰好用一次；`random` 允许重复 |
 | `--include-flasks`、`--include-remembrances` | 把圣杯瓶 / 追忆也加入道具池（默认都不加） |
 | `--split-anim [same\|any]` | 使用动作和效果分开随机；`same` 只在同类动作里挑，`any` 全池 |
-| `--random-flask-locations` | 红 / 蓝露滴圣杯瓶改到随机一处必定给出的位置（拾取物、boss 奖励、NPC 赠礼或商店货架）获得，第一个赐福改给那里原来的东西 |
+| `--random-flask-locations` | 红 / 蓝露滴圣杯瓶改到随机一处必定给出的位置（拾取物、boss 奖励、NPC 赠礼或商人——一个商人算一个位置，抽中后瓶子放到他的某一格限量货架上）获得，第一个赐福改给那里原来的东西 |
 | `--start-with-bell`、`--start-with-lantern` | 开局随圣杯瓶一起拿到招魂铃 / 携带照明灯（追加到圣杯瓶掉落组，铃那行带召唤骨灰所需的标志 60110）；给雾门随机用，前期可能到不了给铃的宁姆格福、卖灯的湖之利耶尼亚 |
 | `--random-dialogue` | NPC 对话字幕在所有 NPC 的台词之间打乱，语音不动（NPC 念的还是自己那句）；报告 `dialogue.txt` |
 | `--dialogue-jokes [MSGBND...]` | 笑话大师，与 `--random-dialogue` 合用：被砍的台词（有 id 没文本）改成冷笑话并加入随机；MSGBND 是每种游戏语言的 `msg/<语言>/menu_dlc02.msgbnd.dcx`，不给时用自带的英文、中文两份（`tools/msg/`，exe 版在旁边的 `msg\`）；改好的副本写到输出旁的 `msg/<语言>/`，要和 regulation.bin 一起放进 mod 目录 |
@@ -255,9 +255,9 @@ Release 里的 `ERFurtherRandom.exe`（见开头“快速开始”）、`randomi
 
 道具随机器不随机红 / 蓝露滴圣杯瓶：原版在第一次休息的赐福处由事件发放，走 `ItemLotParam_map` 的 2000 行
 （Flask of Crimson Tears ×3）和 2001 行（Flask of Cerulean Tears ×1），数量就是使用次数。这个选项把两行的道具槽
-各自与一个随机"道具位置"互换：掉落行（圣杯瓶连同次数出现在那个拾取点 / boss / NPC 处）或商店货架（商人按瓶子的
-次数限量出售圣杯瓶，价格沿用那个货架的价格），第一个赐福改给那里原来的东西；两边的标记、权重、掉落组、价格都
-不动，位置仍是一次性的。
+各自与一个随机"道具位置"互换：掉落行（圣杯瓶连同次数出现在那个拾取点 / boss / NPC 处）或商人（抽中商人后再在他的
+限量货架里抽一格，商人按瓶子的次数限量出售圣杯瓶，价格沿用那个货架的价格），第一个赐福改给那里原来的东西；两边的
+标记、权重、掉落组、价格都不动，位置仍是一次性的。
 
 候选位置来自 `tools/names/item_locations.txt`：原版与道具随机器输出之间道具不同的 `ItemLotParam_map` 行和
 `ShopLineupParam` 格子（regulation.bin 自己看不出哪些行真的被地图 / 事件引用，表里混着被砍内容；道具随机器读
@@ -267,7 +267,10 @@ Release 里的 `ERFurtherRandom.exe`（见开头“快速开始”）、`randomi
 且只给一样（只有一个带权重的槽，有获得标记；带概率的行和敌人掉落表 `ItemLotParam_enemy` 一律不用）、是掉落组
 的第一行（同一个标记下另一条路给同一件东西的行一起换，给别的东西的位置整个跳过）、原版内容在 Paramdex 行名里
 唯一（报告才说得清"在原版 Dragonscale Blade 的位置"）；商店格子必须限量（`sellQuantity >= 1` 且有库存旗标）、
-以卢恩或龙心结账。地图碎片两边都不碰。1.17.1 的道具随机器输出上约 2000 个候选（1581 个掉落行 + 459 个货架）。
+以卢恩或龙心结账。地图碎片两边都不碰。**一个商人算一个候选位置**（不是每一格各算一个，否则货多的商人机会就多）：
+商人按行名的 "[商人] 商品" 前缀归并，同一 NPC 之后解锁的清单（祷告书 / 卷轴、艾妮雅的 boss 装备、双指侍女的追加货）
+并入该 NPC，追忆兑换算艾妮雅的，流浪商人按地点各算一个；一个商人最多放一个瓶子。1.17.1 的道具随机器输出上
+1616 个候选（1581 个掉落行 + 35 个商人，共 459 个合格货架）。
 2026-10-18 在游戏 1.17.1 里验证通过：红瓶放到商人货架（限量 3 个）能买，蓝瓶放到拾取点能捡，第一个赐福给出换进去的
 两样东西，之后圣杯瓶菜单正常。
 
@@ -275,12 +278,12 @@ Release 里的 `ERFurtherRandom.exe`（见开头“快速开始”）、`randomi
 
 ```
 Flask of Crimson Tears x3    ->  lot 1050390070: Cerulean Tear Scarab (m60_50_39)  |  Golden Rune [5] x1
-Flask of Cerulean Tears x1   ->  shop 100633: [Merchant - Liurnia of the Lakes] Astrologer's Staff (320 runes each, stock 1)  |  Smithing Stone [2] x3
+Flask of Cerulean Tears x1   ->  shop 100633: [Merchant - Liurnia of the Lakes] Astrologer's Staff (320 runes each, stock 1) [Merchant - Liurnia of the Lakes: 1 of 10 slots]  |  Smithing Stone [2] x3
 ```
 
 `lot` 后是行 id 和它在原版里的内容（"在原版 Cerulean Tear Scarab 的位置"），括号里是从 id 推出的地图块
 （野外 `m60_XX_YY` / `m61_XX_YY`，带 `[地点]` 前缀的行不再标）；`shop` 后是货架 id、原版的"[商人] 商品"、单价和
-库存；`|` 后是第一个赐福改给的东西。
+库存，方括号里是归并后的商人名和他有几格合格货架；`|` 后是第一个赐福改给的东西。
 
 ## 开局道具（--start-with-bell / --start-with-lantern）
 
