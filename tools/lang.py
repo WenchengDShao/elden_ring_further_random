@@ -125,17 +125,16 @@ ZH = {
     "Random dialogue subtitles (--random-dialogue)": "对话字幕随机 (--random-dialogue)",
     "(every NPC line shows the subtitle of another line; the voices stay, so the NPC still speaks its own line)":
         "（每句 NPC 台词显示另一句的字幕；语音不动，NPC 念的还是自己原来那句）",
-    "Text archives": "文本档",
-    "(the game's msg\\<language>\\menu_dlc02.msgbnd.dcx and item_dlc02.msgbnd.dcx, one per language, taken from the "
-    "mod folder in use: Item and Enemy Randomizer mod\\randomizer\\msg\\..., English with the Fog Gate "
-    "Randomizer mod\\fog\\msg\\engus\\...; the subtitle options below use the menu archives, the weapon "
-    "names of --somber-infusable the item archives. Give the paths: left empty, the copies shipped with "
-    "the program are used, and some text may then disagree with the actual items, e.g. the keepsake "
-    "names and class descriptions in character creation)":
-        "（游戏的 msg\\<语言>\\menu_dlc02.msgbnd.dcx 和 item_dlc02.msgbnd.dcx，每种语言各一个，取当前 mod 目录里的：道具随机器 "
-        "mod\\randomizer\\msg\\…，英文配雾门随机器 mod\\fog\\msg\\engus\\…；下面改字幕的选项用 menu 档，失色武器可质变（--somber-infusable）"
-        "的武器名用 item 档。请填路径：留空就用程序自带的副本，某些地方的文字可能和实物不符，例如人物创建界面的遗物名和职业说明）",
-    "Text archives (msg\\<language>\\menu_dlc02 / item_dlc02.msgbnd.dcx)": "文本档（msg\\<语言>\\menu_dlc02 / item_dlc02.msgbnd.dcx）",
+    "Text archives folder": "文本档目录",
+    "(optional: the msg folder of the mod in use, or its msg\\<language> folders, ';' between several, e.g. Item and "
+    "Enemy Randomizer mod\\randomizer\\msg, English with the Fog Gate Randomizer mod\\fog\\msg\\engus; the subtitle "
+    "options rewrite the menu_dlc02.msgbnd.dcx found there, the weapon names of --somber-infusable the "
+    "item_dlc02.msgbnd.dcx. Left empty, the copies shipped with the program are used, and some text may then "
+    "disagree with the actual items, e.g. the keepsake names in character creation)":
+        "（可选：当前 mod 的 msg 目录或它的 msg\\<语言> 目录，多个用 ; 隔开，例如道具随机器 mod\\randomizer\\msg，英文配雾门随机器 "
+        "mod\\fog\\msg\\engus；改字幕的选项改写里面的 menu_dlc02.msgbnd.dcx，失色武器可质变（--somber-infusable）的武器名改写 "
+        "item_dlc02.msgbnd.dcx。留空就用程序自带的副本，某些地方的文字可能和实物不符，例如人物创建界面的遗物名）",
+    "Text archives folder (the mod's msg folder or msg\\<language>)": "文本档目录（mod 的 msg 目录或 msg\\<语言>）",
     "Joke shifu (--dialogue-jokes)": "笑话大师（joke shifu）(--dialogue-jokes)",
     "(the cut lines show a joke and join the shuffle)": "（被砍的台词改成冷笑话并加入随机）",
     "Three Kingdoms + joke pool first, then the game's lines (--pool-first)": "三国 + 冷笑话台词池先抽，抽完再抽原字幕 (--pool-first)",
@@ -195,6 +194,11 @@ ZH = {
         "出招耐力倍率范围应满足 0 <= 最低 <= 最高，例如 0 到 2.0",
     "The folder does not exist yet: {}": "目录还不存在：{}",
     "Input file not found: {}": "找不到输入文件：{}",
+    "Warning: using the msg/ files provided by this program could cause the disagreement between the name "
+    "and the actual items.\n\nNo text archives folder is given (Files section): the subtitle options and "
+    "the weapon names would rewrite the copies shipped with the program. Continue anyway?":
+        "警告：使用程序自带的 msg/ 文件可能导致名字和实际物品不符。\n\n没有填文本档目录（“文件”区）：改字幕的选项和武器名会改写"
+        "程序自带的副本。仍要继续吗？",
     "The output file must not be in the same folder as the input ({}): the reports and the joke shifu's msg folder "
     "are written next to the output and would end up in that folder, and an output named regulation.bin would "
     "replace the input. Create a new folder for the output; that also keeps the mods easy to manage.":

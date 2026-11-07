@@ -142,6 +142,33 @@ def default_archives() -> list[Path]:
     return [MSG_DIR / lang / ARCHIVE for lang in joke_languages() if (MSG_DIR / lang / ARCHIVE).is_file()]
 
 
+def expand_archives(flag: str, given: list[str], name: str, langs: list[str]) -> list[str]:
+    """The MSGBND arguments of an option as archive paths.  A file is taken as it is; a folder stands for the
+       archives called `name` in it: a language folder (msg/<language>/, whatever the language) holding the
+       archive itself, else a msg folder or a mod folder holding msg/ (then the languages in `langs` that have
+       the archive there).  One archive per language (the folder name), a later argument replacing an earlier
+       one, so mod folders can be listed in the me3 order: the last one wins, as in the game."""
+    found: dict[str, str] = {}
+    for g in given:
+        p = Path(g)
+        if p.is_file():
+            hits = [p]
+        elif p.is_dir():
+            if (p / name).is_file():
+                hits = [p / name]
+            else:
+                base = p / "msg" if (p / "msg").is_dir() else p
+                hits = [base / lang / name for lang in langs if (base / lang / name).is_file()]
+                if not hits:
+                    raise SystemExit(f"{flag}: no {name} in {p}: expected {p / name} or {base / '<language>' / name} "
+                                     f"for {', '.join(langs)}")
+        else:
+            raise SystemExit(f"{flag}: {p} does not exist")
+        for h in hits:
+            found[h.parent.name.lower()] = str(h)
+    return list(found.values())
+
+
 def has_text(t: str | None) -> bool:
     return bool(t) and bool(t.strip()) and t not in talkmsg.PLACEHOLDERS
 

@@ -61,8 +61,9 @@ Weapons:
                         the affinity rows --somber-infusable adds get a name and a description in the game's text
                         ("Heavy Crystal Sword", 厚重结晶剑), else the game shows ?WeaponName?; done by default with
                         --somber-infusable / --weapons, --no-weapon-names skips it.  MSGBND is the game's
-                        msg/<language>/item_dlc02.msgbnd.dcx (one per language; with the Item and Enemy Randomizer its
-                        own mod/randomizer/msg/<language>/..., English with the Fog Gate Randomizer mod/fog/msg/engus/...),
+                        msg/<language>/item_dlc02.msgbnd.dcx (one per language, or a folder holding it as for
+                        --dialogue-jokes; with the Item and Enemy Randomizer its own mod/randomizer/msg/<language>/...,
+                        English with the Fog Gate Randomizer mod/fog/msg/engus/...),
                         without paths the archives shipped with the tool; the patched copy is written next to the output
                         as msg/<language>/item_dlc02.msgbnd.dcx and replaces the mod folder's archive as a whole.  Given
                         on its own it names the unnamed affinity rows the input already has (tools/weapon_names.py)
@@ -73,7 +74,9 @@ Dialogue (TalkParam):
   --dialogue-jokes [MSGBND ...]
                         "joke shifu": the cut rows (text id without a text) get a joke each from
                         names/jokes_<language>.txt and join the shuffle; MSGBND is the game's
-                        msg/<language>/menu_dlc02.msgbnd.dcx (one per language); without paths the archives
+                        msg/<language>/menu_dlc02.msgbnd.dcx (one per language) or a folder holding it: msg/<language>,
+                        msg or the mod folder (then every language the tool knows; for the same language a later
+                        folder wins, so list the mod folders in the me3 order); without paths the archives
                         shipped with the tool are used (tools/msg/<language>/, or the msg folder next to the
                         executable); the patched copy is written next to the output as msg/<language>/...
                         The patched copy replaces the mod folder's archive as a whole: with the Item and Enemy
@@ -410,7 +413,7 @@ def pool_archives(flag: str, given: list[str], jokes, langs: list[str], notes: l
        --dialogue-jokes uses for that language), else the joke shifu's archives, else the shipped ones for `langs`
        (then the shipped-archive warning goes to the console and into `notes`, the dialogue.txt lines)."""
     if given:
-        archives = [Path(a) for a in given]
+        archives = [Path(a) for a in dialogue.expand_archives(flag, given, dialogue.ARCHIVE, langs)]
         for a in archives:
             lang = a.parent.name.lower()
             if jokes is not None and lang in jokes.langs:
@@ -435,30 +438,25 @@ def pool_archives(flag: str, given: list[str], jokes, langs: list[str], notes: l
     return archives
 
 
+SHIPPED_WARNING = ("warning: using the msg/ files provided by this program could cause the disagreement between the name "
+                   "and the actual items")
+
+
 def shipped_warning(flag: str, archives: list[Path]) -> list[str]:
-    """What a subtitle option prints (and puts into dialogue.txt) when it falls back to the shipped text archives:
-       the patched copy replaces the mod folder's archive as a whole, and the shipped copies are the randomizers'
-       output of 2026-10-18, whose character-creation texts belong to that run (reported 2026-10-31: the keepsake
-       menu named an old run's items while the game handed out the current run's)."""
+    """What an option prints (and puts into dialogue.txt / weapons.txt) when it falls back to the shipped text
+       archives.  Why a warning: the patched copy replaces the mod folder's archive as a whole, and the shipped
+       copies are one run of 2026-10-31 (English: the Fog Gate Randomizer's archives, Chinese: the Item and Enemy
+       Randomizer's; copied from the mod folders 2026-11-07), whose character-creation texts (keepsake names /
+       descriptions, class starting gear: GR_MenuText / GR_LineHelp 2971xx) and item names belong to that run -
+       reported 2026-10-31: the keepsake menu named an old run's items while the game handed out the current run's.
+       The wording of the warning line is the user's (2026-11-07); the GUI asks the same before a run."""
     return [f"# {flag.lstrip('-')}: using the shipped text archives: " + ", ".join(str(a) for a in archives),
-            "# warning: the patched msg/<language>/menu_dlc02.msgbnd.dcx written next to the output replaces the mod "
-            "folder's archive as a whole, so every text another mod wrote into it is lost. The shipped archives carry "
-            "the game's dialogue, but the character creation texts of an Item and Enemy Randomizer run of 2026-10-18 "
-            "(keepsake names / descriptions and class starting gear: GR_MenuText / GR_LineHelp 2971xx).",
-            "# warning: with the Item and Enemy Randomizer pass its own archives instead, one per language: "
-            "mod/randomizer/msg/<language>/menu_dlc02.msgbnd.dcx (English with the Fog Gate Randomizer: "
-            "mod/fog/msg/engus/menu_dlc02.msgbnd.dcx); otherwise the character creation menu names that old run's "
-            "keepsakes while the items handed out are your run's."]
+            "# " + SHIPPED_WARNING]
 
 
 def item_shipped_warning(archives: list[Path]) -> list[str]:
     """What --weapon-names prints (and puts into weapons.txt) when it falls back to the shipped item text archives."""
-    return [f"# weapon-names: using the shipped text archives: " + ", ".join(str(a) for a in archives),
-            "# warning: the patched msg/<language>/item_dlc02.msgbnd.dcx written next to the output replaces the mod folder's "
-            "archive as a whole; the shipped copies are the Item and Enemy Randomizer's output of 2026-10-31 (game 1.17.1 "
-            "item texts). With the Fog Gate Randomizer pass its English archive, mod/fog/msg/engus/item_dlc02.msgbnd.dcx "
-            "(it names the randomizer's own items), with the Item and Enemy Randomizer its "
-            "mod/randomizer/msg/<language>/item_dlc02.msgbnd.dcx."]
+    return shipped_warning("--weapon-names", archives)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -545,7 +543,9 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--dialogue-jokes", nargs="*", default=None, metavar="MSGBND",
                     help="joke shifu, with --random-dialogue: the cut rows (a text id without a text) get a joke each "
                          "from tools/names/jokes_<language>.txt and join the shuffle; MSGBND = the game's "
-                         "msg/<language>/menu_dlc02.msgbnd.dcx, one per language (with the Item and Enemy Randomizer "
+                         "msg/<language>/menu_dlc02.msgbnd.dcx, one per language, or a folder holding it: msg/<language>, "
+                         "msg or the mod folder, then every language the tool knows, a later folder winning for the same "
+                         "language (with the Item and Enemy Randomizer "
                          "its own: mod/randomizer/msg/<language>/..., the patched copy replaces the mod folder's archive "
                          "as a whole and the shipped ones carry one of its runs' character creation texts); without paths the archives shipped "
                          "with the tool are used (tools/msg/<language>/, or the msg folder next to the executable); the "
@@ -612,7 +612,8 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--weapon-names", nargs="*", default=None, metavar="MSGBND",
                     help="the affinity rows --somber-infusable adds get a name and a description in the game's text ('Heavy "
                          "Crystal Sword'), without which the game shows ?WeaponName?; done by default with --somber-infusable / "
-                         "--weapons: MSGBND = the game's msg/<language>/item_dlc02.msgbnd.dcx, one per language (with the Item and "
+                         "--weapons: MSGBND = the game's msg/<language>/item_dlc02.msgbnd.dcx, one per language, or a folder "
+                         "holding it as for --dialogue-jokes (with the Item and "
                          "Enemy Randomizer its own: mod/randomizer/msg/<language>/..., English with the Fog Gate Randomizer: "
                          "mod/fog/msg/engus/...; the patched copy replaces the mod folder's archive as a whole); without paths "
                          "the archives shipped with the tool are used; the patched copy goes next to the output as "
@@ -753,7 +754,9 @@ def main(argv: list[str] | None = None) -> int:
         print("\n".join(l for l in wlines if l.startswith("#")))
     wnames = None
     if (args.somber_infusable or args.weapon_names is not None) and not args.no_weapon_names:
-        archives = args.weapon_names or [str(p) for p in weapon_names.shipped_archives()]
+        archives = (dialogue.expand_archives("--weapon-names", args.weapon_names or [], weapon_names.ARCHIVE,
+                                             dialogue.joke_languages())
+                    or [str(p) for p in weapon_names.shipped_archives()])
         if not archives:
             raise SystemExit(f"--weapon-names: the shipped item text archives are missing: {dialogue.MSG_DIR}/<language>/"
                              f"{weapon_names.ARCHIVE}. "
@@ -798,7 +801,8 @@ def main(argv: list[str] | None = None) -> int:
     if args.dialogue_jokes is not None and not args.random_dialogue:
         raise SystemExit("--dialogue-jokes needs --random-dialogue")
     if args.random_dialogue and args.dialogue_jokes is not None:
-        archives = args.dialogue_jokes or [str(p) for p in dialogue.default_archives()]
+        archives = (dialogue.expand_archives("--dialogue-jokes", args.dialogue_jokes, dialogue.ARCHIVE, dialogue.joke_languages())
+                    or [str(p) for p in dialogue.default_archives()])
         if not archives:
             raise SystemExit(f"--dialogue-jokes: the shipped text archives are missing: {dialogue.MSG_DIR}/<language>/"
                              f"{dialogue.ARCHIVE} for {', '.join(dialogue.joke_languages())}. "

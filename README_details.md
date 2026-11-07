@@ -180,6 +180,7 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 ./randomize.sh --random-dialogue         # NPC 对话字幕在所有 NPC 的台词之间打乱，语音不动；报告在 dialogue.txt
 ./randomize.sh --random-dialogue --dialogue-jokes   # 笑话大师：被砍的台词改成冷笑话并加入随机，用自带的英文、中文文本档
 ./randomize.sh --random-dialogue --dialogue-jokes /path/to/mod/randomizer/msg/zhocn/menu_dlc02.msgbnd.dcx   # 自己指定文本档
+./randomize.sh --random-dialogue --dialogue-jokes /path/to/mod/randomizer/msg /path/to/mod/fog/msg/engus   # 也可以给目录（msg、msg/<语言> 或 mod 目录），同一语言后给的优先
 ./randomize.sh --help                          # 全部选项
 ```
 
@@ -202,7 +203,7 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 | `--random-runes` | 每个敌人死后给的卢恩随机（NpcParam.getSoul，原版 2739 个敌人有值）；`--rune-mode shuffle`（默认）在敌人之间打乱，`range` 在 `--rune-min` / `--rune-max`（默认现有最小 / 最大）之间按对数均匀重抽；报告 `runes.txt` |
 | `--random-durations` | 消耗品（油脂、肉、有时限的 buff 道具）和法术（武器附魔、黄金誓约……）的 buff 持续时间随机（它们触发的 SpEffectParam.effectEndurance，5 秒以上的）；`--duration-mode shuffle`（默认）在 buff 之间打乱，`range` 在 `--duration-min` / `--duration-max` 秒之间重抽；报告在 `mapping.txt` 的 `# buff durations` 一段 |
 | `--random-dialogue` | NPC 对话字幕在所有 NPC 的台词之间打乱，语音不动（NPC 念的还是自己那句）；报告 `dialogue.txt` |
-| `--dialogue-jokes [MSGBND...]` | 笑话大师，与 `--random-dialogue` 合用：被砍的台词（有 id 没文本）改成冷笑话并加入随机；MSGBND 是每种游戏语言的 `msg/<语言>/menu_dlc02.msgbnd.dcx`，不给时用自带的英文、中文两份（`tools/msg/`，exe 版在旁边的 `msg\`）——配合道具随机器 / 雾门随机器时请给它们 mod 目录里当前的那份，见下文；改好的副本写到输出旁的 `msg/<语言>/`，要和 regulation.bin 一起放进 mod 目录 |
+| `--dialogue-jokes [MSGBND...]` | 笑话大师，与 `--random-dialogue` 合用：被砍的台词（有 id 没文本）改成冷笑话并加入随机；MSGBND 是每种游戏语言的 `msg/<语言>/menu_dlc02.msgbnd.dcx`，也可以给目录（`msg/<语言>`、`msg` 或 mod 目录，后两种取工具认识的语言，同一语言后给的优先），不给时用自带的英文、中文两份（`tools/msg/`，exe 版在旁边的 `msg\`）——配合道具随机器 / 雾门随机器时请给它们 mod 目录里当前的那份，见下文；改好的副本写到输出旁的 `msg/<语言>/`，要和 regulation.bin 一起放进 mod 目录 |
 | `--pool-first [MSGBND...]` | 三国 + 冷笑话台词池先抽，与 `--random-dialogue` 合用：中文字幕先从 `tools/names/sanguo_zhocn.txt`（2010 版《三国》台词 305 条）+ `jokes_zhocn.txt` 的池子里抽，英文先从 `jokes_engus.txt` 里抽，每句一次，抽完剩下的才保留原文；MSGBND 同 `--dialogue-jokes`，不给时用它的或自带的两份；改好的写到输出旁的 `msg/<语言>/`；`--zhocn-pool` 是旧名 |
 | `--mixed-pool [MSGBND...]` | 混合台词池，与 `--random-dialogue` 合用、和 `--pool-first` 二选一：每句字幕都从池子里抽、不分先后，中文池 = `sanguo_zhocn.txt` + `jokes_zhocn.txt` + `translate20_zhocn.txt`，英文池 = `jokes_engus.txt` + `translate20_engus.txt`（`translate20_*` 是游戏原文被机器翻译 20 次的结果，`tools/translate20.py` 生成）；游戏原文不出现；MSGBND 同 `--dialogue-jokes`，不给时用它的或自带的两份；改好的写到输出旁的 `msg/<语言>/` |
 | `--translate20 [MSGBND...]` | 翻译 20 次原位替换：每句字幕换成这句话本身被机器翻译 20 次之后的样子（`tools/names/translate20_<语言>.txt`，id 对应），中英文都改，其他 id 不动；可单独用（NPC 念原句、字幕是歪掉的原句），也可和 `--random-dialogue`、`--dialogue-jokes` 合用；和两个台词池互斥；MSGBND 和输出同 `--dialogue-jokes` |
@@ -210,7 +211,7 @@ DLL 的查找规则、linoodle 和 `build.sh` 的细节见下文"Oodle DLL 与 l
 | `--random-prices` | 商店购买价和道具售价；`--price-mode shuffle\|range`、`--price-min N`、`--price-max N`、`--sell-min N`、`--sell-max N`、`--no-sell-prices`（售价不动）、`--sell-equipment`（武器、防具、战灰的售价也随机，默认不动） |
 | `--weapons` | = 下面四项 |
 | `--somber-infusable` | 失色/独特武器获得全部 12 种质变并可装战灰 |
-| `--weapon-names [MSGBND...]` | `--somber-infusable` 默认连带：给输出里没有名字的质变行（失色武器的 12 种质变）在游戏文本里补上名字和说明（"Heavy Crystal Sword"、"厚重结晶剑"），否则显示 `?WeaponName?`；MSGBND 是每种语言的 `msg/<语言>/item_dlc02.msgbnd.dcx`，不给用自带的英文、中文两份；改好的写到输出旁的 `msg/<语言>/`，整个替换 mod 目录里的那份；单独给时只给输入里已有的无名质变行补名 |
+| `--weapon-names [MSGBND...]` | `--somber-infusable` 默认连带：给输出里没有名字的质变行（失色武器的 12 种质变）在游戏文本里补上名字和说明（"Heavy Crystal Sword"、"厚重结晶剑"），否则显示 `?WeaponName?`；MSGBND 是每种语言的 `msg/<语言>/item_dlc02.msgbnd.dcx`，目录同 `--dialogue-jokes`，不给用自带的英文、中文两份；改好的写到输出旁的 `msg/<语言>/`，整个替换 mod 目录里的那份；单独给时只给输入里已有的无名质变行补名 |
 | `--no-weapon-names` | `--somber-infusable` 不补名字 |
 | `--random-movesets` | 每个（武器, 质变）行换成随机武器的动作模组；`--moveset-mode affinity\|bound\|weapon`、`--shield-movesets shields\|none\|all`、`--bow-movesets bows\|none`、`--keep-standard-moveset`、`--weptype-follows` |
 | `--random-default-ash` | 默认战技随机；掉落表 / 商店 / 初始职业给出的武器改成随机质变 |
@@ -228,12 +229,12 @@ Release 里的 `ERFurtherRandom.exe`（见开头“快速开始”）、`randomi
   （`[gui] language = zh`），下次启动沿用；切换时窗口按新语言重建，已填的选项和日志都保留。日志里命令行工具的
   输出和 `mapping.txt` 等清单始终是英文。
 - 文件：输入 regulation.bin、输出文件、Oodle DLL（启动时自动填入 exe / 仓库目录里的 `oo2core_6_win64.dll`，
-  没有就留空，开始时会询问是否改用 zstd 格式）、随机种子（留空则随机抽一个，日志里会显示）、压缩格式。
+  没有就留空，开始时会询问是否改用 zstd 格式）、文本档目录（可选：当前 mod 的 `msg` 目录或它的 `msg\<语言>` 目录，
+  “浏览…”每次添加一个、分号隔开；改字幕的选项用里面的 menu 档，失色武器可质变的武器名用 item 档；留空用自带的副本，
+  某些文字可能和实物不符，比如人物创建界面的遗物名；留空时点“开始随机”会弹窗提醒并问是否继续）、随机种子（留空则随机抽一个，日志里会显示）、压缩格式。
 - 选项分五块：文件、道具与法术、武器、道具获取位置（圣杯瓶获得位置随机 `--random-flask-locations`，开局招魂铃 / 携带照明灯
   `--start-with-bell` / `--start-with-lantern`，敌人掉落随机 `--random-enemy-drops` 和它的“每次击杀掉 0～N 件”）、娱乐（fun）；
-  道具与法术一块的末尾是敌人卢恩随机（`--random-runes`）和 buff 持续时间随机（`--random-durations`），各带 shuffle / range 和区间：第一行是文本档（当前 mod 目录里的 `msg\<语言>\menu_dlc02.msgbnd.dcx`，
-  和 `item_dlc02.msgbnd.dcx`，每种语言各一个，可多选；下面改字幕的选项用 menu 档，失色武器可质变的武器名用 item 档，留空就用自带的副本，某些地方的文字可能和实物不符，比如人物创建界面的遗物名），
-  然后是对话字幕随机（`--random-dialogue`）、笑话大师（joke shifu，`--dialogue-jokes`）和
+  道具与法术一块的末尾是敌人卢恩随机（`--random-runes`）和 buff 持续时间随机（`--random-durations`），各带 shuffle / range 和区间；娱乐一块是对话字幕随机（`--random-dialogue`）、笑话大师（joke shifu，`--dialogue-jokes`）和
   三国 + 冷笑话台词池先抽（`--pool-first`，中文 = 三国 + 冷笑话、英文 = 冷笑话，抽完再回到原字幕）、混合台词池（`--mixed-pool`，三国 + 冷笑话 + 翻译 20 次，不含原字幕）和
   翻译 20 次原位替换（`--translate20`，不依赖字幕随机）；这三项互斥，都不在常用设定里。
 - “常用设定”按钮 = `--split-anim any --random-prices --weapons --random-flask-locations --random-dialogue --dialogue-jokes`；“预览（不写文件）” = `--dry-run`；右上角“语言”左边的“只重新压缩（不随机）” = `--repack`（修复 Fog Gate Randomizer 的输出等，见下文）；
@@ -414,14 +415,14 @@ NPC 对话的每一句都是 `TalkParam` 的一行：`msgId` 是字幕（TalkMsg
 除非用冷笑话把它们填上（“笑话大师”）：`--dialogue-jokes` 接每种游戏语言的 `msg/<语言>/menu_dlc02.msgbnd.dcx`（道具随机器的
 mod 目录里就有，`mod\randomizer\msg\zhocn\...`，游戏自己用的语言放第一个；不给路径就用工具自带的英文、中文两份——
 `tools/msg/<语言>/`，exe 版在 exe 旁边的 `msg\` 目录里：对话文本是 1.17.1 原版，但人物创建界面的遗物名 / 说明和职业装备
-说明是 2026-10-18 某次道具随机器的结果。**配合道具随机器 / 雾门随机器时一定要给它们 mod 目录里当前的那份**（中文
+说明是 2026-10-31 某次道具随机器的结果（英文那份是雾门随机器在它上面写出的）。**配合道具随机器 / 雾门随机器时一定要给它们 mod 目录里当前的那份**（中文
 `mod\randomizer\msg\zhocn\menu_dlc02.msgbnd.dcx`，英文配雾门随机器时是 `mod\fog\msg\engus\...`）：改好的文本档会整个盖掉它们的，
-用自带的会让创建人物时的遗物名和实际拿到的道具对不上（2026-10-31 修正：不给路径时控制台和 `dialogue.txt` 里有 warning 提醒）），每个文本档里没有文本的对话 id 各填一条 `tools/names/jokes_<语言>.txt`
+用自带的会让创建人物时的遗物名和实际拿到的道具对不上（2026-10-31 修正：不给路径时控制台和 `dialogue.txt` 里有 warning 提醒；图形界面在开始前弹窗询问是否继续）），每个文本档里没有文本的对话 id 各填一条 `tools/names/jokes_<语言>.txt`
 里的冷笑话（中文、英文各 955 条，逐行对应，多于没文本的 id 数，所以每句拿到的都不同，可自行增删；哪些 id 没文本因语言而异，
 中文约 830 个、英文约 850 个），这些行也加入
 随机，正常对话里就会时不时蹦出一条冷笑话。改好的文本档写到输出文件旁的
-`msg/<语言>/menu_dlc02.msgbnd.dcx`，要和 regulation.bin 一起放进 mod 目录（图形界面里是“娱乐”区的“笑话大师”，文本档填在
-该区第一行，可以多选，留空用自带的）。输出文件不要和 exe 放在同一目录：那样改好的文本档会落在自带文本档的位置上，程序会拒绝，不会覆盖自带的或你指定的
+`msg/<语言>/menu_dlc02.msgbnd.dcx`，要和 regulation.bin 一起放进 mod 目录（图形界面里是“娱乐”区的“笑话大师”，文本档目录填在
+“文件”区，留空用自带的）。输出文件不要和 exe 放在同一目录：那样改好的文本档会落在自带文本档的位置上，程序会拒绝，不会覆盖自带的或你指定的
 原文件。输出文件也不能和输入文件放在同一目录（清单和 msg 目录会落进那个 mod 目录，同名还会覆盖输入），命令行和图形界面都
 会拒绝；预览（`--dry-run`）只提醒。两种情况的提示都是：建议创建新目录以方便 mod 管理。1.17.1 原版上参与的句子从 9135 增加到 10033。
 
@@ -491,8 +492,8 @@ python tools/talkmsg.py "C:\...\mod\randomizer\msg\engus\menu_dlc02.msgbnd.dcx" 
   `?WeaponName?`（2026-11-07 报告：结晶剑）。所以 `--somber-infusable` 默认连带 `--weapon-names`：给输出里每个没有
   名字的质变行补上名字和说明，写进输出旁的 `msg\<语言>\item_dlc02.msgbnd.dcx`——名字 = 基础名加上这种语言自己的
   质变词（从文本档里可质变武器的 13 条名字学出来：英文 "Heavy " … "Occult " 前缀，中文 "厚重" … "神秘"），说明照抄
-  基础武器的；其余条目不动。文本档路径用 `--weapon-names`（图形界面填在“文本档”栏里，和 menu 档放一起），不给就
-  用自带的两份（道具随机器 2026-10-31 写出的英文、中文）；`--no-weapon-names` 跳过。改好的副本和 menu 档一样整个替换
+  基础武器的；其余条目不动。文本档路径用 `--weapon-names`（图形界面填“文件”区的文本档目录），不给就
+  用自带的两份（2026-10-31 一次生成的：英文是雾门随机器写出的，中文是道具随机器写出的）；`--no-weapon-names` 跳过。改好的副本和 menu 档一样整个替换
   mod 目录里的那份，配合雾门随机器时英文要给 `mod\fog\msg\engus\item_dlc02.msgbnd.dcx`（里面有它自己加的道具名）。
 - **`--random-movesets`**：模组 = 动画集 + 攻击行为块（`wepmotionCategory / wepmotionOneHandId /
   wepmotionBothHandId / spAtkcategory / behaviorVariationId / isDualBlade / isThrustAttackType`），整套拷贝自
@@ -584,8 +585,10 @@ param 重新序列化（支持新增行），没动过的原字节写回，再�
   fog_fix 的 msg 目录会整个盖掉它们；留空用自带的会把人物创建界面的遗物名换成旧随机的（见“对话字幕随机”）。FogMod 每次
   重新生成后连文本档一起重做。
 - **武器名文本档**：`--weapons` / `--somber-infusable` 同样要给当前生效的 item 档：`mod\fog\msg\engus\item_dlc02.msgbnd.dcx`
-  和 `mod\randomizer\msg\zhocn\item_dlc02.msgbnd.dcx`（图形界面填在同一个“文本档”栏里，程序按文件名分开用）；留空用自带的
-  会丢掉雾门随机器加进英文档的道具名（Bell of Return 等）。
+  和 `mod\randomizer\msg\zhocn\item_dlc02.msgbnd.dcx`（图形界面在“文件”区的文本档目录里填 `mod\fog\msg\engus;mod\randomizer\msg\zhocn`，
+  或按 me3 的顺序填 `mod\randomizer\msg;mod\fog\msg`，同一语言后面的优先）；留空用自带的
+  （2026-10-31 这条链写出的雾门随机器英文档和道具随机器中文档的副本，带雾门随机器加的道具名）也能用，但 mod 目录若是
+  另一次生成的，道具名和实物可能对不上，还是给当前那份。
 
 ## 已知限制
 
@@ -609,10 +612,10 @@ param 重新序列化（支持新增行），没动过的原字节写回，再�
 - `tools/enemy_drops.py` — 敌人掉落随机（ItemLotParam_enemy，按 NpcParam 指向的掉落组；`tools/paramdef/NpcParam.xml` 为此加入）
 - `tools/runes.py` — 敌人卢恩随机（NpcParam.getSoul）；`tools/durations.py` — 消耗品 / 法术 buff 持续时间随机（SpEffectParam.effectEndurance）
 - `tools/weapon_names.py` — 给失色武器的质变行补名字和说明（`--weapon-names`，写 `msg/<语言>/item_dlc02.msgbnd.dcx` 的
-  WeaponName / WeaponCaption）；`tools/msg/<语言>/item_dlc02.msgbnd.dcx` 是它默认改写的文本档（道具随机器 2026-10-31 写出的那两份）
-- `tools/msg/engus/`、`tools/msg/zhocn/` — 笑话大师默认改写的文本档 `menu_dlc02.msgbnd.dcx`（2026-10-18 道具随机器 /
-  雾门随机器写出的那两份：对话等是 1.17.1 原版文本，人物创建界面的遗物 / 职业说明是那次随机的结果）；`build_exe` 把它们
-  复制到 exe 旁边的 `msg\`，Release 里和 exe 一起
+  WeaponName / WeaponCaption）；`tools/msg/<语言>/item_dlc02.msgbnd.dcx` 是它默认改写的文本档（2026-10-31 雾门随机器写出的英文档、道具随机器写出的中文档）
+- `tools/msg/engus/`、`tools/msg/zhocn/` — 笑话大师默认改写的文本档 `menu_dlc02.msgbnd.dcx`（2026-10-31 道具随机器 /
+  雾门随机器写出的那两份：对话等是 1.17.1 原版文本，人物创建界面的遗物 / 职业说明是那次随机的结果）；`build_exe` 把它们连同 item 档
+  一起复制到 exe 旁边的 `msg\`（2026-11-07 之前只复制 menu 档），Release 里和 exe 一起
 - `tools/dialogue.py` — 对话字幕随机、冷笑话填充、三国台词池、混合台词池和翻译 20 次原位替换；`tools/talkmsg.py` — 读写 FMG：生成台词文本表
   `tools/names/TalkMsg.txt`、把 `tools/names/jokes_zhocn.txt` / `jokes_engus.txt`（笑话）、`sanguo_zhocn.txt`（2010 版《三国》台词
   305 条，用时去掉说话人）和 `translate20_zhocn.txt` / `translate20_engus.txt`（游戏原文翻译 20 次的结果）写进

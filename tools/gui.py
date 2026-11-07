@@ -153,7 +153,7 @@ class Gui:
         self.drop_rolls, self.drop_chance = S(DROP_DEFAULT[0]), S(DROP_DEFAULT[1])
         self.dialogue = B(False)
         self.jokes = B(False)                        # "joke shifu", --dialogue-jokes
-        self.archives = S("")                        # text archives of the subtitle options, ';' separated (empty = the shipped copies)
+        self.archives = S("")                        # text archive folders, ';' separated (empty = the shipped copies)
         self.pool_first = B(False)                   # --pool-first: Three Kingdoms + jokes (Chinese) / jokes (English) first, then the game's lines
         self.mixed_pool = B(False)                   # --mixed-pool: every subtitle from the Three Kingdoms + jokes + 20x-translated heap
         self.translate20 = B(False)                  # --translate20: every subtitle replaced id for id by its 20x-translated line
@@ -204,6 +204,7 @@ class Gui:
     def _build(self) -> None:
         lines = theme.TITLE_LINES[:2] + (_(theme.TITLE_LINES[2]),)
         parent = theme.layout(self.root, self.pal, lines)
+        wrap = round(620 * theme.dpi_scale(self.root))  # hints on their own row wrap at this width instead of widening the window
         sections = []                                   # (widget, sticky, grows, pady)
 
         top = ttk.Frame(parent, style="Bg.TFrame")
@@ -224,8 +225,15 @@ class Gui:
         ttk.Label(f, text=_("{}: in the game's Game\\ folder or ModEngine2's mod folder; without it the output is zstd "
                             "and larger").format(oodle.DLL_NAME),
                   style="Hint.TLabel").grid(row=3, column=1, columnspan=3, sticky="w", **PAD)
+        # Text archive folders: optional, empty = the shipped copies (moved here from the Fun section 2026-11-07).
+        self._file_row(f, 4, _("Text archives folder"), self.archives, self._pick_archives)
+        self._wrapped_hint(f, _("(optional: the msg folder of the mod in use, or its msg\\<language> folders, ';' between several, e.g. Item and "
+                              "Enemy Randomizer mod\\randomizer\\msg, English with the Fog Gate Randomizer mod\\fog\\msg\\engus; the subtitle "
+                              "options rewrite the menu_dlc02.msgbnd.dcx found there, the weapon names of --somber-infusable the "
+                              "item_dlc02.msgbnd.dcx. Left empty, the copies shipped with the program are used, and some text may then "
+                              "disagree with the actual items, e.g. the keepsake names in character creation)"), wrap).grid(row=5, column=1, columnspan=3, sticky="ew", **PAD)
         r = ttk.Frame(f)
-        r.grid(row=4, column=0, columnspan=4, sticky="w")
+        r.grid(row=6, column=0, columnspan=4, sticky="w")
         ttk.Label(r, text=_("Seed")).pack(side="left", **PAD)
         ttk.Entry(r, textvariable=self.seed, width=12).pack(side="left")
         ttk.Label(r, text=_("(blank = random; the log shows it, enter it here to reproduce a run)"),
@@ -417,28 +425,13 @@ class Gui:
         sections.append((il, "ew", False, 2))
 
         dg = ttk.LabelFrame(parent, text=_("Fun"))
-        # Row 0: the text archives every subtitle option below rewrites.  First in the section on purpose (user request
-        # 2026-10-31): with the shipped copies the character creation menu can disagree with the items handed out.
         r = ttk.Frame(dg)
-        r.grid(row=0, column=0, sticky="ew")
-        r.columnconfigure(1, weight=1)
-        ttk.Label(r, text=_("Text archives")).grid(row=0, column=0, sticky="w", **PAD)
-        ttk.Entry(r, textvariable=self.archives).grid(row=0, column=1, sticky="ew", **PAD)
-        ttk.Button(r, text=_("Browse…"), command=self._pick_archives).grid(row=0, column=2, **PAD)
-        ttk.Label(r, text=_("(the game's msg\\<language>\\menu_dlc02.msgbnd.dcx and item_dlc02.msgbnd.dcx, one per language, taken from the "
-                            "mod folder in use: Item and Enemy Randomizer mod\\randomizer\\msg\\..., English with the Fog Gate "
-                            "Randomizer mod\\fog\\msg\\engus\\...; the subtitle options below use the menu archives, the weapon "
-                            "names of --somber-infusable the item archives. Give the paths: left empty, the copies shipped with "
-                            "the program are used, and some text may then disagree with the actual items, e.g. the keepsake "
-                            "names and class descriptions in character creation)"),
-                  style="Hint.TLabel").grid(row=1, column=0, columnspan=3, sticky="w", **PAD)
-        r = ttk.Frame(dg)
-        r.grid(row=1, column=0, sticky="w")
+        r.grid(row=0, column=0, sticky="w")
         ttk.Checkbutton(r, text=_("Random dialogue subtitles (--random-dialogue)"), variable=self.dialogue).pack(side="left", **PAD)
         ttk.Label(r, text=_("(every NPC line shows the subtitle of another line; the voices stay, so the NPC still speaks "
                             "its own line)"), style="Hint.TLabel").pack(side="left", **PAD)
         r = ttk.Frame(dg)
-        r.grid(row=2, column=0, sticky="w")
+        r.grid(row=1, column=0, sticky="w")
         w = ttk.Checkbutton(r, text=_("Joke shifu (--dialogue-jokes)"), variable=self.jokes)
         w.pack(side="left", **PAD)
         self.dep_dialogue.append(w)
@@ -446,7 +439,7 @@ class Gui:
         w.pack(side="left", **PAD)
         self.dep_dialogue.append(w)
         r = ttk.Frame(dg)
-        r.grid(row=3, column=0, sticky="w")
+        r.grid(row=2, column=0, sticky="w")
         w = ttk.Checkbutton(r, text=_("Three Kingdoms + joke pool first, then the game's lines (--pool-first)"), variable=self.pool_first)
         w.pack(side="left", **PAD)
         self.dep_dialogue.append(w)
@@ -456,7 +449,7 @@ class Gui:
         w.pack(side="left", **PAD)
         self.dep_dialogue.append(w)
         r = ttk.Frame(dg)
-        r.grid(row=4, column=0, sticky="w")
+        r.grid(row=3, column=0, sticky="w")
         w = ttk.Checkbutton(r, text=_("Mixed pool: Three Kingdoms + jokes + 20x-translated lines, no game lines (--mixed-pool)"),
                             variable=self.mixed_pool)
         w.pack(side="left", **PAD)
@@ -467,7 +460,7 @@ class Gui:
         w.pack(side="left", **PAD)
         self.dep_dialogue.append(w)
         r = ttk.Frame(dg)
-        r.grid(row=5, column=0, sticky="w")
+        r.grid(row=4, column=0, sticky="w")
         ttk.Checkbutton(r, text=_("Subtitles replaced id for id by their 20x-translated line (--translate20)"),
                         variable=self.translate20).pack(side="left", **PAD)
         ttk.Label(r, text=_("(every line shows the same line after 20 machine translations, Chinese and English; works alone "
@@ -516,6 +509,19 @@ class Gui:
         ttk.Entry(parent, textvariable=var).grid(row=row, column=1, sticky="ew", **PAD)
         ttk.Button(parent, text=_("Browse…"), command=pick).grid(row=row, column=2, **PAD)
 
+    def _uses_archives(self) -> bool:
+        """Whether the run rewrites text archives: a subtitle option, or the weapon names of --somber-infusable."""
+        return ((self.dialogue.get() and (self.jokes.get() or self.pool_first.get() or self.mixed_pool.get()))
+                or self.translate20.get() or self.somber.get())
+
+    @staticmethod
+    def _wrapped_hint(parent, text: str, wrap: int) -> ttk.Label:
+        """A hint on a row of its own that wraps instead of widening the window: `wrap` pixels at first, then the
+           width the row actually gets (gridded with sticky="ew")."""
+        w = ttk.Label(parent, text=text, style="Hint.TLabel", wraplength=wrap, justify="left")
+        w.bind("<Configure>", lambda e, w=w: w.configure(wraplength=max(200, e.width - 8)))
+        return w
+
     def _set_status(self, template: str, *args) -> None:
         """The status line keeps its English template so a language change can re-render it."""
         self._status = (template, *args)
@@ -539,7 +545,8 @@ class Gui:
         text = self.log.get("1.0", "end-1c")
         for w in self.root.winfo_children():
             w.destroy()
-        for dep in (self.dep_prices, self.dep_sell, self.dep_movesets, self.dep_stats, self.dep_dialogue):
+        for dep in (self.dep_prices, self.dep_drops, self.dep_runes, self.dep_durations, self.dep_multi, self.dep_sell,
+                    self.dep_movesets, self.dep_stats, self.dep_dialogue):   # every list _refresh walks: stale widgets would raise
             dep.clear()
         self._build()
         if text:
@@ -564,11 +571,13 @@ class Gui:
             self.output.set(p)
 
     def _pick_archives(self) -> None:
-        ps = filedialog.askopenfilenames(title=_("Text archives (msg\\<language>\\menu_dlc02 / item_dlc02.msgbnd.dcx)"),
-                                         filetypes=[("*.msgbnd.dcx", "*.msgbnd.dcx"), (_("All files"), "*.*")])
-        if ps:
-            have = [x for x in self.archives.get().split(";") if x.strip()]
-            self.archives.set(";".join(have + [p for p in ps if p not in have]))
+        """Adds one folder per call (';' separated): the mod's msg folder or one of its msg\\<language> folders."""
+        p = filedialog.askdirectory(title=_("Text archives folder (the mod's msg folder or msg\\<language>)"), mustexist=True)
+        if p:
+            p = os.path.normpath(p)
+            have = [x.strip() for x in self.archives.get().split(";") if x.strip()]
+            if p not in have:
+                self.archives.set(";".join(have + [p]))
 
     def _pick_dll(self) -> None:
         p = filedialog.askopenfilename(title=oodle.DLL_NAME,
@@ -625,9 +634,7 @@ class Gui:
             if self.drop_multi.get():
                 a += ["--enemy-drop-rolls", str(self._int(self.drop_rolls.get(), "rolls")),
                       "--enemy-drop-chance", str(self._int(self.drop_chance.get(), "chance per roll"))]
-        given = [x.strip() for x in self.archives.get().split(";") if x.strip()]
-        archives = [x for x in given if not Path(x).name.lower().startswith("item")]      # menu_dlc02: the subtitle options
-        item_archives = [x for x in given if Path(x).name.lower().startswith("item")]     # item_dlc02: the weapon names
+        archives = [x.strip() for x in self.archives.get().split(";") if x.strip()]   # text archive folders (randomize.py expands them)
         if self.dialogue.get():
             a.append("--random-dialogue")
             if self.jokes.get():
@@ -669,8 +676,8 @@ class Gui:
                     if var.get().strip():
                         a += [f"--{prefix}-{suffix}", str(self._int(var.get(), f"{suffix} {prefix}"))]
         four = (self.somber.get(), self.movesets.get(), self.default_ash.get(), self.stats.get())
-        if self.somber.get() and item_archives:
-            a += ["--weapon-names", *item_archives]                                      # after the subtitle options' paths
+        if self.somber.get() and archives:
+            a += ["--weapon-names", *archives]                                           # after the subtitle options' paths
         if all(four):
             a.append("--weapons")
         else:
@@ -819,6 +826,11 @@ class Gui:
                     argv[argv.index("--compression") + 1] = erreg.CODEC_ZSTD
                 else:
                     argv += ["--compression", erreg.CODEC_ZSTD]
+        if not dry_run and not repack and not self.archives.get().strip() and self._uses_archives():
+            if not messagebox.askyesno(TITLE, _("Warning: using the msg/ files provided by this program could cause the disagreement between the name "
+                    "and the actual items.\n\nNo text archives folder is given (Files section): the subtitle options and "
+                    "the weapon names would rewrite the copies shipped with the program. Continue anyway?")):
+                return
         self.running, self.dry_run, self.repack = True, dry_run, repack
         self.out = Path(self.output.get().strip() or "randomized/regulation.bin")
         for b in (self.btn_dry, self.btn_repack, self.btn_run):
