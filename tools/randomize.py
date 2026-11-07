@@ -6,6 +6,11 @@ Goods:
   --random-prices       rune prices of goods in shops (ShopLineupParam.value) and the sell prices of goods
                         (EquipParamGoods.sellValue); --no-sell-prices keeps the sell prices
   --sell-equipment      with --random-prices: sell prices of weapons, armor and Ashes of War too
+  --random-durations    how long the buffs of consumables (greases, meats, boluses with a timer, blessings...) and of
+                        spells (weapon buffs, Golden Vow...) last: SpEffectParam.effectEndurance of every timed effect
+                        they fire; --duration-mode shuffle (default: the durations are permuted over the buffs) | range
+                        (log-uniform between --duration-min / --duration-max seconds, default the shortest / longest
+                        existing); timed effects under 5 s are mechanics and stay (tools/durations.py)
   --random-flask-locations
                         the Flask of Crimson Tears and the Flask of Cerulean Tears are found somewhere
                         else: a random one-time pickup, boss reward, NPC gift or merchant (one candidate
@@ -16,6 +21,19 @@ Goods:
   --start-with-lantern  (rows appended to item lot 2000; the bell's row sets flag 60110, which is what enables
                         spirit summoning): for Fog Gate Randomizer runs in which Limgrave (Renna) or Liurnia
                         (the merchants) may be out of reach early (tools/start_items.py)
+Enemy drops (ItemLotParam_enemy):
+  --random-enemy-drops  every enemy drops something, and what it drops is random: the first row of every drop
+                        lot an NpcParam row points at always drops, the rows after it keep their chance, and
+                        every row's items are drawn from everything the input hands out anywhere (pickups,
+                        rewards, gifts, shops, drops: weapons, armor, talismans, Ashes of War, goods; no key
+                        items); one-time drops (rows with a flag) and rows holding a key item stay, such a lot
+                        gets a guaranteed row appended.  Report in drops.txt (tools/enemy_drops.py)
+  --random-runes        the runes every enemy gives (NpcParam.getSoul): --rune-mode shuffle (default: the amounts are
+                        permuted over the enemies) | range (log-uniform between --rune-min / --rune-max, default the
+                        lowest / highest existing).  Report in runes.txt (tools/runes.py)
+  --enemy-drop-rolls N  with it: every enemy's lot gets exactly N drop rolls instead (rows appended or emptied), each
+                        one random item at --enemy-drop-chance percent (default 50), so a kill drops 0 to N items
+                        (N x chance / 100 on average)
 Weapons:
   --somber-infusable    somber / unique weapons get all 12 affinities and can mount Ashes of War
   --random-movesets     every melee weapon and shield gets the moveset of a random other weapon/shield
@@ -27,7 +45,7 @@ Weapons:
   --bow-movesets        bows (default: bows/crossbows/ballistas swap only among themselves) | none
   --weptype-follows     affinity/bound: each randomized row also takes the donor's wepType, so the
                         smithing table lists exactly the ashes animated for it (no ash unlock);
-                        untested against save validation, see README
+                        untested against save validation, see README_details.md
   --random-default-ash  random default skill per (weapon, affinity) + random affinity for
                         weapons given by item lots, shops and starting classes
   --random-stats        random attack / critical / poise & stamina damage / guard / requirements /
@@ -39,6 +57,15 @@ Weapons:
                         vanilla light-attack base cost and a multiplier; staminaConsumptionRate is set so
                         the first light attack costs base x multiplier whatever moveset the row carries
   --weapons             shortcut for the four weapon options
+  --weapon-names [MSGBND ...]
+                        the affinity rows --somber-infusable adds get a name and a description in the game's text
+                        ("Heavy Crystal Sword", 厚重结晶剑), else the game shows ?WeaponName?; done by default with
+                        --somber-infusable / --weapons, --no-weapon-names skips it.  MSGBND is the game's
+                        msg/<language>/item_dlc02.msgbnd.dcx (one per language; with the Item and Enemy Randomizer its
+                        own mod/randomizer/msg/<language>/..., English with the Fog Gate Randomizer mod/fog/msg/engus/...),
+                        without paths the archives shipped with the tool; the patched copy is written next to the output
+                        as msg/<language>/item_dlc02.msgbnd.dcx and replaces the mod folder's archive as a whole.  Given
+                        on its own it names the unnamed affinity rows the input already has (tools/weapon_names.py)
 Dialogue (TalkParam):
   --random-dialogue     the subtitles of NPC dialogue are shuffled over every NPC's lines: the NPC speaks
                         its own line while another line is shown (voices are never moved, the game loads a
@@ -86,11 +113,15 @@ Usage:
                         [--no-spells] [--dry-run]
                         [--random-prices] [--price-mode shuffle|range] [--price-min N] [--price-max N]
                         [--no-sell-prices] [--sell-min N] [--sell-max N] [--sell-equipment]
-                        [--random-flask-locations] [--start-with-bell] [--start-with-lantern]
+                        [--random-flask-locations] [--start-with-bell] [--start-with-lantern] [--random-enemy-drops]
+                        [--enemy-drop-rolls N] [--enemy-drop-chance P]
+                        [--random-runes] [--rune-mode shuffle|range] [--rune-min N] [--rune-max N]
+                        [--random-durations] [--duration-mode shuffle|range] [--duration-min S] [--duration-max S]
                         [--random-dialogue] [--dialogue-jokes [MSGBND ...]] [--pool-first [MSGBND ...]]
                         [--mixed-pool [MSGBND ...]] [--translate20 [MSGBND ...]]
                         [--somber-infusable] [--random-movesets] [--random-default-ash]
                         [--random-stats] [--stat-groups attack,guard,...] [--stamina-rate 0,2.0] [--weapons]
+                        [--weapon-names [MSGBND ...]] [--no-weapon-names]
 """
 from __future__ import annotations
 
@@ -102,12 +133,16 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import dialogue  # noqa: E402
+import durations  # noqa: E402
+import enemy_drops  # noqa: E402
 import erreg  # noqa: E402
 import flasks  # noqa: E402
 import oodle  # noqa: E402
+import runes  # noqa: E402
 import spells  # noqa: E402
 import start_items  # noqa: E402
 import talkmsg  # noqa: E402
+import weapon_names  # noqa: E402
 import weapons  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
@@ -416,6 +451,16 @@ def shipped_warning(flag: str, archives: list[Path]) -> list[str]:
             "keepsakes while the items handed out are your run's."]
 
 
+def item_shipped_warning(archives: list[Path]) -> list[str]:
+    """What --weapon-names prints (and puts into weapons.txt) when it falls back to the shipped item text archives."""
+    return [f"# weapon-names: using the shipped text archives: " + ", ".join(str(a) for a in archives),
+            "# warning: the patched msg/<language>/item_dlc02.msgbnd.dcx written next to the output replaces the mod folder's "
+            "archive as a whole; the shipped copies are the Item and Enemy Randomizer's output of 2026-10-31 (game 1.17.1 "
+            "item texts). With the Fog Gate Randomizer pass its English archive, mod/fog/msg/engus/item_dlc02.msgbnd.dcx "
+            "(it names the randomizer's own items), with the Item and Enemy Randomizer its "
+            "mod/randomizer/msg/<language>/item_dlc02.msgbnd.dcx."]
+
+
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--input", default="regulation.bin")
@@ -465,6 +510,34 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--start-with-lantern", action="store_true",
                     help="the Lantern likewise, in the same lot (in vanilla sold by the nomadic merchants of Liurnia "
                          "and the Weeping Peninsula, which a fog gate run may not reach early)")
+    ap.add_argument("--random-enemy-drops", action="store_true",
+                    help="every enemy drops something, and what it drops is random: the first row of every enemy drop lot "
+                         "(ItemLotParam_enemy, the rows NpcParam points at) always drops, the rows after it keep their "
+                         "chance, and every row's items are drawn from everything the input hands out anywhere (pickups, "
+                         "rewards, gifts, shops and drops: weapons, armor, talismans, Ashes of War and goods, no key items, "
+                         "each once); one-time drops (rows with a flag) and rows holding a key item are left alone and such "
+                         "a lot gets a guaranteed row appended; report in drops.txt")
+    ap.add_argument("--enemy-drop-rolls", type=int, default=None, metavar="N",
+                    help="with --random-enemy-drops: every enemy's lot gets exactly N drop rolls instead (rows appended or "
+                         "emptied as needed; one-time drops stay and do not count), each one random item at --enemy-drop-chance "
+                         "percent, so a kill drops 0 to N items, N x chance / 100 on average")
+    ap.add_argument("--enemy-drop-chance", type=int, default=50, metavar="P",
+                    help="--enemy-drop-rolls: chance of each roll in percent, 1-100 (default 50)")
+    ap.add_argument("--random-runes", action="store_true",
+                    help="the runes every enemy gives on death are random (NpcParam.getSoul of every enemy that gives any); "
+                         "report in runes.txt")
+    ap.add_argument("--rune-mode", choices=["shuffle", "range"], default="shuffle",
+                    help="shuffle: permute the existing amounts over the enemies (default); range: draw between --rune-min/--rune-max")
+    ap.add_argument("--rune-min", type=int, default=None, help="range mode: fewest runes (default: fewest existing)")
+    ap.add_argument("--rune-max", type=int, default=None, help="range mode: most runes (default: most existing)")
+    ap.add_argument("--random-durations", action="store_true",
+                    help="how long the buffs of consumables (greases, meats, blessings...) and spells (weapon buffs, Golden "
+                         "Vow...) last is random: SpEffectParam.effectEndurance of every timed effect they fire (5 s and longer)")
+    ap.add_argument("--duration-mode", choices=["shuffle", "range"], default="shuffle",
+                    help="shuffle: permute the existing durations over the buffs (default); range: draw between "
+                         "--duration-min/--duration-max seconds")
+    ap.add_argument("--duration-min", type=int, default=None, help="range mode: shortest duration in seconds (default: shortest existing)")
+    ap.add_argument("--duration-max", type=int, default=None, help="range mode: longest duration in seconds (default: longest existing)")
     ap.add_argument("--random-dialogue", action="store_true",
                     help="shuffle the subtitles of NPC dialogue (TalkParam.msgId) over every NPC's lines: the NPC "
                          "speaks its own line while another line is shown; voices are never moved (the game loads a "
@@ -536,6 +609,17 @@ def main(argv: list[str] | None = None) -> int:
                          "base / the base of the moveset the row carries")
     ap.add_argument("--weapons", action="store_true",
                     help="= --somber-infusable --random-movesets --random-default-ash --random-stats")
+    ap.add_argument("--weapon-names", nargs="*", default=None, metavar="MSGBND",
+                    help="the affinity rows --somber-infusable adds get a name and a description in the game's text ('Heavy "
+                         "Crystal Sword'), without which the game shows ?WeaponName?; done by default with --somber-infusable / "
+                         "--weapons: MSGBND = the game's msg/<language>/item_dlc02.msgbnd.dcx, one per language (with the Item and "
+                         "Enemy Randomizer its own: mod/randomizer/msg/<language>/..., English with the Fog Gate Randomizer: "
+                         "mod/fog/msg/engus/...; the patched copy replaces the mod folder's archive as a whole); without paths "
+                         "the archives shipped with the tool are used; the patched copy goes next to the output as "
+                         "msg/<language>/item_dlc02.msgbnd.dcx; given on its own it names the unnamed affinity rows the input "
+                         "already has")
+    ap.add_argument("--no-weapon-names", action="store_true",
+                    help="--somber-infusable without the text patch (the added affinity rows then show as ?WeaponName?)")
     ap.add_argument("--compression", choices=("auto",) + erreg.CODECS, default="auto",
                     help="kraken (default when oo2core_6_win64.dll is found): the game's own Oodle Kraken format, "
                          "file ~25%% smaller than zstd; zstd: 64 KB-window zstd like the fog gate / item randomizers "
@@ -600,6 +684,11 @@ def main(argv: list[str] | None = None) -> int:
         print("pool too small", file=sys.stderr)
         return 1
 
+    dur_lines: list[str] = []
+    if args.random_durations:                      # before the effect shuffle: the report names the vanilla owner of each effect
+        dur_lines = durations.Durations(reg).randomize(rng, args.duration_mode, args.duration_min, args.duration_max)
+        print("\n".join(l for l in dur_lines if l.startswith("#")))
+
     bundles = [{f: P.get(r, f) for f in EFFECT_FIELDS} for r in pool]
     if args.mode == "shuffle":
         src = derangement(len(pool), rng)
@@ -624,8 +713,28 @@ def main(argv: list[str] | None = None) -> int:
                                          not args.no_sell_prices, args.sell_min, args.sell_max)
         if args.sell_equipment:
             lines += randomize_equipment_sell(reg, rng, args.price_mode, args.sell_min, args.sell_max)
+    if dur_lines:
+        lines += [""] + dur_lines
     report = "\n".join(lines)
     print(report)
+
+    rlines: list[str] = []
+    if args.random_runes:
+        rlines = [f"# seed={seed}"] + runes.randomize(reg, rng, args.rune_mode, args.rune_min, args.rune_max)
+        print("\n".join(l for l in rlines if l.startswith("#")))
+
+    elines: list[str] = []         # enemy drops: before the weapons pass, so --random-default-ash rerolls the dropped weapons too
+    if args.enemy_drop_rolls is not None:
+        if not args.random_enemy_drops:
+            raise SystemExit("--enemy-drop-rolls needs --random-enemy-drops")
+        if not 1 <= args.enemy_drop_rolls <= 32:
+            raise SystemExit(f"--enemy-drop-rolls {args.enemy_drop_rolls}: 1 to 32")
+    if not 1 <= args.enemy_drop_chance <= 100:
+        raise SystemExit(f"--enemy-drop-chance {args.enemy_drop_chance}: 1 to 100 (percent)")
+    if args.random_enemy_drops:
+        elines.append(f"# seed={seed}")
+        elines += enemy_drops.EnemyDrops(reg).randomize(rng, args.enemy_drop_rolls, args.enemy_drop_chance)
+        print("\n".join(l for l in elines if l.startswith("#")))
 
     wlines: list[str] = []
     if args.somber_infusable or args.random_movesets or args.random_default_ash or args.random_stats:
@@ -642,6 +751,25 @@ def main(argv: list[str] | None = None) -> int:
         if args.random_stats:
             wlines += [""] + wp.random_stats(rng, stat_groups, stamina_rate)
         print("\n".join(l for l in wlines if l.startswith("#")))
+    wnames = None
+    if (args.somber_infusable or args.weapon_names is not None) and not args.no_weapon_names:
+        archives = args.weapon_names or [str(p) for p in weapon_names.shipped_archives()]
+        if not archives:
+            raise SystemExit(f"--weapon-names: the shipped item text archives are missing: {dialogue.MSG_DIR}/<language>/"
+                             f"{weapon_names.ARCHIVE}. "
+                             + ("Put the msg folder from the Release zip next to the executable, "
+                                if getattr(sys, "frozen", False) else "Restore tools/msg/ from the repository, ")
+                             + "or pass the path(s) of the game's msg/<language>/item_dlc02.msgbnd.dcx (or --no-weapon-names).")
+        if not args.weapon_names:
+            for line in item_shipped_warning([Path(a) for a in archives]):
+                print(line)
+                wlines.append(line)
+        wnames = weapon_names.WeaponNames(reg, archives)
+        for src in wnames.archives:
+            archive_guard("--weapon-names", src, Path(args.output), args.dry_run)
+        for line in wnames.prepare():
+            print(line)
+            wlines.append(line)
 
     slines: list[str] = []
     if not args.no_spells:
@@ -730,10 +858,24 @@ def main(argv: list[str] | None = None) -> int:
     size = reg.save(out, window_log=args.zstd_window, codec=codec)
     print(f"# wrote {out} ({codec}, {size} bytes, limit {erreg.REGULATION_MAX_SIZE}; {erreg.REGULATION_MAX_SIZE - size} bytes to spare)")
     out.with_name("mapping.txt").write_text(report + "\n", encoding="utf-8")
+    if wnames is not None:
+        for src, texts, anchor in wnames.patches:
+            dst = out.parent / "msg" / src.parent.name / src.name
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            data, written = talkmsg.patch_fmgs(src, texts, anchor)
+            dst.write_bytes(data)
+            note = (f"# weapon names: {dst} <- {src}: " + ", ".join(f"{n} entries in {name}" for name, n in written.items())
+                    + "; put the msg folder next to regulation.bin in the mod folder")
+            print(note)
+            wlines.append(note)
     if wlines:
         out.with_name("weapons.txt").write_text("\n".join(wlines) + "\n", encoding="utf-8")
     if slines:
         out.with_name("spells.txt").write_text("\n".join(slines) + "\n", encoding="utf-8")
+    if elines:
+        out.with_name("drops.txt").write_text("\n".join(elines) + "\n", encoding="utf-8")
+    if rlines:
+        out.with_name("runes.txt").write_text("\n".join(rlines) + "\n", encoding="utf-8")
     patches: list[tuple[str, Path, dict[int, str], str]] = []    # (what, source archive, texts to write, detail)
     if jokes is not None:
         for src, lang in zip(jokes.archives, jokes.langs):
@@ -761,6 +903,8 @@ def main(argv: list[str] | None = None) -> int:
     print(f"\nwritten: {out}  (mapping: {out.with_name('mapping.txt')}"
           + (f", weapons: {out.with_name('weapons.txt')}" if wlines else "")
           + (f", spells: {out.with_name('spells.txt')}" if slines else "")
+          + (f", enemy drops: {out.with_name('drops.txt')}" if elines else "")
+          + (f", runes: {out.with_name('runes.txt')}" if rlines else "")
           + (f", dialogue: {out.with_name('dialogue.txt')}" if dlines else "") + f")  seed={seed}")
     return 0
 

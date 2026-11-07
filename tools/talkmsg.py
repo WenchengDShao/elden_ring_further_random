@@ -114,6 +114,43 @@ def patch_archive(src: Path, texts: dict[int, str]) -> tuple[bytes, dict[str, in
     return erreg.write_dcx(erreg.Dcx(9, data, erreg.CODEC_DEFLATE)), written
 
 
+def patch_fmgs(src: Path, texts: dict[str, dict[int, str]], anchor: dict[int, int] | None = None
+               ) -> tuple[bytes, dict[str, int]]:
+    """The archive `src` (DCX around a BND4 of FMGs) with `texts` = {FMG prefix: {id: text}} written into its FMGs
+       of that prefix (<prefix>.fmg, <prefix>_dlc01.fmg ...): an id one of them already holds is replaced there (in
+       every one that has it); a new id goes to the FMG that holds anchor[id] (the base weapon of an affinity row:
+       WeaponName.fmg for the base game, WeaponName_dlc01.fmg for Shadow of the Erdtree), else to <prefix>.fmg.
+       Returns the DCX DFLT bytes and {fmg name: entries written}; every other file is copied byte for byte."""
+    raw = src.read_bytes()
+    bnd = erreg.read_bnd4(erreg.read_dcx(raw).data if raw[:4] == b"DCX\0" else raw)
+    names = {f.index: fmg_name(f) for f in bnd.files}
+    fmgs: dict[int, dict[int, str]] = {}
+    written: dict[str, int] = {}
+    changed: set[int] = set()
+    for prefix, entries in texts.items():
+        low = prefix.lower()
+        idx = [i for i, n in names.items() if n.lower() == low + ".fmg" or (n.lower().startswith(low + "_") and n.lower().endswith(".fmg"))]
+        if not idx:
+            raise SystemExit(f"{src}: no {prefix}*.fmg inside")
+        for i in idx:
+            fmgs.setdefault(i, read_fmg(bnd.datas[i]))
+        base = next((i for i in idx if names[i].lower() == low + ".fmg"), idx[0])
+        for tid, text in entries.items():
+            wheres = [i for i in idx if tid in fmgs[i]]
+            if not wheres and anchor and tid in anchor:
+                wheres = [i for i in idx if anchor[tid] in fmgs[i]][:1]
+            for where in wheres or [base]:
+                fmgs[where][tid] = text
+                changed.add(where)
+                written[names[where]] = written.get(names[where], 0) + 1
+    datas = list(bnd.datas)
+    for i in changed:
+        datas[i] = write_fmg(fmgs[i])
+    data = erreg.write_bnd4(erreg.Bnd4(bnd.head, bnd.files, datas, bnd.file_header_size,
+                                       bnd.has_compression, bnd.long_offsets))
+    return erreg.write_dcx(erreg.Dcx(9, data, erreg.CODEC_DEFLATE)), written
+
+
 def read_archive(path: Path) -> dict[int, str]:
     raw = path.read_bytes()
     bnd = erreg.read_bnd4(erreg.read_dcx(raw).data if raw[:4] == b"DCX\0" else raw)

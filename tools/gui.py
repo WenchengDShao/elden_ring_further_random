@@ -88,6 +88,7 @@ def fatal(text: str) -> None:
             pass
 LAUNCHER = "randomize.bat" if WINDOWS else "./randomize.sh"
 WEAPON_FLAGS = ("--somber-infusable", "--random-movesets", "--random-default-ash", "--random-stats")
+DROP_DEFAULT = ("3", "50")                      # --enemy-drop-rolls N, --enemy-drop-chance P as shown in the entries
 STAMINA_DEFAULT = ("0", "2.0")
 PAD = dict(padx=6, pady=2)
 NO_TK_HINT = ("Windows: install Python from python.org (tick \"tcl/tk and IDLE\" in the installer), delete "
@@ -147,6 +148,9 @@ class Gui:
         self.split_anim = S("none")
         self.flask_locations = B(False)
         self.start_bell, self.start_lantern = B(False), B(False)   # --start-with-bell / --start-with-lantern
+        self.enemy_drops = B(False)                  # --random-enemy-drops
+        self.drop_multi = B(False)                   # --enemy-drop-rolls N --enemy-drop-chance P
+        self.drop_rolls, self.drop_chance = S(DROP_DEFAULT[0]), S(DROP_DEFAULT[1])
         self.dialogue = B(False)
         self.jokes = B(False)                        # "joke shifu", --dialogue-jokes
         self.archives = S("")                        # text archives of the subtitle options, ';' separated (empty = the shipped copies)
@@ -158,6 +162,9 @@ class Gui:
         self.price_min, self.price_max = S(""), S("")
         self.sell_prices, self.sell_min, self.sell_max = B(True), S(""), S("")
         self.sell_equipment = B(False)
+        self.random_runes, self.rune_mode, self.rune_min, self.rune_max = B(False), S("shuffle"), S(""), S("")
+        self.random_durations, self.duration_mode = B(False), S("shuffle")
+        self.duration_min, self.duration_max = S(""), S("")
         # weapons
         self.somber, self.movesets, self.default_ash, self.stats = B(False), B(False), B(False), B(False)
         self.moveset_mode, self.shield, self.bow, self.variety = S("affinity"), S("shields"), S("bows"), S("3")
@@ -165,6 +172,10 @@ class Gui:
         self.groups = {g: B(True) for g in weapons.STAT_GROUPS}
         self.stamina_lo, self.stamina_hi = S(STAMINA_DEFAULT[0]), S(STAMINA_DEFAULT[1])
         self.dep_prices: list = []
+        self.dep_drops: list = []
+        self.dep_runes: list = []
+        self.dep_durations: list = []
+        self.dep_multi: list = []
         self.dep_sell: list = []
         self.dep_movesets: list = []
         self.dep_stats: list = []
@@ -280,6 +291,27 @@ class Gui:
                             variable=self.sell_equipment)
         w.pack(side="left", **PAD)
         self.dep_prices.append(w)
+        for row, text, var, mode, lo, hi, deps, unit in (
+                (6, _("Enemy runes (--random-runes)"), self.random_runes, self.rune_mode, self.rune_min, self.rune_max,
+                 self.dep_runes, ""),
+                (7, _("Buff durations of consumables and spells (--random-durations)"), self.random_durations,
+                 self.duration_mode, self.duration_min, self.duration_max, self.dep_durations, " s")):
+            r = ttk.Frame(g)
+            r.grid(row=row, column=0, sticky="w")
+            ttk.Checkbutton(r, text=text, variable=var).pack(side="left", **PAD)
+            w = ttk.Radiobutton(r, text=_("shuffle: permute the existing values"), variable=mode, value="shuffle")
+            w.pack(side="left", **PAD)
+            deps.append(w)
+            w = ttk.Radiobutton(r, text=_("range: redraw within a range"), variable=mode, value="range")
+            w.pack(side="left", **PAD)
+            deps.append(w)
+            for label, v in ((_("min") + unit, lo), (_("max") + unit, hi)):
+                w = ttk.Label(r, text=label)
+                w.pack(side="left", padx=(10, 2))
+                deps.append(w)
+                w = ttk.Entry(r, textvariable=v, width=8)
+                w.pack(side="left")
+                deps.append(w)
         sections.append((g, "ew", False, 2))
 
         wf = ttk.LabelFrame(parent, text=_("Weapons (all four = --weapons)"))
@@ -359,6 +391,29 @@ class Gui:
                             "Renna hands out the bell, and Liurnia, where the merchants sell the lantern, may be out of "
                             "reach early)"),
                   style="Hint.TLabel").pack(side="left", **PAD)
+        r = ttk.Frame(il)
+        r.grid(row=2, column=0, sticky="w")
+        ttk.Checkbutton(r, text=_("Random enemy drops (--random-enemy-drops)"),
+                        variable=self.enemy_drops).pack(side="left", **PAD)
+        ttk.Label(r, text=_("(every enemy always drops one random item: goods, gear, spells...; its other drop rolls keep "
+                            "their chance but drop random items too; one-time drops stay; report in drops.txt)"),
+                  style="Hint.TLabel").pack(side="left", **PAD)
+        r = ttk.Frame(il)
+        r.grid(row=3, column=0, sticky="w", padx=(24, 0))
+        w = ttk.Checkbutton(r, text=_("0 to N items per kill (--enemy-drop-rolls N --enemy-drop-chance P)"), variable=self.drop_multi)
+        w.pack(side="left", **PAD)
+        self.dep_drops.append(w)
+        for label, var in ((_("rolls N"), self.drop_rolls), (_("chance per roll P %"), self.drop_chance)):
+            w = ttk.Label(r, text=label)
+            w.pack(side="left", padx=(10, 2))
+            self.dep_multi.append(w)
+            w = ttk.Entry(r, textvariable=var, width=5)
+            w.pack(side="left")
+            self.dep_multi.append(w)
+        w = ttk.Label(r, text=_("(every enemy gets exactly N drop rolls, each a random item at P %: N x P / 100 items on average, "
+                                "instead of one certain drop)"), style="Hint.TLabel")
+        w.pack(side="left", **PAD)
+        self.dep_drops.append(w)
         sections.append((il, "ew", False, 2))
 
         dg = ttk.LabelFrame(parent, text=_("Fun"))
@@ -370,11 +425,12 @@ class Gui:
         ttk.Label(r, text=_("Text archives")).grid(row=0, column=0, sticky="w", **PAD)
         ttk.Entry(r, textvariable=self.archives).grid(row=0, column=1, sticky="ew", **PAD)
         ttk.Button(r, text=_("Browse…"), command=self._pick_archives).grid(row=0, column=2, **PAD)
-        ttk.Label(r, text=_("(the game's msg\\<language>\\menu_dlc02.msgbnd.dcx, one per language, taken from the mod folder "
-                            "in use: Item and Enemy Randomizer mod\\randomizer\\msg\\..., English with the Fog Gate Randomizer "
-                            "mod\\fog\\msg\\engus\\...; every option below that rewrites subtitles uses them. Give the paths: "
-                            "left empty, the copies shipped with the program are used, and some text may then disagree with "
-                            "the actual items, e.g. the keepsake names and class descriptions in character creation)"),
+        ttk.Label(r, text=_("(the game's msg\\<language>\\menu_dlc02.msgbnd.dcx and item_dlc02.msgbnd.dcx, one per language, taken from the "
+                            "mod folder in use: Item and Enemy Randomizer mod\\randomizer\\msg\\..., English with the Fog Gate "
+                            "Randomizer mod\\fog\\msg\\engus\\...; the subtitle options below use the menu archives, the weapon "
+                            "names of --somber-infusable the item archives. Give the paths: left empty, the copies shipped with "
+                            "the program are used, and some text may then disagree with the actual items, e.g. the keepsake "
+                            "names and class descriptions in character creation)"),
                   style="Hint.TLabel").grid(row=1, column=0, columnspan=3, sticky="w", **PAD)
         r = ttk.Frame(dg)
         r.grid(row=1, column=0, sticky="w")
@@ -508,8 +564,8 @@ class Gui:
             self.output.set(p)
 
     def _pick_archives(self) -> None:
-        ps = filedialog.askopenfilenames(title=_("Text archives (msg\\<language>\\menu_dlc02.msgbnd.dcx)"),
-                                         filetypes=[("menu_dlc02.msgbnd.dcx", "*.msgbnd.dcx"), (_("All files"), "*.*")])
+        ps = filedialog.askopenfilenames(title=_("Text archives (msg\\<language>\\menu_dlc02 / item_dlc02.msgbnd.dcx)"),
+                                         filetypes=[("*.msgbnd.dcx", "*.msgbnd.dcx"), (_("All files"), "*.*")])
         if ps:
             have = [x for x in self.archives.get().split(";") if x.strip()]
             self.archives.set(";".join(have + [p for p in ps if p not in have]))
@@ -564,7 +620,14 @@ class Gui:
             a.append("--start-with-bell")
         if self.start_lantern.get():
             a.append("--start-with-lantern")
-        archives = [x.strip() for x in self.archives.get().split(";") if x.strip()]   # after every option that takes them
+        if self.enemy_drops.get():
+            a.append("--random-enemy-drops")
+            if self.drop_multi.get():
+                a += ["--enemy-drop-rolls", str(self._int(self.drop_rolls.get(), "rolls")),
+                      "--enemy-drop-chance", str(self._int(self.drop_chance.get(), "chance per roll"))]
+        given = [x.strip() for x in self.archives.get().split(";") if x.strip()]
+        archives = [x for x in given if not Path(x).name.lower().startswith("item")]      # menu_dlc02: the subtitle options
+        item_archives = [x for x in given if Path(x).name.lower().startswith("item")]     # item_dlc02: the weapon names
         if self.dialogue.get():
             a.append("--random-dialogue")
             if self.jokes.get():
@@ -594,7 +657,20 @@ class Gui:
                                         (self.sell_max, "--sell-max", "max sell price")):
                     if var.get().strip():
                         a += [flag, str(self._int(var.get(), what))]
+        for on, flag, prefix, mode, lo, hi in ((self.random_runes.get(), "--random-runes", "rune", self.rune_mode, self.rune_min, self.rune_max),
+                                               (self.random_durations.get(), "--random-durations", "duration",
+                                                self.duration_mode, self.duration_min, self.duration_max)):
+            if not on:
+                continue
+            a.append(flag)
+            if mode.get() == "range":
+                a += [f"--{prefix}-mode", "range"]
+                for var, suffix in ((lo, "min"), (hi, "max")):
+                    if var.get().strip():
+                        a += [f"--{prefix}-{suffix}", str(self._int(var.get(), f"{suffix} {prefix}"))]
         four = (self.somber.get(), self.movesets.get(), self.default_ash.get(), self.stats.get())
+        if self.somber.get() and item_archives:
+            a += ["--weapon-names", *item_archives]                                      # after the subtitle options' paths
         if all(four):
             a.append("--weapons")
         else:
@@ -644,6 +720,10 @@ class Gui:
 
     def _refresh(self) -> None:
         for widgets, on in ((self.dep_prices, self.random_prices.get()),
+                            (self.dep_drops, self.enemy_drops.get()),
+                            (self.dep_runes, self.random_runes.get()),
+                            (self.dep_durations, self.random_durations.get()),
+                            (self.dep_multi, self.enemy_drops.get() and self.drop_multi.get()),
                             (self.dep_sell, self.random_prices.get()
                              and (self.sell_prices.get() or self.sell_equipment.get())),
                             (self.dep_movesets, self.movesets.get()),
@@ -678,8 +758,13 @@ class Gui:
         self.sell_equipment.set(False)
         self.sell_min.set("")
         self.sell_max.set("")
+        for v in (self.rune_min, self.rune_max, self.duration_min, self.duration_max):
+            v.set("")
+        self.rune_mode.set("shuffle")
+        self.duration_mode.set("shuffle")
         for v in (self.include_flasks, self.include_remembrances, self.flask_locations, self.start_bell,
-                  self.start_lantern, self.dialogue, self.jokes, self.pool_first, self.mixed_pool, self.translate20,
+                  self.start_lantern, self.enemy_drops, self.drop_multi, self.dialogue, self.jokes, self.pool_first,
+                  self.mixed_pool, self.translate20, self.random_runes, self.random_durations,
                   self.random_prices, self.somber, self.movesets,
                   self.default_ash, self.stats, self.keep_standard, self.weptype):
             v.set(False)
@@ -692,6 +777,8 @@ class Gui:
             v.set(True)
         self.stamina_lo.set(STAMINA_DEFAULT[0])
         self.stamina_hi.set(STAMINA_DEFAULT[1])
+        self.drop_rolls.set(DROP_DEFAULT[0])
+        self.drop_chance.set(DROP_DEFAULT[1])
 
     # ---------------------------------------------------------------- running
     def _start(self, dry_run: bool, repack: bool = False) -> None:

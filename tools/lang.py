@@ -97,6 +97,9 @@ ZH = {
     "Sell prices of goods too (off = --no-sell-prices)": "道具售价也随机（取消 = --no-sell-prices）",
     "sell min": "售价最低",
     "sell max": "售价最高",
+    "Enemy runes (--random-runes)": "敌人掉落的卢恩随机 (--random-runes)",
+    "Buff durations of consumables and spells (--random-durations)": "消耗品与法术的 buff 持续时间随机 (--random-durations)",
+    "shuffle: permute the existing values": "shuffle：打乱现有数值",
     "Sell prices of weapons / armor / Ashes of War too (--sell-equipment)":
         "武器 / 防具 / 战灰的售价也随机 (--sell-equipment)",
     # weapons
@@ -108,20 +111,31 @@ ZH = {
     "(handed out with the flasks at the start; for Fog Gate Randomizer runs: Limgrave, where Renna hands out the "
     "bell, and Liurnia, where the merchants sell the lantern, may be out of reach early)":
         "（开局随圣杯瓶一起发放；配合雾门随机用：前期可能到不了蕾娜给铃的宁姆格福、商人卖灯的湖之利耶尼亚）",
+    "Random enemy drops (--random-enemy-drops)": "敌人掉落随机 (--random-enemy-drops)",
+    "(every enemy always drops one random item: goods, gear, spells...; its other drop rolls keep their chance but "
+    "drop random items too; one-time drops stay; report in drops.txt)":
+        "（每个敌人必掉一件随机物品：道具、装备、法术……；它原有的其他掉落判定保留概率、物品也随机；一次性掉落不动；报告在 drops.txt）",
+    "0 to N items per kill (--enemy-drop-rolls N --enemy-drop-chance P)": "每次击杀掉 0～N 件 (--enemy-drop-rolls N --enemy-drop-chance P)",
+    "rolls N": "判定次数 N",
+    "chance per roll P %": "每次概率 P %",
+    "(every enemy gets exactly N drop rolls, each a random item at P %: N x P / 100 items on average, instead of one "
+    "certain drop)":
+        "（每个敌人固定 N 次掉落判定，每次以 P% 掉一件随机物品：平均 N×P/100 件；取代“必掉一件”）",
     "Fun": "娱乐（fun）",
     "Random dialogue subtitles (--random-dialogue)": "对话字幕随机 (--random-dialogue)",
     "(every NPC line shows the subtitle of another line; the voices stay, so the NPC still speaks its own line)":
         "（每句 NPC 台词显示另一句的字幕；语音不动，NPC 念的还是自己原来那句）",
     "Text archives": "文本档",
-    "(the game's msg\\<language>\\menu_dlc02.msgbnd.dcx, one per language, taken from the mod folder "
-    "in use: Item and Enemy Randomizer mod\\randomizer\\msg\\..., English with the Fog Gate Randomizer "
-    "mod\\fog\\msg\\engus\\...; every option below that rewrites subtitles uses them. Give the paths: "
-    "left empty, the copies shipped with the program are used, and some text may then disagree with "
-    "the actual items, e.g. the keepsake names and class descriptions in character creation)":
-        "（游戏的 msg\\<语言>\\menu_dlc02.msgbnd.dcx，每种语言一个，取当前 mod 目录里的：道具随机器 mod\\randomizer\\msg\\…，"
-        "英文配雾门随机器 mod\\fog\\msg\\engus\\…；下面所有改字幕的选项都用它。请填路径：留空就用程序自带的副本，"
-        "某些地方的文字可能和实物不符，例如人物创建界面的遗物名和职业说明）",
-    "Text archives (msg\\<language>\\menu_dlc02.msgbnd.dcx)": "文本档（msg\\<语言>\\menu_dlc02.msgbnd.dcx）",
+    "(the game's msg\\<language>\\menu_dlc02.msgbnd.dcx and item_dlc02.msgbnd.dcx, one per language, taken from the "
+    "mod folder in use: Item and Enemy Randomizer mod\\randomizer\\msg\\..., English with the Fog Gate "
+    "Randomizer mod\\fog\\msg\\engus\\...; the subtitle options below use the menu archives, the weapon "
+    "names of --somber-infusable the item archives. Give the paths: left empty, the copies shipped with "
+    "the program are used, and some text may then disagree with the actual items, e.g. the keepsake "
+    "names and class descriptions in character creation)":
+        "（游戏的 msg\\<语言>\\menu_dlc02.msgbnd.dcx 和 item_dlc02.msgbnd.dcx，每种语言各一个，取当前 mod 目录里的：道具随机器 "
+        "mod\\randomizer\\msg\\…，英文配雾门随机器 mod\\fog\\msg\\engus\\…；下面改字幕的选项用 menu 档，失色武器可质变（--somber-infusable）"
+        "的武器名用 item 档。请填路径：留空就用程序自带的副本，某些地方的文字可能和实物不符，例如人物创建界面的遗物名和职业说明）",
+    "Text archives (msg\\<language>\\menu_dlc02 / item_dlc02.msgbnd.dcx)": "文本档（msg\\<语言>\\menu_dlc02 / item_dlc02.msgbnd.dcx）",
     "Joke shifu (--dialogue-jokes)": "笑话大师（joke shifu）(--dialogue-jokes)",
     "(the cut lines show a joke and join the shuffle)": "（被砍的台词改成冷笑话并加入随机）",
     "Three Kingdoms + joke pool first, then the game's lines (--pool-first)": "三国 + 冷笑话台词池先抽，抽完再抽原字幕 (--pool-first)",

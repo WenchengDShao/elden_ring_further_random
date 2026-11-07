@@ -9,7 +9,7 @@ rem No parentheses inside echo lines within ( ) blocks: an unescaped ) there end
 setlocal
 cd /d "%~dp0"
 where uv >nul 2>&1 || (
-  echo uv not found. Install it first - see the README section "Install" - then open a new window and run this again.
+  echo uv not found. Install it first - see README_details.md, section "Install" - then open a new window and run this again.
   goto :fail
 )
 set "VENV=%USERPROFILE%\.venvs\er_mod"
