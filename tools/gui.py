@@ -227,7 +227,7 @@ class Gui:
                   style="Hint.TLabel").grid(row=3, column=1, columnspan=3, sticky="w", **PAD)
         # Text archive folders: optional, empty = the shipped copies (moved here from the Fun section 2026-11-07).
         self._file_row(f, 4, _("Text archives folder"), self.archives, self._pick_archives)
-        self._wrapped_hint(f, _("(optional: the msg folder of the mod in use, or its msg\\<language> folders, ';' between several, e.g. Item and "
+        self._wrapped_hint(f, _("(optional: the msg folder or msg\\<language> folders, ';' between several, e.g. Item and "
                               "Enemy Randomizer mod\\randomizer\\msg, English with the Fog Gate Randomizer mod\\fog\\msg\\engus; the subtitle "
                               "options rewrite the menu_dlc02.msgbnd.dcx found there, the weapon names of --somber-infusable the "
                               "item_dlc02.msgbnd.dcx. Left empty, the copies shipped with the program are used, and some text may then "
@@ -508,11 +508,6 @@ class Gui:
         ttk.Label(parent, text=label).grid(row=row, column=0, sticky="w", **PAD)
         ttk.Entry(parent, textvariable=var).grid(row=row, column=1, sticky="ew", **PAD)
         ttk.Button(parent, text=_("Browse…"), command=pick).grid(row=row, column=2, **PAD)
-
-    def _uses_archives(self) -> bool:
-        """Whether the run rewrites text archives: a subtitle option, or the weapon names of --somber-infusable."""
-        return ((self.dialogue.get() and (self.jokes.get() or self.pool_first.get() or self.mixed_pool.get()))
-                or self.translate20.get() or self.somber.get())
 
     @staticmethod
     def _wrapped_hint(parent, text: str, wrap: int) -> ttk.Label:
@@ -826,11 +821,6 @@ class Gui:
                     argv[argv.index("--compression") + 1] = erreg.CODEC_ZSTD
                 else:
                     argv += ["--compression", erreg.CODEC_ZSTD]
-        if not dry_run and not repack and not self.archives.get().strip() and self._uses_archives():
-            if not messagebox.askyesno(TITLE, _("Warning: using the msg/ files provided by this program could cause the disagreement between the name "
-                    "and the actual items.\n\nNo text archives folder is given (Files section): the subtitle options and "
-                    "the weapon names would rewrite the copies shipped with the program. Continue anyway?")):
-                return
         self.running, self.dry_run, self.repack = True, dry_run, repack
         self.out = Path(self.output.get().strip() or "randomized/regulation.bin")
         for b in (self.btn_dry, self.btn_repack, self.btn_run):

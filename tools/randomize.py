@@ -449,7 +449,8 @@ def shipped_warning(flag: str, archives: list[Path]) -> list[str]:
        Randomizer's; copied from the mod folders 2026-11-07), whose character-creation texts (keepsake names /
        descriptions, class starting gear: GR_MenuText / GR_LineHelp 2971xx) and item names belong to that run -
        reported 2026-10-31: the keepsake menu named an old run's items while the game handed out the current run's.
-       The wording of the warning line is the user's (2026-11-07); the GUI asks the same before a run."""
+       The wording of the warning line is the user's (2026-11-07); the GUI does not ask (a popup was tried and
+       removed the same day: it made the program harder to pick up)."""
     return [f"# {flag.lstrip('-')}: using the shipped text archives: " + ", ".join(str(a) for a in archives),
             "# " + SHIPPED_WARNING]
 
